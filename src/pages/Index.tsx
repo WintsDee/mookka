@@ -7,67 +7,71 @@ import { Film, Tv, Book, GamepadIcon } from "lucide-react";
 
 const Index = () => {
   return (
-    <Background className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md animate-fade-in flex flex-col items-center">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      {/* Image de fond avec overlay pour assurer la lisibilité du texte */}
+      <div className="absolute inset-0 z-0">
         <img 
-          src="/logo.png" 
-          alt="Mookka Logo" 
-          className="w-32 h-32 mb-6 animate-scale-in"
+          src="/lovable-uploads/1207c6ca-56b8-421d-b536-7decdd515caa.png" 
+          alt="Mookka Background" 
+          className="w-full h-full object-cover"
         />
-        
-        <h1 className="text-4xl font-bold mb-6">
-          <span className="text-blue-500">Mookka</span>
-        </h1>
-        
-        <p className="text-lg mb-8 text-muted-foreground">
-          Gérez vos films, séries, livres et jeux vidéo en un seul endroit. 
-          Suivez votre progression, notez vos favoris et découvrez les 
-          recommandations de vos amis.
-        </p>
-        
-        {/* Nouvelle section avec l'image */}
-        <div className="mb-8 w-full">
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
+      
+      {/* Contenu principal */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md animate-fade-in flex flex-col items-center backdrop-blur-sm bg-black/30 p-6 rounded-xl">
           <img 
-            src="/lovable-uploads/1207c6ca-56b8-421d-b536-7decdd515caa.png" 
-            alt="Illustration Mookka" 
-            className="w-full h-auto rounded-lg shadow-lg object-cover animate-fade-in"
+            src="/lovable-uploads/34db9168-1159-46fb-8dea-647ac3684f99.png" 
+            alt="Mookka Logo" 
+            className="w-32 h-32 mb-6 animate-scale-in"
           />
-        </div>
-        
-        <div className="space-y-4 w-full">
-          <Link to="/bibliotheque">
-            <Button size="lg" className="w-full">
-              Commencer maintenant
-            </Button>
-          </Link>
           
-          <Link to="/connexion">
-            <Button variant="outline" size="lg" className="w-full">
-              Se connecter
-            </Button>
-          </Link>
-        </div>
-        
-        <div className="flex justify-between mt-16 px-8">
-          <div className="flex flex-col items-center text-blue-500">
-            <Film size={32} />
-            <span className="text-sm mt-2">Films</span>
+          <h1 className="text-4xl font-bold mb-6">
+            <span className="text-blue-500">Mookka</span>
+          </h1>
+          
+          <p className="text-lg mb-8 text-white">
+            Gérez vos films, séries, livres et jeux vidéo en un seul endroit. 
+            Suivez votre progression, notez vos favoris et découvrez les 
+            recommandations de vos amis.
+          </p>
+          
+          <div className="space-y-4 w-full">
+            <Link to="/bibliotheque">
+              <Button size="lg" className="w-full">
+                Commencer maintenant
+              </Button>
+            </Link>
+            
+            <Link to="/connexion">
+              <Button variant="outline" size="lg" className="w-full">
+                Se connecter
+              </Button>
+            </Link>
           </div>
-          <div className="flex flex-col items-center text-purple-500">
-            <Tv size={32} />
-            <span className="text-sm mt-2">Séries</span>
-          </div>
-          <div className="flex flex-col items-center text-emerald-500">
-            <Book size={32} />
-            <span className="text-sm mt-2">Livres</span>
-          </div>
-          <div className="flex flex-col items-center text-amber-500">
-            <GamepadIcon size={32} />
-            <span className="text-sm mt-2">Jeux</span>
+          
+          <div className="flex justify-between mt-10 w-full px-4">
+            <div className="flex flex-col items-center text-blue-500">
+              <Film size={28} />
+              <span className="text-sm mt-2">Films</span>
+            </div>
+            <div className="flex flex-col items-center text-purple-500">
+              <Tv size={28} />
+              <span className="text-sm mt-2">Séries</span>
+            </div>
+            <div className="flex flex-col items-center text-emerald-500">
+              <Book size={28} />
+              <span className="text-sm mt-2">Livres</span>
+            </div>
+            <div className="flex flex-col items-center text-amber-500">
+              <GamepadIcon size={28} />
+              <span className="text-sm mt-2">Jeux</span>
+            </div>
           </div>
         </div>
       </div>
-    </Background>
+    </div>
   );
 };
 
