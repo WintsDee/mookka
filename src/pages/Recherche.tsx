@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 
 const Recherche = () => {
-  const [selectedType, setSelectedType] = useState<MediaType | "">("");
+  const [selectedType, setSelectedType] = useState<MediaType | "">("film");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   
@@ -48,7 +48,6 @@ const Recherche = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              disabled={!selectedType}
               className="pl-10 py-6 bg-secondary/60 border-none shadow-sm"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
