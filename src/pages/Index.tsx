@@ -1,13 +1,59 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from "react";
+import { Background } from "@/components/ui/background";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Film, Tv, Book, GamepadIcon } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <Background className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="max-w-md animate-fade-in">
+        <h1 className="text-5xl font-bold mb-6">
+          <span className="text-blue-500">Mookka</span> - Votre{" "}
+          <span className="text-white">Bibliothèque Numérique</span>
+        </h1>
+        
+        <p className="text-lg mb-8 text-muted-foreground">
+          Gérez vos films, séries, livres et jeux vidéo en un seul endroit. 
+          Suivez votre progression, notez vos favoris et découvrez les 
+          recommandations de vos amis.
+        </p>
+        
+        <div className="space-y-4">
+          <Link to="/bibliotheque">
+            <Button size="lg" className="w-full">
+              Commencer maintenant
+            </Button>
+          </Link>
+          
+          <Link to="/connexion">
+            <Button variant="outline" size="lg" className="w-full">
+              Se connecter
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="flex justify-between mt-16 px-8">
+          <div className="flex flex-col items-center text-blue-500">
+            <Film size={32} />
+            <span className="text-sm mt-2">Films</span>
+          </div>
+          <div className="flex flex-col items-center text-purple-500">
+            <Tv size={32} />
+            <span className="text-sm mt-2">Séries</span>
+          </div>
+          <div className="flex flex-col items-center text-emerald-500">
+            <Book size={32} />
+            <span className="text-sm mt-2">Livres</span>
+          </div>
+          <div className="flex flex-col items-center text-amber-500">
+            <GamepadIcon size={32} />
+            <span className="text-sm mt-2">Jeux</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </Background>
   );
 };
 
