@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -118,6 +119,7 @@ const Recherche = () => {
           <MediaTypeSelector 
             selectedType={selectedType}
             onSelectType={(type) => setSelectedType(type as MediaType)}
+            className="mt-6" // Ajout de la marge
           />
           
           <div className="relative mt-6">

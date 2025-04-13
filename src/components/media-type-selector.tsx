@@ -7,9 +7,14 @@ import { MediaType } from "@/types";
 interface MediaTypeSelectorProps {
   selectedType: MediaType | "";
   onSelectType: (type: string) => void;
+  className?: string; // Ajout d'une prop optionnelle pour les classes
 }
 
-const MediaTypeSelector = ({ selectedType, onSelectType }: MediaTypeSelectorProps) => {
+const MediaTypeSelector = ({ 
+  selectedType, 
+  onSelectType, 
+  className // Nouvelle prop
+}: MediaTypeSelectorProps) => {
   const mediaTypes = [
     { id: "book", label: "Livres", icon: Book, color: "emerald" },
     { id: "film", label: "Films", icon: Film, color: "blue" },
@@ -18,7 +23,7 @@ const MediaTypeSelector = ({ selectedType, onSelectType }: MediaTypeSelectorProp
   ];
 
   return (
-    <div className="flex justify-center gap-3 px-4">
+    <div className={cn("flex justify-center gap-3 px-4", className)}>
       {mediaTypes.map((type) => {
         const isSelected = selectedType === type.id;
         const mediaColor = `media-${type.id}`;
