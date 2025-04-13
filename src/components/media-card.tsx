@@ -1,9 +1,11 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MediaCardProps {
   media: Media;
@@ -13,6 +15,7 @@ interface MediaCardProps {
 
 const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProps) => {
   const { id, title, type, coverImage, year, rating, genres, status, duration } = media;
+  const isMobile = useIsMobile();
   
   const sizeClasses = {
     small: "w-32 h-48",
@@ -67,42 +70,44 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
     return type as "film" | "serie" | "book" | "game";
   };
 
-  const getTypeBgColor = () => {
-    switch (type) {
-      case "film":
-        return "backdrop-blur-sm shadow-blue-500/30";
-      case "serie":
-        return "backdrop-blur-sm shadow-purple-500/30";
-      case "book":
-        return "backdrop-blur-sm shadow-emerald-500/30";
-      case "game":
-        return "backdrop-blur-sm shadow-amber-500/30";
-      default:
-        return "backdrop-blur-sm";
-    }
-  };
-  
   return (
     <Link to={`/media/${type}/${id}`} className="block animate-fade-in">
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
+          {/* Image de couverture */}
           <img 
             src={coverImage} 
             alt={title} 
             className="w-full h-full object-cover rounded-lg"
           />
-          {getStatusBadge()}
-          <Badge 
-            variant={getTypeVariant()} 
-            className={`absolute top-2 right-2 text-[0.6rem] py-0 shadow-md ${getTypeBgColor()} font-semibold border border-white/20`}
-          >
-            <MediaTypeIcon />
-            {type === "film" ? "Film" : 
-             type === "serie" ? "Série" : 
-             type === "book" ? "Livre" : "Jeu"}
-          </Badge>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg">
+          {/* Status Badge */}
+          {getStatusBadge()}
+          
+          {/* Type Badge - Repositionné pour mobile */}
+          {isMobile ? (
+            <div className="absolute top-0 right-0">
+              <div className={cn(
+                "w-5 h-5 rounded-tr-lg flex items-center justify-center",
+                `bg-media-${type}`
+              )}>
+                <MediaTypeIcon />
+              </div>
+            </div>
+          ) : (
+            <Badge 
+              variant={getTypeVariant()} 
+              className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
+            >
+              <MediaTypeIcon />
+              {type === "film" ? "Film" : 
+               type === "serie" ? "Série" : 
+               type === "book" ? "Livre" : "Jeu"}
+            </Badge>
+          )}
+          
+          {/* Informations - Toujours visibles */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
               <h3 className="text-white font-bold text-sm line-clamp-2">{title}</h3>
               {showDetails && (
@@ -142,6 +147,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
         <div className={cn(
           "absolute top-0 right-0 w-2 h-8", 
           `bg-media-${type}`,
+          isMobile && "hidden"
         )} />
       </div>
     </Link>
