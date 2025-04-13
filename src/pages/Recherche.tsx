@@ -1,28 +1,97 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { Input } from "@/components/ui/input";
 import { MediaTypeSelector } from "@/components/media-type-selector";
 import { MediaCard } from "@/components/media-card";
-import { mockMedia } from "@/data/mockData";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
+import { searchMedia } from "@/services/media-service";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useToast } from "@/components/ui/use-toast";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchQuery, 500);
+  const { toast } = useToast();
   
-  // Filtrer les médias en fonction du type et de la recherche
-  const filteredMedia = mockMedia.filter(media => {
-    const matchesType = selectedType ? media.type === selectedType : true;
-    const matchesSearch = searchQuery 
-      ? media.title.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-    return matchesType && matchesSearch;
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      if (debouncedSearchTerm && selectedType) {
+        setIsLoading(true);
+        try {
+          const result = await searchMedia(selectedType, debouncedSearchTerm);
+          
+          let formattedResults: any[] = [];
+          
+          switch (selectedType) {
+            case 'film':
+              formattedResults = result.results?.map((item: any) => ({
+                id: item.id.toString(),
+                title: item.title,
+                type: selectedType,
+                coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+                year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : null,
+                rating: item.vote_average || null,
+              }));
+              break;
+            case 'serie':
+              formattedResults = result.results?.map((item: any) => ({
+                id: item.id.toString(),
+                title: item.name,
+                type: selectedType,
+                coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+                year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
+                rating: item.vote_average || null,
+              }));
+              break;
+            case 'book':
+              formattedResults = result.items?.map((item: any) => ({
+                id: item.id,
+                title: item.volumeInfo?.title || 'Sans titre',
+                type: selectedType,
+                coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+                year: item.volumeInfo?.publishedDate ? parseInt(item.volumeInfo.publishedDate.substring(0, 4)) : null,
+                author: item.volumeInfo?.authors ? item.volumeInfo.authors[0] : null,
+              }));
+              break;
+            case 'game':
+              formattedResults = result.results?.map((item: any) => ({
+                id: item.id.toString(),
+                title: item.name,
+                type: selectedType,
+                coverImage: item.background_image || '/placeholder.svg',
+                year: item.released ? parseInt(item.released.substring(0, 4)) : null,
+                rating: item.rating || null,
+              }));
+              break;
+          }
+          
+          setSearchResults(formattedResults || []);
+        } catch (error) {
+          console.error("Erreur de recherche:", error);
+          toast({
+            title: "Erreur de recherche",
+            description: "Impossible de récupérer les résultats",
+            variant: "destructive",
+          });
+          setSearchResults([]);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    fetchData();
+  }, [debouncedSearchTerm, selectedType, toast]);
   
   // Déterminer le placeholder en fonction du type sélectionné
   const getPlaceholder = () => {
@@ -62,17 +131,27 @@ const Recherche = () => {
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
               className={`pl-10 py-6 border-none shadow-sm ${getSelectedTypeColor()}`}
+              disabled={!selectedType}
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+            {isLoading ? (
+              <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground animate-spin" size={18} />
+            ) : (
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+            )}
           </div>
         </header>
         
         <ScrollArea className="h-[calc(100vh-260px)] mt-6">
-          {selectedType && filteredMedia.length > 0 ? (
+          {selectedType && searchResults.length > 0 ? (
             <div className="px-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {filteredMedia.map((media) => (
+              {searchResults.map((media) => (
                 <MediaCard key={media.id} media={media} size="medium" />
               ))}
+            </div>
+          ) : isLoading ? (
+            <div className="flex flex-col items-center justify-center h-40">
+              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              <p className="text-muted-foreground mt-2">Recherche en cours...</p>
             </div>
           ) : selectedType && searchQuery ? (
             <div className="flex flex-col items-center justify-center h-40 text-center px-6">

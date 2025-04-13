@@ -9,7 +9,104 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      media: {
+        Row: {
+          author: string | null
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          director: string | null
+          duration: string | null
+          external_id: string
+          genres: string[] | null
+          id: string
+          platform: string | null
+          publisher: string | null
+          rating: number | null
+          title: string
+          type: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          author?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          director?: string | null
+          duration?: string | null
+          external_id: string
+          genres?: string[] | null
+          id?: string
+          platform?: string | null
+          publisher?: string | null
+          rating?: number | null
+          title: string
+          type: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          author?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          director?: string | null
+          duration?: string | null
+          external_id?: string
+          genres?: string[] | null
+          id?: string
+          platform?: string | null
+          publisher?: string | null
+          rating?: number | null
+          title?: string
+          type?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
+      user_media: {
+        Row: {
+          added_at: string
+          id: string
+          media_id: string
+          notes: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          user_rating: number | null
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          media_id: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          user_rating?: number | null
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          media_id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          user_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_media_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
