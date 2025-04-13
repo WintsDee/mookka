@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/page-title";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -39,7 +40,7 @@ const Bibliotheque = () => {
       <div className="pb-24 pt-6">
         <header className="px-6 mb-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Ma Bibliothèque</h1>
+            <PageTitle title="Ma Bibliothèque" />
             <Button variant="outline" size="icon">
               <FilterIcon className="h-4 w-4" />
             </Button>

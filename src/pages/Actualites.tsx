@@ -8,13 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PageTitle } from "@/components/page-title";
 
 const Actualites = () => {
   return (
     <Background>
       <div className="pb-24 pt-6">
         <header className="px-6 mb-6">
-          <h1 className="text-2xl font-bold">Actualités</h1>
+          <PageTitle title="Actualités" />
           
           <div className="mt-4">
             <Tabs defaultValue="all" className="w-full">

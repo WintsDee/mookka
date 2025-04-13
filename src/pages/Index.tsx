@@ -27,7 +27,7 @@ const Index = () => {
             className="w-32 h-32 mb-6 animate-scale-in"
           />
           
-          <h1 className="text-4xl font-bold mb-6">
+          <h1 className="text-4xl font-bold mb-6 flex items-center justify-center">
             <span className="text-blue-500">Mookka</span>
           </h1>
           
