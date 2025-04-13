@@ -25,6 +25,15 @@ const Index = () => {
           recommandations de vos amis.
         </p>
         
+        {/* Nouvelle section avec l'image */}
+        <div className="mb-8 w-full">
+          <img 
+            src="/lovable-uploads/1207c6ca-56b8-421d-b536-7decdd515caa.png" 
+            alt="Illustration Mookka" 
+            className="w-full h-auto rounded-lg shadow-lg object-cover animate-fade-in"
+          />
+        </div>
+        
         <div className="space-y-4 w-full">
           <Link to="/bibliotheque">
             <Button size="lg" className="w-full">
