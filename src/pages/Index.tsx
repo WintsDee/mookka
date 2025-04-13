@@ -8,10 +8,15 @@ import { Film, Tv, Book, GamepadIcon } from "lucide-react";
 const Index = () => {
   return (
     <Background className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md animate-fade-in">
-        <h1 className="text-5xl font-bold mb-6">
-          <span className="text-blue-500">Mookka</span> - Votre{" "}
-          <span className="text-white">Bibliothèque Numérique</span>
+      <div className="max-w-md animate-fade-in flex flex-col items-center">
+        <img 
+          src="/logo.png" 
+          alt="Mookka Logo" 
+          className="w-32 h-32 mb-6 animate-scale-in"
+        />
+        
+        <h1 className="text-4xl font-bold mb-6">
+          <span className="text-blue-500">Mookka</span>
         </h1>
         
         <p className="text-lg mb-8 text-muted-foreground">
@@ -20,7 +25,7 @@ const Index = () => {
           recommandations de vos amis.
         </p>
         
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <Link to="/bibliotheque">
             <Button size="lg" className="w-full">
               Commencer maintenant
