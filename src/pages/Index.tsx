@@ -8,10 +8,10 @@ import { Film, Tv, Book, GamepadIcon } from "lucide-react";
 const Index = () => {
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Image de fond avec overlay pour assurer la lisibilité du texte */}
+      {/* Nouveau fond d'écran avec fond bleu dégradé et icônes */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/lovable-uploads/1207c6ca-56b8-421d-b536-7decdd515caa.png" 
+          src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
           className="w-full h-full object-cover"
         />
@@ -22,7 +22,7 @@ const Index = () => {
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md animate-fade-in flex flex-col items-center backdrop-blur-sm bg-black/30 p-6 rounded-xl">
           <img 
-            src="/lovable-uploads/34db9168-1159-46fb-8dea-647ac3684f99.png" 
+            src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
             alt="Mookka Logo" 
             className="w-32 h-32 mb-6 animate-scale-in"
           />
