@@ -9,7 +9,7 @@ import { Search, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { searchMedia } from "@/services/media-service";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useDebounce, filterAdultContent } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 
 const Recherche = () => {
@@ -73,7 +73,9 @@ const Recherche = () => {
               break;
           }
           
-          setSearchResults(formattedResults || []);
+          // Filtrer le contenu pour adultes
+          const filteredResults = filterAdultContent(formattedResults || []);
+          setSearchResults(filteredResults);
         } catch (error) {
           console.error("Erreur de recherche:", error);
           toast({

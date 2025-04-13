@@ -16,10 +16,10 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
-        film: "border-transparent bg-media-film/10 text-media-film border-media-film",
-        serie: "border-transparent bg-media-serie/10 text-media-serie border-media-serie",
-        book: "border-transparent bg-media-book/10 text-media-book border-media-book",
-        game: "border-transparent bg-media-game/10 text-media-game border-media-game",
+        film: "border-transparent bg-media-film/30 text-media-film border-media-film shadow-sm",
+        serie: "border-transparent bg-media-serie/30 text-media-serie border-media-serie shadow-sm",
+        book: "border-transparent bg-media-book/30 text-media-book border-media-book shadow-sm",
+        game: "border-transparent bg-media-game/30 text-media-game border-media-game shadow-sm",
       },
     },
     defaultVariants: {

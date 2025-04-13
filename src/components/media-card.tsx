@@ -71,6 +71,22 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
   const getTypeVariant = () => {
     return type as "film" | "serie" | "book" | "game";
   };
+
+  // Obtenir la couleur de fond pour le badge de type
+  const getTypeBgColor = () => {
+    switch (type) {
+      case "film":
+        return "bg-media-film/20 backdrop-blur-sm";
+      case "serie":
+        return "bg-media-serie/20 backdrop-blur-sm";
+      case "book":
+        return "bg-media-book/20 backdrop-blur-sm";
+      case "game":
+        return "bg-media-game/20 backdrop-blur-sm";
+      default:
+        return "bg-gray-500/20 backdrop-blur-sm";
+    }
+  };
   
   return (
     <Link to={`/media/${type}/${id}`} className="block animate-fade-in">
@@ -82,11 +98,12 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
             className="w-full h-full object-cover rounded-lg"
           />
           {getStatusBadge()}
-          {/* Badge de type */}
+          {/* Badge de type avec fond amélioré */}
           <Badge 
             variant={getTypeVariant()} 
-            className="absolute top-2 right-2 text-[0.6rem] py-0"
+            className={`absolute top-2 right-2 text-[0.6rem] py-0 shadow-md ${getTypeBgColor()} font-semibold border border-white/10`}
           >
+            <MediaTypeIcon />
             {type === "film" ? "Film" : 
              type === "serie" ? "Série" : 
              type === "book" ? "Livre" : "Jeu"}
