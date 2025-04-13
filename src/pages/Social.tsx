@@ -9,13 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PageTitle } from "@/components/page-title";
 
 const Social = () => {
   return (
     <Background>
       <div className="pb-24 pt-6">
         <header className="px-6 mb-6">
-          <h1 className="text-2xl font-bold">Social</h1>
+          <PageTitle title="Social" />
           
           <div className="mt-4">
             <Tabs defaultValue="activity" className="w-full">

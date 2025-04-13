@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -11,6 +10,7 @@ import { MediaType } from "@/types";
 import { searchMedia } from "@/services/media-service";
 import { useDebounce, filterAdultContent } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
+import { PageTitle } from "@/components/page-title";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -73,7 +73,6 @@ const Recherche = () => {
               break;
           }
           
-          // Filtrer le contenu pour adultes
           const filteredResults = filterAdultContent(formattedResults || []);
           setSearchResults(filteredResults);
         } catch (error) {
@@ -95,7 +94,6 @@ const Recherche = () => {
     fetchData();
   }, [debouncedSearchTerm, selectedType, toast]);
   
-  // Déterminer le placeholder en fonction du type sélectionné
   const getPlaceholder = () => {
     switch(selectedType) {
       case "film": return "Rechercher un film...";
@@ -106,7 +104,6 @@ const Recherche = () => {
     }
   };
 
-  // Déterminer la couleur de fond pour le type sélectionné
   const getSelectedTypeColor = () => {
     if (!selectedType) return "bg-secondary/60";
     return `bg-media-${selectedType}/10 border-media-${selectedType}/30`;
@@ -116,15 +113,13 @@ const Recherche = () => {
     <Background>
       <div className="pb-24 pt-6">
         <header className="px-6 mb-4">
-          <h1 className="text-2xl font-bold mb-6">Recherche</h1>
+          <PageTitle title="Recherche" />
           
-          {/* Media Type Selector - Now at the top */}
           <MediaTypeSelector 
             selectedType={selectedType}
             onSelectType={(type) => setSelectedType(type as MediaType)}
           />
           
-          {/* Search Bar - Now below the media type selector */}
           <div className="relative mt-6">
             <Input
               placeholder={getPlaceholder()}
