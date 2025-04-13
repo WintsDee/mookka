@@ -35,29 +35,37 @@ const Recherche = () => {
     }
   };
 
+  // Déterminer la couleur de fond pour le type sélectionné
+  const getSelectedTypeColor = () => {
+    if (!selectedType) return "bg-secondary/60";
+    return `bg-media-${selectedType}/10 border-media-${selectedType}/30`;
+  };
+
   return (
     <Background>
       <div className="pb-24 pt-6">
         <header className="px-6 mb-4">
           <h1 className="text-2xl font-bold mb-6">Recherche</h1>
           
-          <div className="relative">
+          {/* Media Type Selector - Now at the top */}
+          <MediaTypeSelector 
+            selectedType={selectedType}
+            onSelectType={(type) => setSelectedType(type as MediaType)}
+          />
+          
+          {/* Search Bar - Now below the media type selector */}
+          <div className="relative mt-6">
             <Input
               placeholder={getPlaceholder()}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="pl-10 py-6 bg-secondary/60 border-none shadow-sm"
+              className={`pl-10 py-6 border-none shadow-sm ${getSelectedTypeColor()}`}
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           </div>
         </header>
-        
-        <MediaTypeSelector 
-          selectedType={selectedType}
-          onSelectType={(type) => setSelectedType(type as MediaType)}
-        />
         
         <ScrollArea className="h-[calc(100vh-260px)] mt-6">
           {selectedType && filteredMedia.length > 0 ? (

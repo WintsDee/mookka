@@ -69,10 +69,10 @@ export default {
         },
         // Couleurs spécifiques pour types de média
         media: {
-          film: '#3B82F6',
-          serie: '#8B5CF6',
-          book: '#10B981',
-          game: '#F59E0B',
+          film: '#3B82F6',  // Blue
+          serie: '#8B5CF6', // Purple
+          book: '#10B981',  // Emerald
+          game: '#F59E0B',  // Amber
         }
       },
       borderRadius: {
@@ -97,12 +97,17 @@ export default {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' }
         },
+        'pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' }
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.3s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }
     }
   },

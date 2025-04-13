@@ -67,9 +67,14 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
     );
   };
   
+  // Appliquer le badge du type de média
+  const getTypeVariant = () => {
+    return type as "film" | "serie" | "book" | "game";
+  };
+  
   return (
     <Link to={`/media/${type}/${id}`} className="block animate-fade-in">
-      <div className={cn("media-card", sizeClasses[size])}>
+      <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
           <img 
             src={coverImage} 
@@ -77,6 +82,16 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
             className="w-full h-full object-cover rounded-lg"
           />
           {getStatusBadge()}
+          {/* Badge de type */}
+          <Badge 
+            variant={getTypeVariant()} 
+            className="absolute top-2 right-2 text-[0.6rem] py-0"
+          >
+            {type === "film" ? "Film" : 
+             type === "serie" ? "Série" : 
+             type === "book" ? "Livre" : "Jeu"}
+          </Badge>
+          
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
               <h3 className="text-white font-bold text-sm line-clamp-2">{title}</h3>
