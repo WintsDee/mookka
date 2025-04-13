@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
@@ -15,14 +14,12 @@ interface MediaCardProps {
 const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProps) => {
   const { id, title, type, coverImage, year, rating, genres, status, duration } = media;
   
-  // Déterminer les classes en fonction de la taille
   const sizeClasses = {
     small: "w-32 h-48",
     medium: "w-40 h-60",
     large: "w-48 h-72"
   };
   
-  // Sélectionner l'icône en fonction du type de média
   const MediaTypeIcon = () => {
     switch (type) {
       case "film":
@@ -38,7 +35,6 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
     }
   };
   
-  // Déterminer le statut
   const getStatusBadge = () => {
     if (!status) return null;
     
@@ -67,24 +63,22 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
     );
   };
   
-  // Appliquer le badge du type de média
   const getTypeVariant = () => {
     return type as "film" | "serie" | "book" | "game";
   };
 
-  // Obtenir la couleur de fond pour le badge de type
   const getTypeBgColor = () => {
     switch (type) {
       case "film":
-        return "bg-media-film/20 backdrop-blur-sm";
+        return "backdrop-blur-sm shadow-blue-500/30";
       case "serie":
-        return "bg-media-serie/20 backdrop-blur-sm";
+        return "backdrop-blur-sm shadow-purple-500/30";
       case "book":
-        return "bg-media-book/20 backdrop-blur-sm";
+        return "backdrop-blur-sm shadow-emerald-500/30";
       case "game":
-        return "bg-media-game/20 backdrop-blur-sm";
+        return "backdrop-blur-sm shadow-amber-500/30";
       default:
-        return "bg-gray-500/20 backdrop-blur-sm";
+        return "backdrop-blur-sm";
     }
   };
   
@@ -98,10 +92,9 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
             className="w-full h-full object-cover rounded-lg"
           />
           {getStatusBadge()}
-          {/* Badge de type avec fond amélioré */}
           <Badge 
             variant={getTypeVariant()} 
-            className={`absolute top-2 right-2 text-[0.6rem] py-0 shadow-md ${getTypeBgColor()} font-semibold border border-white/10`}
+            className={`absolute top-2 right-2 text-[0.6rem] py-0 shadow-md ${getTypeBgColor()} font-semibold border border-white/20`}
           >
             <MediaTypeIcon />
             {type === "film" ? "Film" : 
