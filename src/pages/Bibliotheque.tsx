@@ -3,19 +3,29 @@ import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
+import { MediaRecommendations } from "@/components/media-recommendations";
 import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, FilterIcon, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
+  const [searchTerm, setSearchTerm] = useState("");
   
-  // Filtrer les médias en fonction du type sélectionné
-  const filteredMedia = filter === "all" 
-    ? mockMedia 
-    : mockMedia.filter(media => media.type === filter);
+  // Filtrer les médias en fonction du type sélectionné et du terme de recherche
+  const filteredMedia = mockMedia
+    .filter(media => filter === "all" || media.type === filter)
+    .filter(media => 
+      searchTerm === "" || 
+      media.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (media.genres && media.genres.some(genre => 
+        genre.toLowerCase().includes(searchTerm.toLowerCase())
+      ))
+    );
   
   // Grouper les médias par statut
   const mediaByStatus = {
@@ -28,7 +38,23 @@ const Bibliotheque = () => {
     <Background>
       <div className="pb-24 pt-6">
         <header className="px-6 mb-6">
-          <h1 className="text-2xl font-bold">Ma Bibliothèque</h1>
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Ma Bibliothèque</h1>
+            <Button variant="outline" size="icon">
+              <FilterIcon className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="mt-4 relative">
+            <Input
+              type="text"
+              placeholder="Rechercher dans ma bibliothèque..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          </div>
           
           <div className="mt-4">
             <Tabs defaultValue="all" className="w-full">
@@ -73,54 +99,51 @@ const Bibliotheque = () => {
           </div>
         </header>
         
-        <ScrollArea className="h-[calc(100vh-180px)]">
+        <ScrollArea className="h-[calc(100vh-220px)]">
           <div className="px-6 space-y-8">
             {/* En cours de visionnage/lecture/jeu */}
             {mediaByStatus.current.length > 0 && (
-              <section>
-                <h2 className="text-lg font-medium mb-4">En cours</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {mediaByStatus.current.map((media) => (
-                    <MediaCard key={media.id} media={media} size="medium" />
-                  ))}
-                  <button className="flex flex-col items-center justify-center w-40 h-60 border border-dashed border-muted-foreground/50 rounded-lg text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-                    <PlusCircle size={24} />
-                    <span className="mt-2 text-sm">Ajouter</span>
-                  </button>
-                </div>
-              </section>
+              <MediaRecommendations 
+                title="En cours" 
+                medias={mediaByStatus.current}
+                onSeeMore={() => console.log("Voir plus - En cours")}
+              />
             )}
             
             {/* À voir/lire/jouer */}
             {mediaByStatus.pending.length > 0 && (
-              <section>
-                <h2 className="text-lg font-medium mb-4">À découvrir</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {mediaByStatus.pending.map((media) => (
-                    <MediaCard key={media.id} media={media} size="medium" />
-                  ))}
-                  <button className="flex flex-col items-center justify-center w-40 h-60 border border-dashed border-muted-foreground/50 rounded-lg text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-                    <PlusCircle size={24} />
-                    <span className="mt-2 text-sm">Ajouter</span>
-                  </button>
-                </div>
-              </section>
+              <MediaRecommendations 
+                title="À découvrir" 
+                medias={mediaByStatus.pending}
+                onSeeMore={() => console.log("Voir plus - À découvrir")}
+              />
             )}
             
             {/* Terminés */}
             {mediaByStatus.completed.length > 0 && (
-              <section>
-                <h2 className="text-lg font-medium mb-4">Terminés</h2>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                  {mediaByStatus.completed.map((media) => (
-                    <MediaCard key={media.id} media={media} size="medium" />
-                  ))}
-                  <button className="flex flex-col items-center justify-center w-40 h-60 border border-dashed border-muted-foreground/50 rounded-lg text-muted-foreground hover:text-primary hover:border-primary transition-colors">
-                    <PlusCircle size={24} />
-                    <span className="mt-2 text-sm">Ajouter</span>
-                  </button>
-                </div>
-              </section>
+              <MediaRecommendations 
+                title="Terminés" 
+                medias={mediaByStatus.completed}
+                onSeeMore={() => console.log("Voir plus - Terminés")}
+              />
+            )}
+            
+            {/* Si aucun résultat */}
+            {filteredMedia.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4 text-center">
+                  Aucun média trouvé pour cette recherche.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilter("all");
+                  }}
+                >
+                  Réinitialiser les filtres
+                </Button>
+              </div>
             )}
           </div>
         </ScrollArea>

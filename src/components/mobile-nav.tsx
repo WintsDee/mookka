@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Book, Film, GamepadIcon, Home, Search, User, BarChart3 } from "lucide-react";
+import { Book, Film, GamepadIcon, Home, Search, User, BarChart3, LibraryBig, Users, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MobileNav = () => {
@@ -9,10 +9,10 @@ const MobileNav = () => {
   
   // Navigation items
   const navItems = [
-    { icon: Home, path: "/", label: "Bibliothèque" },
-    { icon: BarChart3, path: "/actualites", label: "Actualités" },
+    { icon: LibraryBig, path: "/bibliotheque", label: "Bibliothèque" },
+    { icon: Globe, path: "/actualites", label: "Actualités" },
     { icon: Search, path: "/recherche", label: "Recherche" },
-    { icon: User, path: "/social", label: "Social" },
+    { icon: Users, path: "/social", label: "Social" },
     { icon: User, path: "/profil", label: "Profil" }
   ];
 
