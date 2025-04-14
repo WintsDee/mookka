@@ -18,12 +18,13 @@ export const SOURCES: NewsSource[] = [
     name: 'ActuaLitté',
     url: 'https://www.actualitte.com/',
     category: 'book',
-    rss: 'https://www.actualitte.com/rss/flux.xml'
+    rss: 'https://actualitte.com/rss/flux.xml'
   },
   {
     name: 'Fnac',
     url: 'https://leclaireur.fnac.com/',
     category: 'general',
+    rss: 'https://leclaireur.fnac.com/feed/'
   },
   {
     name: 'Le Monde Culture',

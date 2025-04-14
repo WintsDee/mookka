@@ -1,9 +1,8 @@
 
-import { DOMParser } from 'https://deno.land/x/deno_dom/deno-dom-wasm.ts';
 import { NewsItem } from './types.ts';
 import { detectMediaType } from './category-detector.ts';
 
-// Parse RSS feed using Deno DOM
+// Parse RSS feed using fetch and basic string manipulation
 export async function parseRSSFeed(url: string, source: string): Promise<NewsItem[]> {
   try {
     const response = await fetch(url);
@@ -14,49 +13,62 @@ export async function parseRSSFeed(url: string, source: string): Promise<NewsIte
     }
     
     const text = await response.text();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(text, "text/xml");
-    
-    if (!xmlDoc) {
-      console.error(`Failed to parse XML from ${source}`);
-      return [];
-    }
-    
-    const items = Array.from(xmlDoc.querySelectorAll('item'));
     const news: NewsItem[] = [];
     
+    // Simple XML parsing without using DOMParser
+    const items = text.split('<item>').slice(1);
+    
     items.forEach((item, index) => {
-      const title = item.querySelector('title')?.textContent || '';
-      const link = item.querySelector('link')?.textContent || '';
-      const pubDate = item.querySelector('pubDate')?.textContent || new Date().toISOString();
-      const description = item.querySelector('description')?.textContent || '';
-      
-      // Extract image
-      let image = '';
-      const enclosure = item.querySelector('enclosure[type^="image"]');
-      if (enclosure && enclosure.getAttribute) {
-        image = enclosure.getAttribute('url') || '';
-      } else {
-        // Try to extract image from description
-        const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
-        if (imgMatch) {
-          image = imgMatch[1];
+      try {
+        // Extract title using regex
+        const titleMatch = item.match(/<title[^>]*>(.*?)<\/title>/s);
+        const title = titleMatch ? removeHTMLTags(titleMatch[1]) : '';
+        
+        // Extract link
+        const linkMatch = item.match(/<link[^>]*>(.*?)<\/link>/s);
+        const link = linkMatch ? removeHTMLTags(linkMatch[1]) : '';
+        
+        // Extract pubDate
+        const pubDateMatch = item.match(/<pubDate[^>]*>(.*?)<\/pubDate>/s);
+        const pubDate = pubDateMatch ? pubDateMatch[1] : new Date().toISOString();
+        
+        // Extract description
+        const descMatch = item.match(/<description[^>]*>(.*?)<\/description>/s);
+        const description = descMatch ? removeHTMLTags(descMatch[1]) : '';
+        
+        // Extract image from enclosure or description
+        let image = '';
+        const enclosureMatch = item.match(/<enclosure[^>]*url="([^"]*)"[^>]*>/);
+        if (enclosureMatch) {
+          image = enclosureMatch[1];
+        } else {
+          // Try to extract image from description
+          const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
+          if (imgMatch) {
+            image = imgMatch[1];
+          }
         }
+        
+        // Only add valid items (must have title and link)
+        if (title && link) {
+          // Detect the media type
+          const category = detectMediaType(title, description, source);
+          
+          news.push({
+            id: `${source}-${index}`,
+            title,
+            link,
+            source,
+            date: new Date(pubDate).toISOString(),
+            image,
+            category,
+            description,
+          });
+        }
+      } catch (error) {
+        console.error(`Error parsing item from ${source}:`, error);
+        // Continue with next item
       }
-      
-      // Detect the media type
-      const category = detectMediaType(title, description, source);
-      
-      news.push({
-        id: `${source}-${index}`,
-        title,
-        link,
-        source,
-        date: new Date(pubDate).toISOString(),
-        image,
-        category,
-        description,
-      });
     });
     
     return news;
@@ -64,4 +76,12 @@ export async function parseRSSFeed(url: string, source: string): Promise<NewsIte
     console.error(`Error parsing RSS from ${source}:`, error);
     return [];
   }
+}
+
+// Helper function to remove HTML tags
+function removeHTMLTags(str: string): string {
+  return str
+    .replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1')  // Extract content from CDATA
+    .replace(/<[^>]*>/g, '')                   // Remove HTML tags
+    .trim();                                   // Trim whitespace
 }

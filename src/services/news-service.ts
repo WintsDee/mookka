@@ -12,9 +12,20 @@ export interface NewsItem {
   description?: string;
 }
 
-export async function fetchNews(type?: string): Promise<NewsItem[]> {
+export async function fetchNews(type?: string, forceRefresh = false): Promise<NewsItem[]> {
   try {
-    const queryParams = type ? `?type=${type}` : '';
+    let queryParams = '';
+    
+    // Ajouter le paramètre de type s'il est défini
+    if (type) {
+      queryParams += `?type=${type}`;
+    }
+    
+    // Ajouter le paramètre de rafraîchissement s'il est activé
+    if (forceRefresh) {
+      queryParams += queryParams ? '&refresh=true' : '?refresh=true';
+    }
+    
     const { data, error } = await supabase.functions.invoke('fetch-news' + queryParams);
 
     if (error) {
