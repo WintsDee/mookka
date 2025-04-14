@@ -5,6 +5,7 @@ import { detectMediaType } from './category-detector.ts';
 // Parse RSS feed using fetch and basic string manipulation
 export async function parseRSSFeed(url: string, source: string): Promise<NewsItem[]> {
   try {
+    console.log(`Fetching RSS from ${source}: ${url}`);
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -71,6 +72,7 @@ export async function parseRSSFeed(url: string, source: string): Promise<NewsIte
       }
     });
     
+    console.log(`Successfully parsed ${news.length} items from ${source}`);
     return news;
   } catch (error) {
     console.error(`Error parsing RSS from ${source}:`, error);
@@ -83,5 +85,10 @@ function removeHTMLTags(str: string): string {
   return str
     .replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1')  // Extract content from CDATA
     .replace(/<[^>]*>/g, '')                   // Remove HTML tags
+    .replace(/&lt;/g, '<')                     // Replace HTML entities
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
     .trim();                                   // Trim whitespace
 }

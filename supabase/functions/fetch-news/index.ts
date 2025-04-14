@@ -4,10 +4,10 @@ import { fetchAllNews } from './news-fetcher.ts';
 import { corsHeaders } from './cors.ts';
 import { NewsItem } from './types.ts';
 
-// Cache the news results for 30 minutes (reduced from 1 hour for testing)
+// Cache the news results for 15 minutes (reduced from 30 minutes for testing)
 let cachedNews: NewsItem[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    console.log('Received request for news');
     const currentTime = Date.now();
     let news: NewsItem[];
     
@@ -25,20 +26,24 @@ Deno.serve(async (req) => {
     
     // Check if we need to fetch fresh news or can use cached
     if (forceRefresh || !cachedNews || (currentTime - lastFetchTime > CACHE_DURATION)) {
-      console.log('Fetching fresh news...');
+      console.log(`Fetching fresh news... (forceRefresh: ${forceRefresh}, hasCachedNews: ${!!cachedNews}, cacheAge: ${(currentTime - lastFetchTime) / 1000} seconds)`);
       news = await fetchAllNews();
       
       // Only update cache if we actually got some news
       if (news.length > 0) {
+        console.log(`Caching ${news.length} news items`);
         cachedNews = news;
         lastFetchTime = currentTime;
       } else if (cachedNews) {
         // If fetch failed but we have cached news, use that
-        console.log('Fresh fetch failed, using cached news');
+        console.log('Fresh fetch failed or returned no news, using cached news');
         news = cachedNews;
+      } else {
+        console.log('No news found, returning empty array');
+        news = [];
       }
     } else {
-      console.log('Using cached news');
+      console.log(`Using cached news (${cachedNews.length} items, cache age: ${(currentTime - lastFetchTime) / 1000} seconds)`);
       news = cachedNews;
     }
     
@@ -47,7 +52,9 @@ Deno.serve(async (req) => {
     
     // Filter by type if specified
     if (type && ['film', 'serie', 'book', 'game', 'general'].includes(type)) {
+      console.log(`Filtering news by type: ${type}`);
       news = news.filter(item => item.category === type);
+      console.log(`Filtered to ${news.length} news items`);
     }
     
     return new Response(JSON.stringify({ news }), {
