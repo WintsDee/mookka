@@ -2,6 +2,7 @@
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
+import { MobileHeader } from "@/components/mobile-header";
 import { currentUser, mockMedia } from "@/data/mockData";
 import { MediaCard } from "@/components/media-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +23,8 @@ const Profil = () => {
 
   return (
     <Background>
-      <div className="pb-24">
+      <MobileHeader />
+      <div className="pt-safe pb-24 mt-16">
         {/* Header avec couverture */}
         <div className="h-40 bg-gradient-to-r from-blue-600 to-purple-600 relative">
           <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">

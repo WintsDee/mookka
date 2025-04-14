@@ -11,6 +11,7 @@ import Recherche from "./pages/Recherche";
 import Social from "./pages/Social";
 import Actualites from "./pages/Actualites";
 import Profil from "./pages/Profil";
+import Notifications from "./pages/Notifications";
 import MediaDetail from "./pages/MediaDetail";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/social" element={<Social />} />
           <Route path="/actualites" element={<Actualites />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/media/:type/:id" element={<MediaDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

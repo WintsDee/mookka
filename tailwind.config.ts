@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -67,12 +66,11 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
         },
-        // Couleurs spécifiques pour types de média
         media: {
-          film: '#3B82F6',  // Blue
-          serie: '#8B5CF6', // Purple
-          book: '#10B981',  // Emerald
-          game: '#F59E0B',  // Amber
+          film: '#3B82F6',
+          serie: '#8B5CF6',
+          book: '#10B981',
+          game: '#F59E0B',
         }
       },
       borderRadius: {
@@ -108,6 +106,9 @@ export default {
         'fade-in': 'fade-in 0.3s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
         'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      padding: {
+        'safe': 'env(safe-area-inset-top)',
       }
     }
   },
