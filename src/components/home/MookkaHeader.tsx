@@ -14,7 +14,7 @@ const MookkaHeader: React.FC = () => {
         <span className="text-blue-500 drop-shadow-md">Mookka</span>
       </h1>
       
-      <p className="text-lg mb-4 text-white font-medium">
+      <p className="text-lg mb-4 text-white/90 font-medium drop-shadow-sm">
         Votre bibliothèque numérique
       </p>
     </>
