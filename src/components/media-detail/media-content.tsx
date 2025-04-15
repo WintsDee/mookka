@@ -57,7 +57,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
         <div className="px-4 py-4 pb-28">
           <TabsContent value="overview" className="mt-0 mb-0">
             <OverviewTab 
-              description={formattedMedia.description?.replace(/<br>/g, '\n')} 
+              description={formattedMedia.description} 
               additionalInfo={additionalInfo} 
               mediaId={id}
               mediaType={type}

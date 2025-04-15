@@ -18,14 +18,14 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
     <>
       <TabsContent value="overview" className="space-y-6 mt-4">
         <OverviewTab 
-          description={formattedMedia.description?.replace(/<br>/g, '\n')} 
+          description={formattedMedia.description} 
           additionalInfo={additionalInfo}
           mediaId={id}
           mediaType={type}
         />
       </TabsContent>
       
-      <TabsContent value="rating" className="space-y-6 mt-4">
+      <TabsContent value="critique" className="space-y-6 mt-4">
         {id && type && (
           <CritiqueTab
             mediaId={id}

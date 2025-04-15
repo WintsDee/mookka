@@ -14,23 +14,26 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ description, additionalInfo, mediaId, mediaType }: OverviewTabProps) {
-  const formattedDescription = description ? description.replace(/<br>/g, '\n') : '';
+  // Sanitize description by removing HTML tags
+  const sanitizedDescription = description ? 
+    description.replace(/<\/?[^>]+(>|$)/g, "") : '';
+  
   const [isOpen, setIsOpen] = useState(false);
   
   // Check if description is long enough to need collapsing
-  const needsCollapsing = formattedDescription.length > 200;
+  const needsCollapsing = sanitizedDescription.length > 200;
   
   return (
     <div className="space-y-6 pb-8">
-      {formattedDescription && (
+      {sanitizedDescription && (
         <div>
           <h2 className="text-lg font-medium mb-2">Synopsis</h2>
           {needsCollapsing ? (
             <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
               <div className="text-sm text-muted-foreground whitespace-pre-line">
                 {isOpen 
-                  ? formattedDescription 
-                  : formattedDescription.substring(0, 200) + "..."}
+                  ? sanitizedDescription 
+                  : sanitizedDescription.substring(0, 200) + "..."}
               </div>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full flex items-center justify-center border-t border-border pt-2">
@@ -51,7 +54,7 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
             </Collapsible>
           ) : (
             <p className="text-sm text-muted-foreground whitespace-pre-line">
-              {formattedDescription}
+              {sanitizedDescription}
             </p>
           )}
         </div>

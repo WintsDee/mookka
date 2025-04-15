@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Check, Clock, Eye, Timer } from "lucide-react";
+import { BookOpen, Check, Clock, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface BookProgressionProps {
@@ -18,6 +18,9 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
     progression?.total_pages || mediaDetails?.pages || 0
   );
   const [status, setStatus] = useState(progression?.status || 'to-read');
+  
+  // Reference to track if component is in initial mount phase
+  const initialMount = useRef(true);
 
   useEffect(() => {
     // Mettre à jour quand la progression externe change
@@ -28,53 +31,39 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
     }
   }, [progression, mediaDetails]);
 
+  // Only update when component is mounted to prevent unnecessary API calls
+  useEffect(() => {
+    if (initialMount.current) {
+      initialMount.current = false;
+      return;
+    }
+  }, []);
+
   const updateCurrentPage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPage = parseInt(e.target.value) || 0;
     const validPage = Math.min(Math.max(0, newPage), totalPages);
     setCurrentPage(validPage);
+  };
+
+  const saveCurrentPage = (e: React.FocusEvent<HTMLInputElement>) => {
+    const validPage = Math.min(Math.max(0, currentPage), totalPages);
     
-    let newStatus = 'to-read';
+    let newStatus = status;
     if (validPage === 0) {
       newStatus = 'to-read';
     } else if (validPage === totalPages) {
       newStatus = 'completed';
-    } else {
+    } else if (validPage > 0) {
       newStatus = 'reading';
     }
     
     setStatus(newStatus);
+    setCurrentPage(validPage);
     
     onUpdate({
       ...progression,
       current_page: validPage,
       total_pages: totalPages,
-      status: newStatus
-    });
-  };
-
-  const updateTotalPages = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTotal = parseInt(e.target.value) || 0;
-    setTotalPages(newTotal);
-    
-    // Ajuster la page courante si nécessaire
-    const validCurrentPage = Math.min(currentPage, newTotal);
-    setCurrentPage(validCurrentPage);
-    
-    let newStatus = status;
-    if (validCurrentPage === 0) {
-      newStatus = 'to-read';
-    } else if (validCurrentPage === newTotal) {
-      newStatus = 'completed';
-    } else if (validCurrentPage > 0) {
-      newStatus = 'reading';
-    }
-    
-    setStatus(newStatus);
-    
-    onUpdate({
-      ...progression,
-      current_page: validCurrentPage,
-      total_pages: newTotal,
       status: newStatus
     });
   };
@@ -139,6 +128,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
             variant={status === 'to-read' ? 'default' : 'outline'}
             className={status === 'to-read' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
             onClick={() => updateStatus('to-read')}
+            type="button"
           >
             <Eye className="h-4 w-4 mr-1" />
             À lire
@@ -148,6 +138,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
             variant={status === 'reading' ? 'default' : 'outline'}
             className={status === 'reading' ? 'bg-purple-500 hover:bg-purple-600' : ''}
             onClick={() => updateStatus('reading')}
+            type="button"
           >
             <Clock className="h-4 w-4 mr-1" />
             En cours
@@ -157,6 +148,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
             variant={status === 'completed' ? 'default' : 'outline'}
             className={status === 'completed' ? 'bg-green-500 hover:bg-green-600' : ''}
             onClick={() => updateStatus('completed')}
+            type="button"
           >
             <Check className="h-4 w-4 mr-1" />
             Terminé
@@ -182,6 +174,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
               max={totalPages}
               value={currentPage}
               onChange={updateCurrentPage}
+              onBlur={saveCurrentPage}
               className="w-full"
             />
           </div>
@@ -195,8 +188,8 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
               type="number"
               min={1}
               value={totalPages}
-              onChange={updateTotalPages}
-              className="w-full"
+              readOnly
+              className="w-full bg-muted/50 cursor-not-allowed"
             />
           </div>
         </div>
