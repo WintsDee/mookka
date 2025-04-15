@@ -163,8 +163,8 @@ function decodeHtmlEntities(str: string): string {
           'hellip': '…',
           'mdash': '—',
           'ndash': '–',
-          'lsquo': ''',
-          'rsquo': ''',
+          'lsquo': "'",
+          'rsquo': "'",
           'ldquo': '"',
           'rdquo': '"',
         };
@@ -177,3 +177,4 @@ function decodeHtmlEntities(str: string): string {
     return str;
   }
 }
+
