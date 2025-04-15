@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
@@ -23,7 +22,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
     <Tabs 
       value={activeTab}
       onValueChange={setActiveTab}
-      className="w-full h-full flex flex-col overflow-hidden pt-0"
+      className="w-full h-full flex flex-col overflow-hidden pt-2"
     >
       <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border rounded-none p-0">
         <TabsTrigger 
@@ -52,7 +51,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
         </TabsTrigger>
       </TabsList>
       
-      <div className="overflow-y-auto overflow-x-hidden p-4 flex-1 pb-16">
+      <div className="overflow-y-auto overflow-x-hidden px-4 pt-2 flex-1 pb-16">
         <TabsContent value="overview" className="mt-0 h-full">
           <OverviewTab 
             description={formattedMedia.description?.replace(/<br>/g, '\n')} 
