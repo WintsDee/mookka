@@ -26,7 +26,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       onValueChange={setActiveTab}
       className="w-full h-full flex flex-col overflow-hidden"
     >
-      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border rounded-none p-0">
+      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0">
         <TabsTrigger 
           value="overview" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
@@ -53,9 +53,9 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
         </TabsTrigger>
       </TabsList>
       
-      <ScrollArea className="flex-1 h-full">
-        <div className="px-4 py-3 pb-20">
-          <TabsContent value="overview" className="mt-0">
+      <ScrollArea className="flex-1 overflow-auto pb-20">
+        <div className="px-4 py-4 pb-24">
+          <TabsContent value="overview" className="mt-0 mb-0">
             <OverviewTab 
               description={formattedMedia.description?.replace(/<br>/g, '\n')} 
               additionalInfo={additionalInfo} 
@@ -64,7 +64,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
             />
           </TabsContent>
           
-          <TabsContent value="rating" className="mt-0">
+          <TabsContent value="rating" className="mt-0 mb-0">
             <RatingTab 
               mediaId={id} 
               mediaType={type} 
@@ -72,7 +72,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
             />
           </TabsContent>
           
-          <TabsContent value="whereto" className="mt-0">
+          <TabsContent value="whereto" className="mt-0 mb-0">
             <WhereToWatchTab 
               mediaId={id} 
               mediaType={type} 
@@ -80,7 +80,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
             />
           </TabsContent>
           
-          <TabsContent value="news" className="mt-0">
+          <TabsContent value="news" className="mt-0 mb-0">
             <NewsTab type={type} />
           </TabsContent>
         </div>

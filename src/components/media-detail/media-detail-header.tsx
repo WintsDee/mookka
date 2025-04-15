@@ -24,8 +24,8 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         variant="ghost" 
         size="icon" 
         className={cn(
-          "absolute top-4 left-4 z-10 p-2",
-          floatingElement('button', 'medium')
+          "absolute top-6 left-4 z-10 p-2",
+          floatingElement('button', 'high')
         )}
         onClick={() => navigate(-1)}
       >
@@ -33,7 +33,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       </Button>
       
       {/* Rating Display in Top Right */}
-      <div className="absolute top-3 right-3 z-10 flex gap-2">
+      <div className="absolute top-6 right-4 z-10 flex gap-2">
         {formattedMedia.rating && (
           <MediaRatingBadge 
             rating={formattedMedia.rating} 
@@ -56,7 +56,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           alt={formattedMedia.title} 
           className="w-full h-full object-cover"
         />
-        <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/60")} />
+        <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/70")} />
       </div>
       
       <div className="absolute bottom-0 left-0 p-6 w-full flex items-end">
@@ -90,7 +90,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
                   key={genre} 
                   variant="outline" 
                   className={cn(
-                    "text-xs py-0 bg-black/40 backdrop-blur-sm border-white/20 text-white font-medium shadow-md",
+                    "text-xs py-0 bg-black/60 backdrop-blur-sm border-white/30 text-white font-medium shadow-md",
                     floatingElement('badge', 'medium')
                   )}
                 >
