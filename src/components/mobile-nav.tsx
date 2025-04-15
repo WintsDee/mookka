@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -21,8 +22,9 @@ const BookIcon = ({ size = 22, className = '' }) => (
     strokeLinejoin="round" 
     className={className}
   >
-    <path d="M4 6h6v12H4z" />
-    <path d="M14 6h6v12h-6z" />
+    <rect x="3" y="7" width="4" height="12" rx="1" />
+    <rect x="17" y="7" width="4" height="12" rx="1" />
+    <line x1="6" y1="12" x2="18" y2="12" />
   </svg>
 );
 
