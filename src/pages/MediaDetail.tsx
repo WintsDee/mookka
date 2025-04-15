@@ -9,6 +9,7 @@ import { Star, Clock, ArrowLeft, Heart, Share, BookmarkPlus, Eye, Loader2 } from
 import { getMediaById, addMediaToLibrary } from "@/services/media-service";
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { MobileHeader } from "@/components/mobile-header";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -67,6 +68,7 @@ const MediaDetail = () => {
   if (isLoading) {
     return (
       <Background>
+        <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
           <p className="mt-4 text-lg">Chargement en cours...</p>
@@ -78,6 +80,7 @@ const MediaDetail = () => {
   if (!media) {
     return (
       <Background>
+        <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
           <Button onClick={() => navigate(-1)}>Retour</Button>
@@ -181,6 +184,7 @@ const MediaDetail = () => {
 
   return (
     <Background>
+      <MobileHeader />
       <div className="relative pb-24">
         {/* Header avec image de couverture */}
         <div className="relative h-72 w-full">

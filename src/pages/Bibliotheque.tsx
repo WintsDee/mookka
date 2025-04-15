@@ -12,6 +12,7 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
+import { MobileHeader } from "@/components/mobile-header";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -37,7 +38,8 @@ const Bibliotheque = () => {
 
   return (
     <Background>
-      <div className="pb-24 pt-6">
+      <MobileHeader />
+      <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
           <div className="flex justify-between items-center">
             <PageTitle title="Ma Bibliothèque" />

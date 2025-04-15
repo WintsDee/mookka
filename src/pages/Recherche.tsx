@@ -12,6 +12,7 @@ import { searchMedia } from "@/services/media-service";
 import { useDebounce, filterAdultContent } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { PageTitle } from "@/components/page-title";
+import { MobileHeader } from "@/components/mobile-header";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -112,14 +113,15 @@ const Recherche = () => {
 
   return (
     <Background>
-      <div className="pb-24 pt-6">
+      <MobileHeader />
+      <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-4">
           <PageTitle title="Recherche" />
           
           <MediaTypeSelector 
             selectedType={selectedType}
             onSelectType={(type) => setSelectedType(type as MediaType)}
-            className="mt-6" // Ajout de la marge
+            className="mt-6"
           />
           
           <div className="relative mt-6">

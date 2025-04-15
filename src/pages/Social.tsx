@@ -10,11 +10,13 @@ import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PageTitle } from "@/components/page-title";
+import { MobileHeader } from "@/components/mobile-header";
 
 const Social = () => {
   return (
     <Background>
-      <div className="pb-24 pt-6">
+      <MobileHeader />
+      <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
           <PageTitle title="Social" />
           
