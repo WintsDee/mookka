@@ -1,27 +1,25 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Star, Clock, ArrowLeft, Heart, Share, BookmarkPlus, Eye, Loader2, FolderPlus } from "lucide-react";
-import { getMediaById, addMediaToLibrary } from "@/services/media-service";
+import { Loader2 } from "lucide-react";
+import { getMediaById } from "@/services/media-service";
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
-import { MediaCollectionsSection } from "@/components/media-collections-section";
+import { Button } from "@/components/ui/button";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { useCollections } from "@/hooks/use-collections";
-import { MediaRating } from "@/components/media-rating";
-import { MediaAdditionalInfo } from "@/components/media-additional-info";
+import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
+import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
+import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
+import { MediaContent } from "@/components/media-detail/media-content";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
-  const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
@@ -48,28 +46,6 @@ const MediaDetail = () => {
 
     fetchMediaDetails();
   }, [type, id, toast]);
-
-  const handleAddToLibrary = async () => {
-    if (!media || !type) return;
-
-    setIsAddingToLibrary(true);
-    try {
-      await addMediaToLibrary(media, type as MediaType);
-      toast({
-        title: "Succès",
-        description: `${type === 'film' ? 'Le film' : type === 'serie' ? 'La série' : type === 'book' ? 'Le livre' : 'Le jeu'} a été ajouté à votre bibliothèque`,
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAddingToLibrary(false);
-    }
-  };
 
   const handleAddToCollection = (collectionId: string) => {
     if (!id) return;
@@ -102,250 +78,31 @@ const MediaDetail = () => {
     );
   }
 
-  let formattedMedia: any = {};
-  
-  switch (type) {
-    case 'film':
-      formattedMedia = {
-        id: media.id.toString(),
-        title: media.title,
-        coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
-        year: media.release_date ? media.release_date.substring(0, 4) : null,
-        rating: media.vote_average || null,
-        genres: media.genres?.map((g: any) => g.name) || [],
-        description: media.overview,
-        duration: media.runtime ? `${media.runtime} min` : null,
-        director: media.credits?.crew?.find((p: any) => p.job === 'Director')?.name,
-        type: 'film'
-      };
-      break;
-    case 'serie':
-      formattedMedia = {
-        id: media.id.toString(),
-        title: media.name,
-        coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
-        year: media.first_air_date ? media.first_air_date.substring(0, 4) : null,
-        rating: media.vote_average || null,
-        genres: media.genres?.map((g: any) => g.name) || [],
-        description: media.overview,
-        duration: media.number_of_seasons ? `${media.number_of_seasons} saison${media.number_of_seasons > 1 ? 's' : ''}` : null,
-        type: 'serie'
-      };
-      break;
-    case 'book':
-      formattedMedia = {
-        id: media.id,
-        title: media.volumeInfo?.title,
-        coverImage: media.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
-        year: media.volumeInfo?.publishedDate ? media.volumeInfo.publishedDate.substring(0, 4) : null,
-        genres: media.volumeInfo?.categories || [],
-        description: media.volumeInfo?.description,
-        author: media.volumeInfo?.authors?.join(', '),
-        type: 'book'
-      };
-      break;
-    case 'game':
-      formattedMedia = {
-        id: media.id.toString(),
-        title: media.name,
-        coverImage: media.background_image || '/placeholder.svg',
-        year: media.released ? media.released.substring(0, 4) : null,
-        rating: media.rating || null,
-        genres: media.genres?.map((g: any) => g.name) || [],
-        description: media.description_raw,
-        publisher: media.publishers?.length > 0 ? media.publishers[0].name : null,
-        platform: media.platforms?.map((p: any) => p.platform.name).join(', '),
-        type: 'game'
-      };
-      break;
-  }
-
-  const renderTypeSpecificInfo = () => {
-    switch (type) {
-      case "film":
-        return (
-          <>
-            {formattedMedia.director && <p className="text-sm text-muted-foreground">Réalisateur: <span className="text-foreground">{formattedMedia.director}</span></p>}
-            {formattedMedia.duration && <p className="text-sm text-muted-foreground mt-1">Durée: <span className="text-foreground">{formattedMedia.duration}</span></p>}
-          </>
-        );
-      case "serie":
-        return (
-          <>
-            {formattedMedia.duration && <p className="text-sm text-muted-foreground">Épisodes: <span className="text-foreground">{formattedMedia.duration}</span></p>}
-          </>
-        );
-      case "book":
-        return (
-          <>
-            {formattedMedia.author && <p className="text-sm text-muted-foreground">Auteur: <span className="text-foreground">{formattedMedia.author}</span></p>}
-          </>
-        );
-      case "game":
-        return (
-          <>
-            {formattedMedia.publisher && <p className="text-sm text-muted-foreground">Éditeur: <span className="text-foreground">{formattedMedia.publisher}</span></p>}
-            {formattedMedia.platform && <p className="text-sm text-muted-foreground mt-1">Plateforme: <span className="text-foreground">{formattedMedia.platform}</span></p>}
-          </>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getAdditionalInfo = () => {
-    const info: any = {
-      mediaType: type,
-      releaseDate: formattedMedia.year ? `${formattedMedia.year}` : undefined,
-      duration: formattedMedia.duration
-    };
-    
-    switch(type) {
-      case 'film':
-        info.director = formattedMedia.director;
-        info.studio = media.production_companies?.[0]?.name;
-        info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
-        break;
-      case 'serie':
-        info.seasons = media.number_of_seasons;
-        info.episodes = media.number_of_episodes;
-        info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
-        break;
-      case 'book':
-        info.author = formattedMedia.author;
-        info.publisher = media.volumeInfo?.publisher;
-        info.pages = media.volumeInfo?.pageCount;
-        break;
-      case 'game':
-        info.developer = media.developers?.[0]?.name;
-        info.publisher = formattedMedia.publisher;
-        info.platform = formattedMedia.platform;
-        break;
-    }
-    
-    return info;
-  };
+  const formattedMedia = formatMediaDetails(media, type as MediaType);
+  const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
 
   return (
     <Background>
       <MobileHeader />
       <div className="relative pb-24">
-        <div className="relative h-72 w-full">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-4 left-4 z-10 bg-black/40 hover:bg-black/60"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="text-white" />
-          </Button>
-          
-          <div className="absolute inset-0">
-            <img 
-              src={formattedMedia.coverImage} 
-              alt={formattedMedia.title} 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-          </div>
-          
-          <div className="absolute bottom-0 left-0 p-6 w-full">
-            <div className="flex items-start gap-4">
-              <img 
-                src={formattedMedia.coverImage} 
-                alt={formattedMedia.title} 
-                className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-white">{formattedMedia.title}</h1>
-                <div className="flex items-center mt-1">
-                  {formattedMedia.year && <span className="text-sm text-white/80 mr-3">{formattedMedia.year}</span>}
-                  {formattedMedia.rating && (
-                    <div className="flex items-center mr-3">
-                      <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                      <span className="text-sm text-white/80">{formattedMedia.rating}</span>
-                    </div>
-                  )}
-                  {formattedMedia.duration && (
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-white/80 mr-1" />
-                      <span className="text-sm text-white/80">{formattedMedia.duration}</span>
-                    </div>
-                  )}
-                </div>
-                {formattedMedia.genres && formattedMedia.genres.length > 0 && (
-                  <div className="flex gap-1 mt-2 flex-wrap">
-                    {formattedMedia.genres.map((genre: string) => (
-                      <Badge key={genre} variant="outline" className="text-xs py-0 border-white/20 text-white/90">
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <MediaDetailHeader 
+          media={media} 
+          formattedMedia={formattedMedia} 
+          type={type as MediaType} 
+        />
         
-        <div className="flex justify-around py-4 px-2 bg-secondary/40 backdrop-blur-sm border-y border-border">
-          <Button variant="ghost" size="sm" className="flex flex-col items-center" onClick={() => setIsLiked(!isLiked)}>
-            <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-            <span className="text-xs mt-1">J'aime</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex flex-col items-center"
-            onClick={handleAddToLibrary}
-            disabled={isAddingToLibrary}
-          >
-            {isAddingToLibrary ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <BookmarkPlus className="h-5 w-5" />
-            )}
-            <span className="text-xs mt-1">Ajouter</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex flex-col items-center"
-            onClick={() => setAddToCollectionOpen(true)}
-          >
-            <FolderPlus className="h-5 w-5" />
-            <span className="text-xs mt-1">Collection</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center">
-            <Share className="h-5 w-5" />
-            <span className="text-xs mt-1">Partager</span>
-          </Button>
-        </div>
+        <MediaDetailActions 
+          media={media} 
+          type={type as MediaType} 
+          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        />
         
-        <div className="p-6 space-y-6">
-          {id && type && (
-            <MediaRating 
-              mediaId={id} 
-              mediaType={type}
-              initialRating={0}
-            />
-          )}
-          
-          {id && (
-            <MediaCollectionsSection mediaId={id} />
-          )}
-          
-          {formattedMedia.description && (
-            <div>
-              <h2 className="text-lg font-medium mb-2">Synopsis</h2>
-              <p className="text-sm text-muted-foreground">{formattedMedia.description}</p>
-            </div>
-          )}
-          
-          <div>
-            <h2 className="text-lg font-medium mb-2">Informations</h2>
-            <MediaAdditionalInfo {...getAdditionalInfo()} />
-          </div>
-        </div>
+        <MediaContent 
+          id={id!} 
+          type={type as MediaType} 
+          formattedMedia={formattedMedia} 
+          additionalInfo={additionalInfo} 
+        />
       </div>
       
       <AddToCollectionDialog
