@@ -28,7 +28,7 @@ const Actualites = () => {
   return (
     <Background>
       <MobileHeader />
-      <div className="pb-24 pt-20">
+      <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
           <PageTitle title="Actualités" />
           <div className="flex justify-between items-center mt-4 mb-2">

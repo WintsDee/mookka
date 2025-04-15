@@ -9,15 +9,13 @@ const Notifications = () => {
   return (
     <Background>
       <MobileHeader />
-      <div className="pb-24 pt-20">
-        <div className="px-6">
-          <PageTitle>Notifications</PageTitle>
-          
-          <div className="flex flex-col items-center justify-center h-[60vh] text-center px-6">
-            <p className="text-muted-foreground">
-              Vous n'avez pas encore de notifications.
-            </p>
-          </div>
+      <div className="pt-safe pb-24 mt-16">
+        <PageTitle>Notifications</PageTitle>
+        
+        <div className="flex flex-col items-center justify-center h-[60vh] text-center px-6">
+          <p className="text-muted-foreground">
+            Vous n'avez pas encore de notifications.
+          </p>
         </div>
       </div>
       
