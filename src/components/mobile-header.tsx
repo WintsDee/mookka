@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { User, Bell } from "lucide-react";
@@ -11,7 +10,7 @@ interface MobileHeaderProps {
   children?: React.ReactNode;
 }
 
-const DEFAULT_AVATAR = "/lovable-uploads/40888565-eee1-470f-8c68-191de21023f8.png";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2070&auto=format&fit=crop";
 
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();

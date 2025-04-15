@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -19,8 +18,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
-const DEFAULT_AVATAR = "/lovable-uploads/40888565-eee1-470f-8c68-191de21023f8.png";
-const DEFAULT_COVER = "https://images.unsplash.com/photo-1616712134411-6b6ae89bc3ba?q=80&w=2274&auto=format&fit=crop";
+const DEFAULT_COVER = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2070&auto=format&fit=crop";
 
 const ProfileSkeleton = () => (
   <>
@@ -61,10 +60,8 @@ const Profil = () => {
   const { profile, loading, isAuthenticated, updateProfile } = useProfile();
   const navigate = useNavigate();
   
-  // Récupérer les collections de l'utilisateur
   const { myCollections, loadingMyCollections } = useCollections();
 
-  // Stats utilisateur (provisoire, à remplacer par des données réelles)
   const stats = {
     films: mockMedia.filter(m => m.type === "film").length,
     series: mockMedia.filter(m => m.type === "serie").length,
@@ -73,7 +70,6 @@ const Profil = () => {
     total: mockMedia.length
   };
   
-  // Déconnexion de l'utilisateur
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/');
@@ -87,7 +83,6 @@ const Profil = () => {
           <ProfileSkeleton />
         ) : (
           <>
-            {/* Header avec couverture */}
             <div 
               className="h-40 relative bg-cover bg-center"
               style={{ 
