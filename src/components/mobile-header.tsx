@@ -10,7 +10,7 @@ const MobileHeader = () => {
   const isProfileActive = location.pathname === "/profil";
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background border-b border-border p-3 pt-safe">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background border-b border-border p-3 pt-safe h-16">
       {/* Logo ou titre de l'app à gauche */}
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 flex-shrink-0">
