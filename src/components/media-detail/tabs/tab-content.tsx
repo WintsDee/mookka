@@ -2,7 +2,7 @@
 import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { OverviewTab } from "./overview-tab";
-import { RatingTab } from "./rating-tab";
+import { CritiqueTab } from "./rating-tab";
 import { WhereToWatchTab } from "./where-to-watch-tab";
 import { MediaType } from "@/types";
 
@@ -27,7 +27,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       
       <TabsContent value="rating" className="space-y-6 mt-4">
         {id && type && (
-          <RatingTab
+          <CritiqueTab
             mediaId={id}
             mediaType={type}
           />
