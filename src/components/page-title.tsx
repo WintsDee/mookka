@@ -3,9 +3,12 @@ import React from "react";
 
 interface PageTitleProps {
   title: string;
+  children?: React.ReactNode;
 }
 
-export const PageTitle = ({ title }: PageTitleProps) => {
+export const PageTitle = ({ title, children }: PageTitleProps) => {
+  const displayTitle = children || title;
+  
   return (
     <div className="flex items-center gap-3">
       <div className="w-8 h-8 flex-shrink-0">
@@ -15,7 +18,7 @@ export const PageTitle = ({ title }: PageTitleProps) => {
           className="w-full h-full object-contain"
         />
       </div>
-      <h1 className="text-2xl font-bold">{title}</h1>
+      <h1 className="text-2xl font-bold">{displayTitle}</h1>
     </div>
   );
 };

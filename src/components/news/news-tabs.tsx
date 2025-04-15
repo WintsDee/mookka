@@ -5,24 +5,24 @@ import { NewsGrid } from "@/components/news/news-grid";
 import { NewsItem } from "@/services/news-service";
 
 interface NewsTabsProps {
+  activeTab: string;
+  onTabChange: (value: string) => void;
+}
+
+interface NewsTabsContentProps {
   news: NewsItem[];
   loading: boolean;
   refreshing: boolean;
-  activeTab: string;
-  onTabChange: (value: string) => void;
   onRefresh: () => void;
+  onArticleSelect: (article: NewsItem) => void;
 }
 
-export const NewsTabs: React.FC<NewsTabsProps> = ({
-  news,
-  loading,
-  refreshing,
+const NewsTabs: React.FC<NewsTabsProps> & { Content: React.FC<NewsTabsContentProps> } = ({
   activeTab,
-  onTabChange,
-  onRefresh
+  onTabChange
 }) => {
   return (
-    <Tabs defaultValue={activeTab} className="w-full" onValueChange={onTabChange}>
+    <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
       <TabsList className="w-full grid grid-cols-5">
         <TabsTrigger value="all" className="text-xs">Tout</TabsTrigger>
         <TabsTrigger value="film" className="text-xs">Films</TabsTrigger>
@@ -30,46 +30,32 @@ export const NewsTabs: React.FC<NewsTabsProps> = ({
         <TabsTrigger value="book" className="text-xs">Livres</TabsTrigger>
         <TabsTrigger value="game" className="text-xs">Jeux</TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="all" className="mt-4">
-        <NewsGrid items={news} loading={loading} refreshing={refreshing} onRefresh={onRefresh} />
-      </TabsContent>
-      
-      <TabsContent value="film" className="mt-4">
-        <NewsGrid 
-          items={news.filter(item => item.category === 'film')} 
-          loading={loading} 
-          refreshing={refreshing} 
-          onRefresh={onRefresh} 
-        />
-      </TabsContent>
-      
-      <TabsContent value="serie" className="mt-4">
-        <NewsGrid 
-          items={news.filter(item => item.category === 'serie')} 
-          loading={loading} 
-          refreshing={refreshing} 
-          onRefresh={onRefresh} 
-        />
-      </TabsContent>
-      
-      <TabsContent value="book" className="mt-4">
-        <NewsGrid 
-          items={news.filter(item => item.category === 'book')} 
-          loading={loading} 
-          refreshing={refreshing} 
-          onRefresh={onRefresh} 
-        />
-      </TabsContent>
-      
-      <TabsContent value="game" className="mt-4">
-        <NewsGrid 
-          items={news.filter(item => item.category === 'game')} 
-          loading={loading} 
-          refreshing={refreshing} 
-          onRefresh={onRefresh} 
-        />
-      </TabsContent>
     </Tabs>
   );
 };
+
+// Composant de contenu séparé pour les onglets
+const NewsTabsContent: React.FC<NewsTabsContentProps> = ({
+  news,
+  loading,
+  refreshing,
+  onRefresh,
+  onArticleSelect
+}) => {
+  return (
+    <div className="mt-4">
+      <NewsGrid 
+        items={news} 
+        loading={loading} 
+        refreshing={refreshing} 
+        onRefresh={onRefresh}
+        onArticleSelect={onArticleSelect}
+      />
+    </div>
+  );
+};
+
+// Attacher le composant Content à NewsTabs
+NewsTabs.Content = NewsTabsContent;
+
+export { NewsTabs };
