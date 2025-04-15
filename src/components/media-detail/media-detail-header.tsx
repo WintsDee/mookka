@@ -40,14 +40,14 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <div className={overlayGradient('to-top', 'medium')} />
       </div>
       
-      <div className="absolute bottom-6 left-0 p-6 w-full">
-        <div className="flex gap-4">
+      <div className="absolute bottom-4 left-0 p-6 w-full">
+        <div className="flex gap-4 items-end">
           <img 
             src={formattedMedia.coverImage} 
             alt={formattedMedia.title} 
             className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
           />
-          <div className="flex-1 flex flex-col justify-between">
+          <div className="flex-1 flex flex-col">
             <div>
               <h1 className={cn("text-2xl font-bold mb-1", enhanceTextVisibility('strong'))}>{formattedMedia.title}</h1>
               <div className="flex items-center mt-1 text-white/90 mb-2">
@@ -66,7 +66,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
                 )}
               </div>
               {formattedMedia.genres && formattedMedia.genres.length > 0 && (
-                <div className="flex gap-1 flex-wrap mb-2">
+                <div className="flex gap-1 flex-wrap">
                   {formattedMedia.genres.map((genre: string) => (
                     <Badge 
                       key={genre} 
