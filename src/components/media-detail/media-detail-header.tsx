@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MediaType } from "@/types";
 import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
@@ -16,6 +17,17 @@ interface MediaDetailHeaderProps {
 
 export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollection }: MediaDetailHeaderProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const handleGoBack = () => {
+    // Check if there's state from react-router indicating where we came from
+    if (location.state?.from) {
+      navigate(location.state.from, { replace: true });
+    } else {
+      // Default fallback
+      navigate(-1);
+    }
+  };
 
   return (
     <div className="relative h-52 w-full pt-8">
@@ -26,7 +38,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           "absolute top-2 left-4 z-20 p-2",
           floatingElement('button', 'high')
         )}
-        onClick={() => navigate(-1)}
+        onClick={handleGoBack}
       >
         <ArrowLeft className="text-white w-6 h-6" />
       </Button>

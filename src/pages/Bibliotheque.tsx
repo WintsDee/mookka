@@ -12,10 +12,12 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
+import { useLocation } from "react-router-dom";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
   
   // Filtrer les médias en fonction du type sélectionné et du terme de recherche
   const filteredMedia = mockMedia
@@ -106,6 +108,7 @@ const Bibliotheque = () => {
                 title="En cours" 
                 medias={mediaByStatus.current}
                 onSeeMore={() => console.log("Voir plus - En cours")}
+                locationState={{ from: location.pathname }}
               />
             )}
             
@@ -115,6 +118,7 @@ const Bibliotheque = () => {
                 title="À découvrir" 
                 medias={mediaByStatus.pending}
                 onSeeMore={() => console.log("Voir plus - À découvrir")}
+                locationState={{ from: location.pathname }}
               />
             )}
             
@@ -124,6 +128,7 @@ const Bibliotheque = () => {
                 title="Terminés" 
                 medias={mediaByStatus.completed}
                 onSeeMore={() => console.log("Voir plus - Terminés")}
+                locationState={{ from: location.pathname }}
               />
             )}
             

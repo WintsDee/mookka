@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
 import { getMediaById } from "@/services/media-service";
@@ -18,6 +18,7 @@ import { MediaDetailActions } from "@/components/media-detail/media-detail-actio
 const MediaDetail = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
@@ -89,7 +90,7 @@ const MediaDetail = () => {
 
   return (
     <Background>
-      <div className="relative flex flex-col h-screen pt-safe"> {/* Added pt-safe for safe area */}
+      <div className="relative flex flex-col h-screen pt-safe">
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 

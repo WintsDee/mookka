@@ -12,6 +12,7 @@ import { searchMedia } from "@/services/media-service";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
+import { useLocation } from "react-router-dom";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -21,6 +22,7 @@ const Recherche = () => {
   const [isLoading, setIsLoading] = useState(false);
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
   const { toast } = useToast();
+  const location = useLocation();
   
   useEffect(() => {
     const fetchData = async () => {
@@ -160,7 +162,12 @@ const Recherche = () => {
             {selectedType && searchResults.length > 0 ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 mb-24">
                 {searchResults.map((media) => (
-                  <MediaCard key={media.id} media={media} size="medium" />
+                  <MediaCard 
+                    key={media.id} 
+                    media={media} 
+                    size="medium" 
+                    state={{ from: location.pathname }}
+                  />
                 ))}
               </div>
             ) : isLoading ? (

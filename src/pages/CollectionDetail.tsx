@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
@@ -34,6 +34,7 @@ import {
 const CollectionDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -280,6 +281,7 @@ const CollectionDetail = () => {
                     key={item.id} 
                     media={item.media!}
                     size="small"
+                    state={{ from: location.pathname }}
                   />
                 ))}
               </div>

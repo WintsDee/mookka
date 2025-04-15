@@ -12,12 +12,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusIcon, Search } from "lucide-react";
 import { useCollections } from "@/hooks/use-collections";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
+import { useLocation } from "react-router-dom";
 
 const Collections = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"personal" | "followed" | "community">("personal");
   const [collectionType, setCollectionType] = useState<CollectionType | "all">("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const location = useLocation();
   
   const {
     myCollections,
@@ -106,6 +108,7 @@ const Collections = () => {
                     loading={loadingMyCollections}
                     emptyMessage="Vous n'avez pas encore créé de collection."
                     className="mb-6"
+                    locationState={{ from: location.pathname }}
                   />
                 </TabsContent>
                 
@@ -115,6 +118,7 @@ const Collections = () => {
                     loading={loadingFollowedCollections}
                     emptyMessage="Vous ne suivez aucune collection pour le moment."
                     className="mb-6"
+                    locationState={{ from: location.pathname }}
                   />
                 </TabsContent>
                 
@@ -124,6 +128,7 @@ const Collections = () => {
                     loading={loadingPublicCollections}
                     emptyMessage="Aucune collection communautaire trouvée."
                     className="mb-6"
+                    locationState={{ from: location.pathname }}
                   />
                 </TabsContent>
               </ScrollArea>
