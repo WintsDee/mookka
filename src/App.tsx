@@ -13,6 +13,8 @@ import Actualites from "./pages/Actualites";
 import Profil from "./pages/Profil";
 import Notifications from "./pages/Notifications";
 import MediaDetail from "./pages/MediaDetail";
+import Collections from "./pages/Collections";
+import CollectionDetail from "./pages/CollectionDetail";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/profil" element={<Profil />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/media/:type/:id" element={<MediaDetail />} />
+          <Route path="/collections" element={<Collections />} />
+          <Route path="/collections/:id" element={<CollectionDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

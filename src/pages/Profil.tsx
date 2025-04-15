@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { LogOut, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCollections } from "@/hooks/use-collections";
+import { CollectionGrid } from "@/components/collections/collection-grid";
 
 const Profil = () => {
   // Stats utilisateur
@@ -20,6 +22,9 @@ const Profil = () => {
     games: mockMedia.filter(m => m.type === "game").length,
     total: mockMedia.length
   };
+  
+  // Récupérer les collections de l'utilisateur
+  const { myCollections, loadingMyCollections } = useCollections();
 
   return (
     <Background>
@@ -96,13 +101,15 @@ const Profil = () => {
               </TabsList>
               
               <TabsContent value="collections" className="mt-4">
-                <h3 className="text-lg font-medium mb-4">Récemment ajoutés</h3>
+                <h3 className="text-lg font-medium mb-4">Mes collections</h3>
                 <ScrollArea className="h-[calc(100vh-380px)]">
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    {mockMedia.slice(0, 6).map((media) => (
-                      <MediaCard key={media.id} media={media} size="small" />
-                    ))}
-                  </div>
+                  <CollectionGrid
+                    collections={myCollections}
+                    loading={loadingMyCollections}
+                    emptyMessage="Vous n'avez pas encore créé de collection."
+                    columns={2}
+                    cardSize="small"
+                  />
                 </ScrollArea>
               </TabsContent>
               
@@ -115,11 +122,14 @@ const Profil = () => {
               </TabsContent>
               
               <TabsContent value="favorites">
-                <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-                  <p className="text-muted-foreground">
-                    Vos favoris apparaîtront ici.
-                  </p>
-                </div>
+                <h3 className="text-lg font-medium mb-4">Récemment ajoutés</h3>
+                <ScrollArea className="h-[calc(100vh-380px)]">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    {mockMedia.slice(0, 6).map((media) => (
+                      <MediaCard key={media.id} media={media} size="small" />
+                    ))}
+                  </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           </div>

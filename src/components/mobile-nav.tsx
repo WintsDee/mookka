@@ -1,15 +1,16 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MessageCircle, Search, LibraryBig, Globe } from "lucide-react";
+import { MessageCircle, Search, LibraryBig, Globe, UserIcon, FolderIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const MobileNav = () => {
   const location = useLocation();
   
-  // Navigation items without Profile
+  // Navigation items with Collection added
   const navItems = [
     { icon: LibraryBig, path: "/bibliotheque", label: "Bibliothèque" },
+    { icon: FolderIcon, path: "/collections", label: "Collections" },
     { icon: MessageCircle, path: "/social", label: "Social" },
     { icon: Search, path: "/recherche", label: "Recherche" },
     { icon: Globe, path: "/actualites", label: "Actualités" }

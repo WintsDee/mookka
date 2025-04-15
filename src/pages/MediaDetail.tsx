@@ -5,11 +5,14 @@ import { Background } from "@/components/ui/background";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Clock, ArrowLeft, Heart, Share, BookmarkPlus, Eye, Loader2 } from "lucide-react";
+import { Star, Clock, ArrowLeft, Heart, Share, BookmarkPlus, Eye, Loader2, FolderPlus } from "lucide-react";
 import { getMediaById, addMediaToLibrary } from "@/services/media-service";
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
+import { MediaCollectionsSection } from "@/components/media-collections-section";
+import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
+import { useCollections } from "@/hooks/use-collections";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -18,7 +21,9 @@ const MediaDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { toast } = useToast();
+  const { addMediaToCollection, isAddingToCollection } = useCollections();
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
@@ -63,6 +68,13 @@ const MediaDetail = () => {
     } finally {
       setIsAddingToLibrary(false);
     }
+  };
+  
+  const handleAddToCollection = (collectionId: string) => {
+    if (!id) return;
+    
+    addMediaToCollection({ collectionId, mediaId: id });
+    setAddToCollectionOpen(false);
   };
 
   if (isLoading) {
@@ -264,9 +276,14 @@ const MediaDetail = () => {
             )}
             <span className="text-xs mt-1">Ajouter</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex flex-col items-center">
-            <Eye className="h-5 w-5" />
-            <span className="text-xs mt-1">À voir</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex flex-col items-center"
+            onClick={() => setAddToCollectionOpen(true)}
+          >
+            <FolderPlus className="h-5 w-5" />
+            <span className="text-xs mt-1">Collection</span>
           </Button>
           <Button variant="ghost" size="sm" className="flex flex-col items-center">
             <Share className="h-5 w-5" />
@@ -276,6 +293,11 @@ const MediaDetail = () => {
         
         {/* Contenu principal */}
         <div className="p-6 space-y-6">
+          {/* Collections */}
+          {id && (
+            <MediaCollectionsSection mediaId={id} />
+          )}
+          
           {/* Description */}
           {formattedMedia.description && (
             <div>
@@ -296,6 +318,15 @@ const MediaDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Dialog pour ajouter à une collection */}
+      <AddToCollectionDialog
+        open={addToCollectionOpen}
+        onOpenChange={setAddToCollectionOpen}
+        mediaId={id!}
+        onAddToCollection={handleAddToCollection}
+        isAddingToCollection={isAddingToCollection}
+      />
     </Background>
   );
 };
