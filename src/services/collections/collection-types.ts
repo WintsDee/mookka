@@ -6,8 +6,8 @@ export interface CollectionData {
   name: string;
   description: string;
   cover_image: string;
-  type: CollectionType;
-  visibility: CollectionVisibility;
+  type: string; // Changed from CollectionType to string to match DB response
+  visibility: string; // Changed from CollectionVisibility to string to match DB response
   created_at: string;
   updated_at: string;
   owner_id: string;
@@ -37,8 +37,8 @@ export function mapCollectionFromDB(data: CollectionData): Collection {
     name: data.name,
     description: data.description,
     coverImage: data.cover_image,
-    type: data.type as CollectionType,
-    visibility: data.visibility as CollectionVisibility,
+    type: data.type as CollectionType, // Cast string to CollectionType
+    visibility: data.visibility as CollectionVisibility, // Cast string to CollectionVisibility
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     ownerId: data.owner_id,

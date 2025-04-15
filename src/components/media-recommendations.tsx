@@ -10,13 +10,16 @@ interface MediaRecommendationsProps {
   medias: Media[];
   type?: MediaType;
   onSeeMore?: () => void;
+  // Add the locationState prop for navigation
+  locationState?: { from: string };
 }
 
 export const MediaRecommendations = ({ 
   title, 
   medias, 
   type, 
-  onSeeMore 
+  onSeeMore,
+  locationState
 }: MediaRecommendationsProps) => {
   const filteredMedias = type ? medias.filter(media => media.type === type) : medias;
   
@@ -32,7 +35,12 @@ export const MediaRecommendations = ({
       </div>
       <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {filteredMedias.map((media) => (
-          <MediaCard key={media.id} media={media} size="medium" />
+          <MediaCard 
+            key={media.id} 
+            media={media} 
+            size="medium" 
+            state={locationState}
+          />
         ))}
       </div>
     </section>

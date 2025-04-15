@@ -1,43 +1,37 @@
 
-import React from 'react';
-import { Collection } from '@/types/collection';
-import { CollectionCard } from './collection-card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Collection } from "@/types/collection";
+import { CollectionCard } from "./collection-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Folder, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CollectionGridProps {
   collections: Collection[];
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
-  cardSize?: 'small' | 'medium' | 'large';
-  columns?: 1 | 2 | 3 | 4;
+  onCreateNew?: () => void;
+  locationState?: { from: string };
 }
 
-export function CollectionGrid({
-  collections,
+export const CollectionGrid = ({
+  collections = [],
   loading = false,
-  emptyMessage = "Aucune collection trouvée",
-  className,
-  cardSize = 'medium',
-  columns = 2
-}: CollectionGridProps) {
-  // Définir le nombre de colonnes
-  const gridCols = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
-  }[columns];
-
+  emptyMessage = "Aucune collection trouvée.",
+  className = "",
+  onCreateNew,
+  locationState
+}: CollectionGridProps) => {
   if (loading) {
     return (
-      <div className={cn(`grid ${gridCols} gap-4`, className)}>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="space-y-2">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-3 w-1/2" />
+      <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="w-full h-32 rounded-lg" />
+            <Skeleton className="w-3/4 h-4" />
+            <Skeleton className="w-1/2 h-3" />
           </div>
         ))}
       </div>
@@ -46,21 +40,30 @@ export function CollectionGrid({
 
   if (collections.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center">
-        <p className="text-muted-foreground">{emptyMessage}</p>
+      <div className={`flex flex-col items-center justify-center py-8 ${className}`}>
+        <Folder className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground text-center mb-4">{emptyMessage}</p>
+        {onCreateNew && (
+          <Button onClick={onCreateNew} variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Créer une collection
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
-    <div className={cn(`grid ${gridCols} gap-4`, className)}>
-      {collections.map(collection => (
-        <CollectionCard
-          key={collection.id}
-          collection={collection}
-          size={cardSize}
-        />
+    <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
+      {collections.map((collection) => (
+        <Link 
+          key={collection.id} 
+          to={`/collections/${collection.id}`}
+          state={locationState}
+        >
+          <CollectionCard collection={collection} />
+        </Link>
       ))}
     </div>
   );
-}
+};

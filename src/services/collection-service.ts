@@ -23,9 +23,13 @@ export {
 // Collection items operations
 export { 
   addMediaToCollection,
-  removeMediaFromCollection,
-  getCollectionById 
+  removeMediaFromCollection
 } from './collections/collection-items';
+
+// Collection retrieval
+export {
+  getCollectionById
+} from './collections/collection-retrieval';
 
 // Social features (follow/unfollow)
 export { 

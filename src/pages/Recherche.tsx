@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -35,7 +34,6 @@ const Recherche = () => {
           
           if (result.results && result.results.length > 0) {
             formattedResults = result.results.map((item: any) => {
-              // Si l'élément vient de la base de données, il est déjà formaté correctement
               if (item.fromDatabase) {
                 return {
                   id: item.id,
@@ -49,7 +47,6 @@ const Recherche = () => {
                 };
               }
               
-              // Sinon, formater selon le type
               switch (selectedType) {
                 case 'film':
                   return {

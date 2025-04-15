@@ -11,6 +11,7 @@ import { CollectionDetailHeader } from "@/components/collections/collection-deta
 import { CollectionDetailActions } from "@/components/collections/collection-detail-actions";
 import { CollectionMediaGrid } from "@/components/collections/collection-media-grid";
 import { CollectionLoading } from "@/components/collections/collection-loading";
+import { CollectionType, CollectionVisibility, CollectionItem } from "@/types/collection";
 
 const CollectionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -116,6 +117,15 @@ const CollectionDetail = () => {
   }
   
   const { collection, items } = data;
+  
+  // Convert items to match CollectionItem type
+  const typedItems: CollectionItem[] = items.map(item => ({
+    ...item,
+    media: {
+      ...item.media,
+      status: item.media.status as "to-watch" | "watching" | "completed"
+    }
+  }));
 
   return (
     <Background>
@@ -124,8 +134,8 @@ const CollectionDetail = () => {
         <CollectionDetailHeader 
           collectionId={collection.id}
           collectionName={collection.name}
-          collectionVisibility={collection.visibility}
-          collectionType={collection.type}
+          collectionVisibility={collection.visibility as CollectionVisibility}
+          collectionType={collection.type as CollectionType}
           onBack={handleGoBack}
         />
         
@@ -137,8 +147,8 @@ const CollectionDetail = () => {
         />
         
         <CollectionMediaGrid 
-          items={items}
-          collectionType={collection.type}
+          items={typedItems}
+          collectionType={collection.type as CollectionType}
           fromPath={location.pathname}
         />
       </div>

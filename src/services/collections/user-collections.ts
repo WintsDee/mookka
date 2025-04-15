@@ -15,7 +15,7 @@ export async function getMyCollections(): Promise<Collection[]> {
 
   if (error) throw error;
 
-  return data.map(mapCollectionFromDB);
+  return data.map((item) => mapCollectionFromDB(item as CollectionData));
 }
 
 export async function getFollowedCollections(): Promise<Collection[]> {

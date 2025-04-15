@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Collection } from "@/types/collection";
-import { mapCollectionFromDB } from "./collection-types";
+import { mapCollectionFromDB, CollectionData } from "./collection-types";
 
 export async function getPublicCollections(): Promise<Collection[]> {
   const { data, error } = await supabase
@@ -15,5 +15,5 @@ export async function getPublicCollections(): Promise<Collection[]> {
 
   if (error) throw error;
 
-  return data.map(mapCollectionFromDB);
+  return data.map((item) => mapCollectionFromDB(item as CollectionData));
 }
