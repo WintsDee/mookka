@@ -16,7 +16,14 @@ interface MediaCardProps {
 }
 
 const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
-  const { id, title, type, coverImage, year, rating, genres, status, duration } = media;
+  // Normalize rating to 10-point scale if it's not already
+  const normalizedRating = media.rating 
+    ? media.rating > 5 
+      ? media.rating 
+      : parseFloat(((media.rating / 5) * 10).toFixed(1))
+    : undefined;
+
+  const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
   
   const sizeClasses = {
@@ -123,9 +130,9 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
                       <MediaTypeIcon />
                       <span className="text-xs text-white/80">{year}</span>
                     </div>
-                    {rating && (
+                    {normalizedRating && (
                       <MediaRatingBadge 
-                        rating={rating} 
+                        rating={normalizedRating} 
                         size="small" 
                       />
                     )}
@@ -161,3 +168,4 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 };
 
 export { MediaCard };
+
