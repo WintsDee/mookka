@@ -42,28 +42,28 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   };
 
   return (
-    <div className="flex justify-around py-4 px-2 bg-secondary/40 backdrop-blur-sm border-y border-border">
+    <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 bg-background/90 backdrop-blur-lg border-t border-border shadow-md">
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center space-y-1 h-auto py-2" 
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
         onClick={() => setIsLiked(!isLiked)}
       >
-        <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+        <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
         <span className="text-xs">J'aime</span>
       </Button>
       
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center space-y-1 h-auto py-2"
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
         onClick={handleAddToLibrary}
         disabled={isAddingToLibrary}
       >
         {isAddingToLibrary ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <BookmarkPlus className="h-5 w-5" />
+          <BookmarkPlus className="h-4 w-4" />
         )}
         <span className="text-xs">Ajouter</span>
       </Button>
@@ -71,19 +71,19 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center space-y-1 h-auto py-2"
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
         onClick={onAddToCollection}
       >
-        <FolderPlus className="h-5 w-5" />
+        <FolderPlus className="h-4 w-4" />
         <span className="text-xs">Collection</span>
       </Button>
       
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center space-y-1 h-auto py-2"
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
       >
-        <Share className="h-5 w-5" />
+        <Share className="h-4 w-4" />
         <span className="text-xs">Partager</span>
       </Button>
     </div>

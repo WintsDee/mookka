@@ -97,13 +97,7 @@ const MediaDetail = () => {
           type={type as MediaType} 
         />
         
-        <MediaDetailActions 
-          media={media} 
-          type={type as MediaType} 
-          onAddToCollection={() => setAddToCollectionOpen(true)} 
-        />
-        
-        <div className="flex-1 overflow-hidden pb-4">
+        <div className="flex-1 overflow-hidden">
           <MediaContent 
             id={id!} 
             type={type as MediaType} 
@@ -111,6 +105,12 @@ const MediaDetail = () => {
             additionalInfo={additionalInfo} 
           />
         </div>
+        
+        <MediaDetailActions 
+          media={media} 
+          type={type as MediaType} 
+          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        />
       </div>
       
       <AddToCollectionDialog
