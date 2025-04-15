@@ -36,6 +36,12 @@ export const SOURCES: NewsSource[] = [
     rss: 'https://leclaireur.fnac.com/feed/'
   },
   {
+    name: 'Actualitté',
+    url: 'https://actualitte.com',
+    category: 'book',
+    rss: 'https://actualitte.com/rss'
+  },
+  {
     name: 'Idboox',
     url: 'https://www.idboox.com/',
     category: 'book',
