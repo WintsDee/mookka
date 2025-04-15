@@ -36,12 +36,6 @@ export const SOURCES: NewsSource[] = [
   
   // Livres
   {
-    name: 'Fnac',
-    url: 'https://leclaireur.fnac.com/',
-    category: 'book',
-    rss: 'https://leclaireur.fnac.com/feed/'
-  },
-  {
     name: 'Actualitté',
     url: 'https://actualitte.com',
     category: 'book',
@@ -62,12 +56,6 @@ export const SOURCES: NewsSource[] = [
   
   // Jeux Vidéo
   {
-    name: 'Jeuxvideo.com',
-    url: 'https://www.jeuxvideo.com/',
-    category: 'game',
-    rss: 'https://www.jeuxvideo.com/rss/rss.xml'
-  },
-  {
     name: 'ActuGaming',
     url: 'https://www.actugaming.net/',
     category: 'game',
@@ -84,13 +72,5 @@ export const SOURCES: NewsSource[] = [
     url: 'https://www.canardpc.com/',
     category: 'game',
     rss: 'https://www.canardpc.com/flux-rss/'
-  },
-  
-  // Sources généralistes
-  {
-    name: 'Numerama',
-    url: 'https://www.numerama.com/',
-    category: 'general',
-    rss: 'https://www.numerama.com/feed/'
   },
 ];
