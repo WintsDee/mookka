@@ -35,7 +35,7 @@ const Profil = () => {
           <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
             <div className="w-20 h-20 rounded-full bg-background p-1">
               <img 
-                src={currentUser.avatar} 
+                src={currentUser.avatar || "/lovable-uploads/40888565-eee1-470f-8c68-191de21023f8.png"} 
                 alt={currentUser.name}
                 className="w-full h-full rounded-full object-cover"
               />
