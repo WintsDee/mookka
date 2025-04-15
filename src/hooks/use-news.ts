@@ -11,13 +11,15 @@ export const useNews = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [activeSource, setActiveSource] = useState<string | null>(null);
+  const [activeSources, setActiveSources] = useState<string[]>([]);
   const [sources, setSources] = useState<string[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
 
   // Store user preferences in local storage
   const [storedPreferences, setStoredPreferences] = useLocalStorage("news-preferences", {
     lastTab: "all",
-    lastSource: null as string | null
+    lastSource: null as string | null,
+    lastSources: [] as string[]
   });
   
   // Load news data from API
@@ -34,22 +36,24 @@ export const useNews = () => {
       setSources(uniqueSources);
       
       // Apply filters to the news data
-      applyFilters(newsData, activeSource);
+      applyFilters(newsData, activeSource, activeSources);
     } catch (error) {
       console.error("Erreur lors du chargement des actualités:", error);
       toast.error("Impossible de charger les actualités");
     } finally {
       setLoading(false);
     }
-  }, [activeSource]);
+  }, [activeSource, activeSources]);
   
   // Apply both category and source filters to news
-  const applyFilters = useCallback((newsData: NewsItem[], source: string | null) => {
+  const applyFilters = useCallback((newsData: NewsItem[], source: string | null, sources: string[]) => {
     let filtered = [...newsData];
     
     // Apply source filter if needed
     if (source) {
       filtered = filtered.filter(item => item.source === source);
+    } else if (sources.length > 0) {
+      filtered = filtered.filter(item => sources.includes(item.source));
     }
     
     setNews(filtered);
@@ -75,13 +79,22 @@ export const useNews = () => {
     loadNews(value === "all" ? undefined : value);
   }, [loadNews, setStoredPreferences]);
 
-  // Handle source change
+  // Handle single source change
   const handleSourceChange = useCallback((source: string | null) => {
     setActiveSource(source);
     setStoredPreferences(prev => ({ ...prev, lastSource: source }));
     
     // Apply filters to already loaded news
-    applyFilters(allNews, source);
+    applyFilters(allNews, source, []);
+  }, [allNews, applyFilters, setStoredPreferences]);
+
+  // Handle multiple sources change
+  const handleSourcesChange = useCallback((sources: string[]) => {
+    setActiveSources(sources);
+    setStoredPreferences(prev => ({ ...prev, lastSources: sources }));
+    
+    // Apply filters to already loaded news
+    applyFilters(allNews, null, sources);
   }, [allNews, applyFilters, setStoredPreferences]);
 
   // Handle article selection
@@ -99,6 +112,7 @@ export const useNews = () => {
     if (storedPreferences) {
       setActiveTab(storedPreferences.lastTab);
       setActiveSource(storedPreferences.lastSource);
+      setActiveSources(storedPreferences.lastSources || []);
       loadNews(
         storedPreferences.lastTab === "all" ? undefined : storedPreferences.lastTab
       );
@@ -107,12 +121,12 @@ export const useNews = () => {
     }
   }, [loadNews, storedPreferences]);
   
-  // Apply source filter when activeSource changes
+  // Apply source filter when activeSource or activeSources changes
   useEffect(() => {
     if (allNews.length > 0) {
-      applyFilters(allNews, activeSource);
+      applyFilters(allNews, activeSource, activeSources);
     }
-  }, [activeSource, allNews, applyFilters]);
+  }, [activeSource, activeSources, allNews, applyFilters]);
 
   return {
     news,
@@ -120,10 +134,12 @@ export const useNews = () => {
     refreshing,
     activeTab,
     activeSource,
+    activeSources,
     sources,
     selectedArticle,
     handleTabChange,
     handleSourceChange,
+    handleSourcesChange,
     handleRefresh,
     handleArticleSelect,
     handleArticleClose

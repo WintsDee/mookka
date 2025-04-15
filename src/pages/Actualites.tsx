@@ -17,10 +17,12 @@ const Actualites = () => {
     refreshing, 
     activeTab, 
     activeSource,
+    activeSources,
     sources,
     selectedArticle,
     handleTabChange, 
     handleSourceChange,
+    handleSourcesChange,
     handleRefresh,
     handleArticleSelect,
     handleArticleClose
@@ -55,7 +57,9 @@ const Actualites = () => {
               <NewsSourceSelector 
                 sources={sources}
                 activeSource={activeSource}
+                activeSources={activeSources}
                 onSourceChange={handleSourceChange}
+                onSourcesChange={handleSourcesChange}
               />
             </div>
           </div>

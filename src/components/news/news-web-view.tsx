@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from "react";
-import { X, Type } from "lucide-react";
+import { X, Type, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/sonner";
 
 interface NewsWebViewProps {
   url: string;
@@ -18,6 +19,8 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   const [textOnly, setTextOnly] = useLocalStorage("news-text-only", false);
   const [articleContent, setArticleContent] = useState<string>("");
   const [isFirefox, setIsFirefox] = useState(false);
+  const [isContentLoading, setIsContentLoading] = useState(false);
+  const [extractionError, setExtractionError] = useState(false);
   
   useEffect(() => {
     // Detect Firefox browser
@@ -28,11 +31,22 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       fetchTextContent(url);
     } else {
       setArticleContent("");
+      setExtractionError(false);
     }
   }, [url, textOnly]);
   
+  const handleToggleTextMode = (checked: boolean) => {
+    setTextOnly(checked);
+    if (checked && !articleContent) {
+      fetchTextContent(url);
+    }
+  };
+  
   const fetchTextContent = async (articleUrl: string) => {
     setLoading(true);
+    setIsContentLoading(true);
+    setExtractionError(false);
+    
     try {
       const { data, error } = await supabase.functions.invoke('fetch-news/extract-content', {
         body: { url: articleUrl }
@@ -42,7 +56,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
         throw new Error(error.message);
       }
       
-      if (data && data.content) {
+      if (data && data.content && data.content.length > 0) {
         setArticleContent(`
           <div class="article-content">
             <h1 class="text-xl font-bold mb-4">${title}</h1>
@@ -51,6 +65,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
             </div>
           </div>
         `);
+        setExtractionError(false);
       } else {
         setArticleContent(`
           <div class="article-content">
@@ -61,6 +76,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
             </div>
           </div>
         `);
+        setExtractionError(true);
       }
     } catch (error) {
       console.error("Erreur lors de l'extraction du contenu:", error);
@@ -70,8 +86,11 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
           <p>Veuillez essayer de visualiser l'article complet en désactivant le mode texte.</p>
         </div>
       `);
+      setExtractionError(true);
+      toast.error("Erreur lors de l'extraction du contenu");
     } finally {
       setLoading(false);
+      setIsContentLoading(false);
     }
   };
 
@@ -93,6 +112,10 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
     return originalUrl;
   };
 
+  const handleOpenOriginal = () => {
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       <header className="flex items-center justify-between p-4 border-b">
@@ -105,11 +128,19 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
             <Type className="h-4 w-4 text-muted-foreground" />
             <Switch 
               checked={textOnly} 
-              onCheckedChange={setTextOnly} 
+              onCheckedChange={handleToggleTextMode} 
               id="text-only" 
               aria-label="Mode texte seulement"
             />
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleOpenOriginal}
+            title="Ouvrir l'article original"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -117,7 +148,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       </header>
 
       <div className="relative flex-1 overflow-hidden">
-        {loading && (
+        {(loading || isContentLoading) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
@@ -137,6 +168,18 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
             referrerPolicy="no-referrer"
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
           />
+        )}
+        
+        {extractionError && textOnly && (
+          <div className="flex justify-center mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setTextOnly(false)} 
+              className="gap-2"
+            >
+              Voir la version originale <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         )}
       </div>
       
