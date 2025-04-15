@@ -4,14 +4,12 @@ import { cn } from "@/lib/utils";
 
 interface MediaRatingBadgeProps {
   rating: number;
-  label?: string;
   size?: "small" | "medium" | "large";
   maxRating?: number;
 }
 
 export function MediaRatingBadge({ 
   rating, 
-  label, 
   size = "medium", 
   maxRating = 10
 }: MediaRatingBadgeProps) {
@@ -40,21 +38,14 @@ export function MediaRatingBadge({
   };
   
   return (
-    <div className="flex flex-col items-center">
-      {label && (
-        <span className="text-[10px] text-white font-semibold mb-0.5 drop-shadow-md">
-          {label}
-        </span>
+    <div 
+      className={cn(
+        "flex items-center justify-center rounded-md font-bold shadow-md",
+        getColorClass(Number(normalizedRating)),
+        sizeClasses[size]
       )}
-      <div 
-        className={cn(
-          "flex items-center justify-center rounded-md font-bold shadow-md",
-          getColorClass(Number(normalizedRating)),
-          sizeClasses[size]
-        )}
-      >
-        {formattedRating}
-      </div>
+    >
+      {formattedRating}
     </div>
   );
 }

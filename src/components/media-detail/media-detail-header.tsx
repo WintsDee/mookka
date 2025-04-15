@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,8 +18,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-52 w-full pt-8"> {/* Increased height and added top padding */}
-      {/* Back button - positioned in the top left, not on the thumbnail */}
+    <div className="relative h-52 w-full pt-8">
       <Button 
         variant="ghost" 
         size="icon" 
@@ -33,19 +31,16 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <ArrowLeft className="text-white w-6 h-6" />
       </Button>
       
-      {/* Rating Display in Top Right */}
       <div className="absolute top-2 right-4 z-20 flex gap-2">
         {formattedMedia.rating && (
           <MediaRatingBadge 
             rating={formattedMedia.rating} 
-            label="TMDB" 
             size="large"
           />
         )}
         {formattedMedia.userRating && formattedMedia.userRating > 0 && (
           <MediaRatingBadge 
-            rating={formattedMedia.userRating} 
-            label="Ma note" 
+            rating={formattedMedia.userRating}
             size="large"
           />
         )}
@@ -64,9 +59,9 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <img 
           src={formattedMedia.coverImage} 
           alt={formattedMedia.title} 
-          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4" /* Added top margin */
+          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4"
         />
-        <div className="flex-1 ml-4 mt-2"> {/* Added top margin */}
+        <div className="flex-1 ml-4 mt-2">
           <div className="flex items-center gap-2">
             <h1 className={cn("text-2xl font-bold text-white drop-shadow-md", enhanceTextVisibility('strong'))}>
               {formattedMedia.title}

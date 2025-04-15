@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Star, Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 
 interface MediaCardProps {
   media: Media;
@@ -74,7 +75,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
     <Link to={`/media/${type}/${id}`} className="block animate-fade-in">
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
-          {/* Image de couverture */}
+          {/* Cover image */}
           <img 
             src={coverImage} 
             alt={title} 
@@ -84,7 +85,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
           {/* Status Badge */}
           {getStatusBadge()}
           
-          {/* Type Badge - Repositionné pour mobile */}
+          {/* Type Badge - Repositioned for mobile */}
           {isMobile ? (
             <div className="absolute top-0 right-0">
               <div className={cn(
@@ -106,7 +107,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
             </Badge>
           )}
           
-          {/* Informations - Toujours visibles */}
+          {/* Information - Always visible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
               <h3 className="text-white font-bold text-sm line-clamp-2">{title}</h3>
@@ -118,10 +119,10 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
                       <span className="text-xs text-white/80">{year}</span>
                     </div>
                     {rating && (
-                      <div className="flex items-center">
-                        <Star className="h-3 w-3 fill-yellow-500 text-yellow-500 mr-1" />
-                        <span className="text-xs text-white/80">{rating}</span>
-                      </div>
+                      <MediaRatingBadge 
+                        rating={rating} 
+                        size="small" 
+                      />
                     )}
                   </div>
                   {duration && (

@@ -1,7 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MediaAdditionalInfo } from "@/components/media-additional-info";
 import { MediaType } from "@/types";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface OverviewTabProps {
   description?: string;
@@ -12,13 +15,45 @@ interface OverviewTabProps {
 
 export function OverviewTab({ description, additionalInfo, mediaId, mediaType }: OverviewTabProps) {
   const formattedDescription = description ? description.replace(/<br>/g, '\n') : '';
-
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Check if description is long enough to need collapsing
+  const needsCollapsing = formattedDescription.length > 200;
+  
   return (
     <div className="space-y-6 pb-8">
       {formattedDescription && (
         <div>
           <h2 className="text-lg font-medium mb-2">Synopsis</h2>
-          <p className="text-sm text-muted-foreground whitespace-pre-line">{formattedDescription}</p>
+          {needsCollapsing ? (
+            <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
+              <div className="text-sm text-muted-foreground whitespace-pre-line">
+                {isOpen 
+                  ? formattedDescription 
+                  : formattedDescription.substring(0, 200) + "..."}
+              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full flex items-center justify-center border-t border-border pt-2">
+                  {isOpen ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-2" /> Voir moins
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-2" /> Voir plus
+                    </>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                {/* This is intentionally left empty as we're manually handling the content display */}
+              </CollapsibleContent>
+            </Collapsible>
+          ) : (
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {formattedDescription}
+            </p>
+          )}
         </div>
       )}
       
