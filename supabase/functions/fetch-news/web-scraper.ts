@@ -88,6 +88,10 @@ export async function scrapeWebPage(url: string, source: string): Promise<NewsIt
           break;
       }
       
+      // Décodage des entités HTML
+      title = decodeHtmlEntities(title);
+      description = decodeHtmlEntities(description);
+      
       // Only add valid articles (must have title and link)
       if (title && link) {
         // Make links absolute if they are relative
@@ -123,5 +127,53 @@ export async function scrapeWebPage(url: string, source: string): Promise<NewsIt
   } catch (error) {
     console.error(`Error scraping from ${source}:`, error);
     return [];
+  }
+}
+
+// Fonction helper pour décoder les entités HTML
+function decodeHtmlEntities(str: string): string {
+  if (!str) return '';
+  
+  try {
+    // Méthode simple dans Deno
+    return str
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+      .replace(/&#x([0-9a-f]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/&([a-z0-9]+);/g, match => {
+        // Liste courte des entités HTML communes
+        const entities: Record<string, string> = {
+          'nbsp': ' ',
+          'amp': '&',
+          'lt': '<',
+          'gt': '>',
+          'quot': '"',
+          'apos': "'",
+          'cent': '¢',
+          'pound': '£',
+          'yen': '¥',
+          'euro': '€',
+          'copy': '©',
+          'reg': '®',
+          'deg': '°',
+          'hellip': '…',
+          'mdash': '—',
+          'ndash': '–',
+          'lsquo': ''',
+          'rsquo': ''',
+          'ldquo': '"',
+          'rdquo': '"',
+        };
+        
+        const entity = match.substring(1, match.length - 1);
+        return entities[entity] || match;
+      });
+  } catch (error) {
+    console.error('Error decoding HTML entities:', error);
+    return str;
   }
 }

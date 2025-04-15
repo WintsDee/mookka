@@ -3,7 +3,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, RefreshCw, BookOpen } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { NewsItem } from "@/services/news-service";
@@ -91,10 +91,31 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     return url && url.startsWith('http');
   };
   
-  const imageUrl = isValidImageUrl(item.image) && !imageError 
-    ? item.image 
-    : placeholderUrl;
+  // Si l'image n'est pas valide ou vide, utiliser une image par défaut en fonction de la catégorie
+  const getImageUrl = () => {
+    if (isValidImageUrl(item.image) && !imageError) {
+      return item.image;
+    }
+    
+    // Images par défaut selon la catégorie
+    switch(item.category) {
+      case 'film': return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format';
+      case 'serie': return 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?q=80&w=500&auto=format';
+      case 'book': return 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=500&auto=format';
+      case 'game': return 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500&auto=format';
+      default: return placeholderUrl;
+    }
+  };
 
+  // Décode les entités HTML comme l&#8217;
+  const decodeHtmlEntities = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  };
+
+  const title = decodeHtmlEntities(item.title);
+  
   const getCategoryColor = (category: string) => {
     switch(category) {
       case 'film': return 'bg-media-film';
@@ -112,8 +133,8 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     >
       <div className="relative h-44">
         <img 
-          src={imageUrl}
-          alt={item.title}
+          src={getImageUrl()}
+          alt={title}
           className="w-full h-full object-cover"
           onError={handleImageError}
         />
@@ -135,10 +156,13 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
             </span>
           </div>
           
-          <h3 className="text-white font-bold text-lg line-clamp-2">{item.title}</h3>
-          <Button variant="ghost" size="sm" className="text-white/90 p-0 mt-1 hover:text-white">
-            <BookOpen className="h-3.5 w-3.5 mr-1" />
-            <span className="text-xs">Lire l'article</span>
+          <h3 className="text-white font-bold text-lg line-clamp-2">{title}</h3>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="text-white/90 mt-1.5 bg-white/20 hover:bg-white/30"
+          >
+            Lire l'article
           </Button>
         </div>
       </div>
