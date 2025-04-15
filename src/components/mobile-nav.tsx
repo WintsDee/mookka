@@ -2,22 +2,22 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, 
   Library, 
   Search, 
   Users, 
-  BookOpen,  // Ajout d'une icône pour les collections
+  Newspaper,  // Icône pour Actualités
+  Bookmark,   // Nouvelle icône pour Collections
 } from 'lucide-react';
 
 export function MobileNav() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Accueil' },
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
-    { path: '/collections', icon: BookOpen, label: 'Collections' }, // Nouvel onglet Collections
+    { path: '/collections', icon: Bookmark, label: 'Collections' }, // Changement d'icône
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: Users, label: 'Social' },
+    { path: '/actualites', icon: Newspaper, label: 'Actualités' }, // Ajout de Actualités
   ];
 
   return (
