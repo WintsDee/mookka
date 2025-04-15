@@ -11,7 +11,8 @@ interface MobileHeaderProps {
   children?: React.ReactNode;
 }
 
-const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=2070&auto=format&fit=crop";
+// Using an abstract image that fits with the app's style
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?q=80&w=1635&auto=format&fit=crop";
 
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();

@@ -5,10 +5,10 @@ import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
 
-// Updated to more media-themed cover image
-const DEFAULT_COVER = "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop";
-// Updated to more media-themed avatar image
-const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=1635&auto=format&fit=crop";
+// Updated to abstract images that match the app's style
+const DEFAULT_COVER = "https://images.unsplash.com/photo-1482881497185-d4a9ddbe4151?q=80&w=2025&auto=format&fit=crop";
+// Using the same avatar image as mobile header for consistency
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?q=80&w=1635&auto=format&fit=crop";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
