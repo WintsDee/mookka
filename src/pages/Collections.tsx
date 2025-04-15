@@ -60,27 +60,29 @@ const Collections = () => {
 
   return (
     <Background>
-      <MobileHeader title="Collections">
-        <Button 
-          variant="ghost" 
-          className="ml-auto"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          <PlusIcon size={20} />
-        </Button>
-      </MobileHeader>
+      <MobileHeader title="Collections" />
       
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
-          <div className="mt-4 relative">
-            <Input
-              type="text"
-              placeholder="Rechercher dans les collections..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          <div className="mt-4 relative flex items-center gap-2">
+            <div className="relative flex-1">
+              <Input
+                type="text"
+                placeholder="Rechercher dans les collections..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            </div>
+            <Button 
+              variant="outline"
+              size="icon"
+              onClick={() => setCreateDialogOpen(true)}
+              className="flex-shrink-0"
+            >
+              <PlusIcon size={20} />
+            </Button>
           </div>
           
           <div className="mt-4">
@@ -130,7 +132,6 @@ const Collections = () => {
         </header>
       </div>
       
-      {/* Create collection dialog */}
       <CreateCollectionDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}

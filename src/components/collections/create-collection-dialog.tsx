@@ -57,7 +57,7 @@ export function CreateCollectionDialog({
         onOpenChange(newOpen);
       }}
     >
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto top-auto transform-none">
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] overflow-y-auto fixed top-[50%] left-[50%] w-[calc(100%-32px)] -translate-x-1/2 -translate-y-1/2 p-4 sm:p-6 rounded-lg">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Créer une collection</DialogTitle>
@@ -66,8 +66,8 @@ export function CreateCollectionDialog({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
+          <div className="space-y-3 py-3">
+            <div className="space-y-1">
               <Label htmlFor="name">Nom de la collection</Label>
               <Input
                 id="name"
@@ -78,7 +78,7 @@ export function CreateCollectionDialog({
               />
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="description">Description (optionnelle)</Label>
               <Textarea
                 id="description"
@@ -89,7 +89,7 @@ export function CreateCollectionDialog({
               />
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label>Type de collection</Label>
               <RadioGroup 
                 value={type} 
@@ -117,7 +117,7 @@ export function CreateCollectionDialog({
               </RadioGroup>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label>Visibilité</Label>
               <RadioGroup 
                 value={visibility} 
@@ -146,11 +146,11 @@ export function CreateCollectionDialog({
             </div>
           </div>
           
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex sm:flex-row flex-col gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Annuler
             </Button>
-            <Button type="submit" disabled={!name || isLoading}>
+            <Button type="submit" disabled={!name || isLoading} className="w-full sm:w-auto">
               {isLoading ? 'Création...' : 'Créer'}
             </Button>
           </DialogFooter>
