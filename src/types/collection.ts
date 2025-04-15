@@ -16,6 +16,9 @@ export interface Collection {
   updatedAt: string;
   ownerId: string;
   itemCount?: number;
+  ownerUsername?: string;
+  ownerAvatar?: string | null;
+  items?: Media[];
   owner?: User;
 }
 

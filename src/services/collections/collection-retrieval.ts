@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Collection } from "@/types/collection";
 import { Media, MediaType } from "@/types";
+import { mapCollectionFromDB } from "../../components/collections/collection-types";
 
 export async function getCollectionById(id: string): Promise<Collection | null> {
   try {
@@ -70,23 +71,14 @@ export async function getCollectionById(id: string): Promise<Collection | null> 
       platform: item.media.platform
     }));
 
-    const result: Collection = {
-      id: collection.id,
-      title: collection.title,
-      description: collection.description,
-      isPublic: collection.is_public,
-      coverImage: collection.cover_image,
-      ownerId: collection.owner_id,
-      createdAt: collection.created_at,
-      updatedAt: collection.updated_at,
-      mediaTypes: collection.media_types,
-      itemsCount: collection.items_count,
-      items: mediaItems,
-      ownerUsername: collection.profile?.username || 'Utilisateur',
-      ownerAvatar: collection.profile?.avatar_url || null
+    // Use the mapCollectionFromDB utility to convert the DB format to our app format
+    const mappedCollection = mapCollectionFromDB(collection);
+    
+    // Add the media items to the collection
+    return {
+      ...mappedCollection,
+      items: mediaItems
     };
-
-    return result;
   } catch (error) {
     console.error("Error in getCollectionById:", error);
     return null;

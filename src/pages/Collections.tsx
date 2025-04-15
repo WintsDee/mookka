@@ -108,7 +108,7 @@ const Collections = () => {
                     loading={loadingMyCollections}
                     emptyMessage="Vous n'avez pas encore créé de collection."
                     className="mb-6"
-                    locationState={{ from: location.pathname }}
+                    from={location.pathname}
                   />
                 </TabsContent>
                 
@@ -118,7 +118,7 @@ const Collections = () => {
                     loading={loadingFollowedCollections}
                     emptyMessage="Vous ne suivez aucune collection pour le moment."
                     className="mb-6"
-                    locationState={{ from: location.pathname }}
+                    from={location.pathname}
                   />
                 </TabsContent>
                 
@@ -127,8 +127,8 @@ const Collections = () => {
                     collections={filteredCommunityCollections}
                     loading={loadingPublicCollections}
                     emptyMessage="Aucune collection communautaire trouvée."
-                    className="mb-6"
-                    locationState={{ from: location.pathname }}
+                    className="mb-6" 
+                    from={location.pathname}
                   />
                 </TabsContent>
               </ScrollArea>

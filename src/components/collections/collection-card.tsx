@@ -9,9 +9,10 @@ import { Users, Lock, Globe, Heart, ListChecks, Tag } from 'lucide-react';
 interface CollectionCardProps {
   collection: Collection;
   size?: 'small' | 'medium' | 'large';
+  from?: string;
 }
 
-export function CollectionCard({ collection, size = 'medium' }: CollectionCardProps) {
+export function CollectionCard({ collection, size = 'medium', from }: CollectionCardProps) {
   // Configuration des tailles
   const sizes = {
     small: {
@@ -63,7 +64,7 @@ export function CollectionCard({ collection, size = 'medium' }: CollectionCardPr
   }[collection.type];
 
   return (
-    <Link to={`/collections/${collection.id}`}>
+    <Link to={`/collections/${collection.id}`} state={{ from: from }}>
       <Card className={`overflow-hidden transition duration-300 hover:shadow-md ${sizes[size].card}`}>
         <div 
           className={`${sizes[size].image} bg-gradient-to-br from-primary/20 to-secondary/20 relative`}

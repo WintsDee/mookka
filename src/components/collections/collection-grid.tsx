@@ -2,7 +2,6 @@
 import React from "react";
 import { Collection } from "@/types/collection";
 import { CollectionCard } from "@/components/collections/collection-card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CollectionLoading } from "@/components/collections/collection-loading";
 
 interface CollectionGridProps {
@@ -12,7 +11,7 @@ interface CollectionGridProps {
   className?: string;
   from?: string;
   columns?: number;
-  cardSize?: string;
+  cardSize?: 'small' | 'medium' | 'large';
 }
 
 export const CollectionGrid = ({
