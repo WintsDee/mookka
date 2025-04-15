@@ -11,6 +11,7 @@ const Index = () => {
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
         />
+        <div className="absolute inset-0 bg-black/60" />
       </div>
       
       {/* Contenu principal */}
