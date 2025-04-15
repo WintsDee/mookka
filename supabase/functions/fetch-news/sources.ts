@@ -16,30 +16,36 @@ export const SOURCES: NewsSource[] = [
     rss: 'https://www.cineserie.com/feed/'
   },
   {
-    name: 'Ecran Large',
-    url: 'https://www.ecranlarge.com/',
+    name: 'Première',
+    url: 'https://www.premiere.fr/',
     category: 'film',
-    rss: 'https://www.ecranlarge.com/rss'
+    rss: 'https://www.premiere.fr/rss'
+  },
+  {
+    name: 'CinémaTeaser',
+    url: 'https://www.cinemateaser.com/',
+    category: 'film',
+    rss: 'https://www.cinemateaser.com/feed/'
   },
   
   // Livres
   {
-    name: 'ActuaLitté',
-    url: 'https://actualitte.com/',
+    name: 'Fnac',
+    url: 'https://leclaireur.fnac.com/',
     category: 'book',
-    rss: 'https://actualitte.com/rss'
+    rss: 'https://leclaireur.fnac.com/feed/'
   },
   {
-    name: 'Babelio',
-    url: 'https://www.babelio.com/',
+    name: 'Idboox',
+    url: 'https://www.idboox.com/',
     category: 'book',
-    rss: 'https://www.babelio.com/rss/actualites.xml'
+    rss: 'https://www.idboox.com/feed/'
   },
   {
-    name: 'Éditions Points',
-    url: 'https://www.editionspoints.com/',
+    name: 'Librairie Mollat',
+    url: 'https://www.mollat.com/',
     category: 'book',
-    rss: 'https://www.editionspoints.com/rss'
+    rss: 'https://www.mollat.com/rss/selections'
   },
   
   // Jeux Vidéo
@@ -50,10 +56,10 @@ export const SOURCES: NewsSource[] = [
     rss: 'https://www.jeuxvideo.com/rss/rss.xml'
   },
   {
-    name: 'JeuxActu',
-    url: 'https://www.jeuxactu.com/',
+    name: 'ActuGaming',
+    url: 'https://www.actugaming.net/',
     category: 'game',
-    rss: 'https://www.jeuxactu.com/rss'
+    rss: 'https://www.actugaming.net/rss'
   },
   {
     name: 'Gamekult',
@@ -68,11 +74,5 @@ export const SOURCES: NewsSource[] = [
     url: 'https://www.numerama.com/',
     category: 'general',
     rss: 'https://www.numerama.com/feed/'
-  },
-  {
-    name: 'Fnac',
-    url: 'https://leclaireur.fnac.com/',
-    category: 'general',
-    rss: 'https://leclaireur.fnac.com/feed/'
   },
 ];

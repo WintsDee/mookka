@@ -13,7 +13,9 @@ export function detectMediaType(title: string, description: string, source: stri
     case 'Jeuxvideo.com':
       defaultCategory = 'game';
       break;
-    case 'Ecran Large':
+    case 'AlloCiné':
+    case 'Première':
+    case 'CinémaTeaser':
       // Detect if it's a film or serie
       if (title.includes('série') || title.includes('saison') || 
           description.includes('série') || description.includes('saison') || 
@@ -23,9 +25,11 @@ export function detectMediaType(title: string, description: string, source: stri
         return 'serie';
       }
       return 'film';
-    case 'ActuaLitté':
-    case 'Babelio':
-    case 'Éditions Points':
+    case 'CineSeries':
+      return 'serie';
+    case 'Fnac':
+    case 'Idboox':
+    case 'Librairie Mollat':
       defaultCategory = 'book';
       break;
     default:

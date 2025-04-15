@@ -98,7 +98,7 @@ export async function parseRSSFeed(url: string, source: string): Promise<NewsIte
   }
 }
 
-// Helper function to remove HTML tags and decode HTML entities
+// Helper function to remove HTML tags and decode HTML entities for Deno environment
 function removeHTMLTags(str: string): string {
   if (!str) return '';
   
@@ -110,12 +110,27 @@ function removeHTMLTags(str: string): string {
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)) // Decode decimal entities
+    .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10))) // Decode decimal entities
     .replace(/&#x([0-9a-f]+);/gi, (match, hex) => String.fromCharCode(parseInt(hex, 16))) // Decode hex entities
-    .replace(/&[a-z0-9]+;/g, (entity) => { // Handle named entities
-      const textarea = document.createElement ? document.createElement('textarea') : { innerHTML: '', value: '' };
-      textarea.innerHTML = entity;
-      return textarea.value || entity;
+    .replace(/&[a-z0-9]+;/g, match => {
+      // Liste simple des entités HTML les plus courantes
+      const entities: Record<string, string> = {
+        'nbsp': ' ',
+        'amp': '&',
+        'lt': '<',
+        'gt': '>',
+        'quot': '"',
+        'apos': "'",
+        'cent': '¢',
+        'pound': '£',
+        'yen': '¥',
+        'euro': '€',
+        'copy': '©',
+        'reg': '®'
+      };
+      
+      const entity = match.substring(1, match.length - 1);
+      return entities[entity] || match;
     })
     .trim();                                   // Trim whitespace
 }
