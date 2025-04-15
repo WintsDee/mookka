@@ -18,7 +18,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-56 w-full">
+    <div className="relative h-64 w-full">
       <Button 
         variant="ghost" 
         size="icon" 
@@ -40,14 +40,14 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <div className={overlayGradient('to-top', 'medium')} />
       </div>
       
-      <div className="absolute bottom-4 left-0 p-6 w-full">
-        <div className="flex gap-4 items-end">
+      <div className="absolute bottom-6 left-0 p-6 w-full">
+        <div className="flex gap-4">
           <img 
             src={formattedMedia.coverImage} 
             alt={formattedMedia.title} 
             className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
           />
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col justify-between">
             <div>
               <h1 className={cn("text-2xl font-bold mb-1", enhanceTextVisibility('strong'))}>{formattedMedia.title}</h1>
               <div className="flex items-center mt-1 text-white/90 mb-2">
@@ -66,7 +66,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
                 )}
               </div>
               {formattedMedia.genres && formattedMedia.genres.length > 0 && (
-                <div className="flex gap-1 flex-wrap">
+                <div className="flex gap-1 flex-wrap mb-2">
                   {formattedMedia.genres.map((genre: string) => (
                     <Badge 
                       key={genre} 
