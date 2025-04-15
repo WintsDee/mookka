@@ -88,7 +88,7 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
             </DropdownMenuItem>
             
             <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t">
-              Sélection multiple
+              Sources disponibles
             </div>
             
             {sources.map((source) => (
@@ -111,21 +111,6 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
                 >
                   {source}
                 </label>
-              </DropdownMenuItem>
-            ))}
-            
-            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t">
-              Sélection unique
-            </div>
-            
-            {sources.map((source) => (
-              <DropdownMenuItem
-                key={`single-${source}`}
-                onClick={() => handleSingleSourceSelect(source)}
-                className="flex items-center justify-between"
-              >
-                <span className="truncate">{source}</span>
-                {activeSource === source && <Check className="h-4 w-4" />}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
@@ -165,3 +150,4 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
     </div>
   );
 };
+
