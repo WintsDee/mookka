@@ -12,7 +12,7 @@ import { useLocation } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchResults } from "@/components/search/search-results";
-import { getSearchPlaceholder, getSelectedTypeColor } from "@/components/search/search-utils";
+import { getSearchPlaceholder, getSelectedTypeColor, formatSearchResult } from "@/components/search/search-utils";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -24,7 +24,7 @@ const Recherche = () => {
   const location = useLocation();
   
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchSearchResults = async () => {
       if (debouncedSearchTerm && selectedType) {
         setIsLoading(true);
         try {
@@ -34,59 +34,7 @@ const Recherche = () => {
           
           if (result.results && result.results.length > 0) {
             formattedResults = result.results.map((item: any) => {
-              if (item.fromDatabase) {
-                return {
-                  id: item.id,
-                  title: item.title,
-                  type: item.type,
-                  coverImage: item.coverImage || '/placeholder.svg',
-                  year: item.year,
-                  rating: item.rating,
-                  author: item.author,
-                  fromDatabase: true
-                };
-              }
-              
-              switch (selectedType) {
-                case 'film':
-                  return {
-                    id: item.id,
-                    title: item.title,
-                    type: selectedType,
-                    coverImage: item.coverImage || '/placeholder.svg',
-                    year: item.year,
-                    rating: item.rating
-                  };
-                case 'serie':
-                  return {
-                    id: item.id,
-                    title: item.title,
-                    type: selectedType,
-                    coverImage: item.coverImage || '/placeholder.svg',
-                    year: item.year,
-                    rating: item.rating
-                  };
-                case 'book':
-                  return {
-                    id: item.id,
-                    title: item.title,
-                    type: selectedType,
-                    coverImage: item.coverImage || '/placeholder.svg',
-                    year: item.year,
-                    author: item.author
-                  };
-                case 'game':
-                  return {
-                    id: item.id,
-                    title: item.title,
-                    type: selectedType,
-                    coverImage: item.coverImage || '/placeholder.svg',
-                    year: item.year,
-                    rating: item.rating
-                  };
-                default:
-                  return item;
-              }
+              return formatSearchResult(item, selectedType);
             });
           }
           
@@ -107,7 +55,7 @@ const Recherche = () => {
       }
     };
 
-    fetchData();
+    fetchSearchResults();
   }, [debouncedSearchTerm, selectedType, toast]);
 
   return (

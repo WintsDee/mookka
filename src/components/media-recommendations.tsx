@@ -10,7 +10,6 @@ interface MediaRecommendationsProps {
   medias: Media[];
   type?: MediaType;
   onSeeMore?: () => void;
-  // Change locationState to from
   from?: string;
 }
 

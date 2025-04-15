@@ -1,67 +1,94 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Collection } from "@/types/collection";
-import { mapCollectionFromDB, CollectionData } from "./collection-types";
-import { Media } from "@/types";
+import { Media, MediaType } from "@/types";
 
-export async function getCollectionById(collectionId: string): Promise<{ collection: Collection; items: Media[] }> {
-  // Get collection data
-  const { data: collectionData, error: collectionError } = await supabase
-    .from('collections')
-    .select(`
-      *,
-      items_count:collection_items(count),
-      owner:profiles(username, avatar_url)
-    `)
-    .eq('id', collectionId)
-    .single();
+export async function getCollectionById(id: string): Promise<Collection | null> {
+  try {
+    // Fetch the collection
+    const { data: collection, error: collectionError } = await supabase
+      .from("collections")
+      .select(`
+        *,
+        profile:owner_id (
+          username,
+          avatar_url
+        )
+      `)
+      .eq("id", id)
+      .single();
 
-  if (collectionError) throw collectionError;
+    if (collectionError) {
+      console.error("Error fetching collection:", collectionError);
+      return null;
+    }
 
-  // Get collection items with media details
-  const { data: itemsData, error: itemsError } = await supabase
-    .from('collection_items')
-    .select(`
-      id, position, added_at, added_by,
-      media(*)
-    `)
-    .eq('collection_id', collectionId)
-    .order('position', { ascending: true });
+    // Fetch the items in this collection
+    const { data: collectionItems, error: itemsError } = await supabase
+      .from("collection_items")
+      .select(`
+        *,
+        media:media_id (
+          id,
+          title,
+          type,
+          year,
+          rating,
+          genres,
+          description,
+          cover_image,
+          duration,
+          director,
+          author,
+          publisher,
+          platform,
+          external_id,
+          created_at
+        )
+      `)
+      .eq("collection_id", id)
+      .order("position");
 
-  if (itemsError) throw itemsError;
+    if (itemsError) {
+      console.error("Error fetching collection items:", itemsError);
+      return null;
+    }
 
-  // Format the collection items to match the Media type
-  const items: Media[] = itemsData.map((item) => {
-    const media = item.media;
-    
-    // Map media to the Media type
-    return {
-      id: media.id,
-      title: media.title,
-      type: media.type,
-      coverImage: media.cover_image,
-      year: media.year,
-      description: media.description,
-      genres: media.genres,
-      director: media.director,
-      author: media.author,
-      publisher: media.publisher,
-      platform: media.platform,
-      duration: media.duration,
-      rating: media.rating,
-      // Don't include status as it's not in the media table
-      externalId: media.external_id,
-      createdAt: media.created_at,
-      ownerId: media.owner_id
+    const mediaItems: Media[] = collectionItems.map((item) => ({
+      id: item.media.id,
+      title: item.media.title,
+      type: item.media.type as MediaType,
+      coverImage: item.media.cover_image,
+      year: item.media.year,
+      rating: item.media.rating,
+      genres: item.media.genres,
+      description: item.media.description,
+      duration: item.media.duration,
+      director: item.media.director,
+      author: item.media.author,
+      publisher: item.media.publisher,
+      platform: item.media.platform
+    }));
+
+    const result: Collection = {
+      id: collection.id,
+      title: collection.title,
+      description: collection.description,
+      isPublic: collection.is_public,
+      coverImage: collection.cover_image,
+      ownerId: collection.owner_id,
+      createdAt: collection.created_at,
+      updatedAt: collection.updated_at,
+      mediaTypes: collection.media_types,
+      itemsCount: collection.items_count,
+      items: mediaItems,
+      ownerUsername: collection.profile?.username || 'Utilisateur',
+      ownerAvatar: collection.profile?.avatar_url || null
     };
-  });
 
-  return {
-    collection: {
-      ...mapCollectionFromDB(collectionData as CollectionData),
-      ownerUsername: collectionData.owner?.username || "Unknown",
-      ownerAvatar: collectionData.owner?.avatar_url || null
-    },
-    items
-  };
+    return result;
+  } catch (error) {
+    console.error("Error in getCollectionById:", error);
+    return null;
+  }
 }
