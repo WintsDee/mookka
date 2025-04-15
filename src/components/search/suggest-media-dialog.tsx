@@ -19,6 +19,8 @@ import { getFormSchema, getDefaultValues } from "./media-suggestion/suggestion-s
 import { TypeSpecificFields } from "./media-suggestion/type-specific-fields";
 import { CommonFormFields } from "./media-suggestion/common-form-fields";
 import { submitMediaSuggestion } from "@/services/media/suggestion-service";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SuggestMediaDialogProps {
   open: boolean;
@@ -28,6 +30,7 @@ interface SuggestMediaDialogProps {
 
 export function SuggestMediaDialog({ open, onOpenChange, mediaType }: SuggestMediaDialogProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const formSchema = getFormSchema(mediaType);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -85,26 +88,28 @@ export function SuggestMediaDialog({ open, onOpenChange, mediaType }: SuggestMed
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={`sm:max-w-md max-h-[90vh] ${isMobile ? 'w-[95%]' : ''}`}>
         <DialogHeader>
           <DialogTitle>Suggérer un {getMediaTypeTitle(mediaType)}</DialogTitle>
           <DialogDescription>
             Proposez un nouveau média à ajouter à la base de données Mookka
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Common form fields for all media types */}
-            <CommonFormFields form={form} />
-            
-            {/* Media type specific fields */}
-            <TypeSpecificFields mediaType={mediaType} form={form} />
-            
-            <DialogFooter>
-              <Button type="submit">Envoyer la suggestion</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <ScrollArea className="max-h-[60vh] pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Common form fields for all media types */}
+              <CommonFormFields form={form} />
+              
+              {/* Media type specific fields */}
+              <TypeSpecificFields mediaType={mediaType} form={form} />
+              
+              <DialogFooter className="mt-6">
+                <Button type="submit">Envoyer la suggestion</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
