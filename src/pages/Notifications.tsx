@@ -10,7 +10,7 @@ const Notifications = () => {
     <Background>
       <MobileHeader />
       <div className="pt-safe pb-24 mt-16">
-        <PageTitle title="Notifications">Notifications</PageTitle>
+        <PageTitle title="Notifications" />
         
         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-6">
           <p className="text-muted-foreground">

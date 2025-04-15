@@ -3,6 +3,7 @@ import React from "react";
 
 interface PageTitleProps {
   title: string;
+  children?: React.ReactNode;
 }
 
 export const PageTitle = ({ title }: PageTitleProps) => {

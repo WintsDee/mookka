@@ -25,7 +25,7 @@ const Actualites = () => {
       <MobileHeader />
       <div className="pb-24 pt-safe mt-12">
         <div className="px-6 mb-4">
-          <PageTitle title="Actualités">Actualités</PageTitle>
+          <PageTitle title="Actualités" />
           
           <div className="mt-4">
             <NewsTabs 
