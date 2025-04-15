@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -30,7 +29,6 @@ const Collections = () => {
     isCreatingCollection
   } = useCollections();
   
-  // Filter collections based on criteria
   const filterCollections = (collections) => {
     return collections
       .filter(collection => 
@@ -54,7 +52,6 @@ const Collections = () => {
   
   const handleTabChange = (value) => {
     setActiveTab(value);
-    // Reset filters when tab changes
     setCollectionType("all");
   };
 
@@ -70,7 +67,7 @@ const Collections = () => {
         </Button>
       </MobileHeader>
       
-      <div className="pb-24 pt-safe mt-16">
+      <div className="pb-28 pt-safe mt-16">
         <header className="px-6 mb-6">
           <div className="mt-4 relative">
             <Input
@@ -130,7 +127,6 @@ const Collections = () => {
         </header>
       </div>
       
-      {/* Create collection dialog */}
       <CreateCollectionDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
