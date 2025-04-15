@@ -34,9 +34,10 @@ export function RatingTab({ mediaId, mediaType, initialRating = 0 }: RatingTabPr
           return;
         }
         
+        // Utiliser user_media au lieu de media_ratings
         const { data, error } = await supabase
-          .from('media_ratings')
-          .select('rating, review')
+          .from('user_media')
+          .select('user_rating, notes')
           .eq('media_id', mediaId)
           .eq('user_id', user.user.id)
           .maybeSingle();
@@ -47,8 +48,8 @@ export function RatingTab({ mediaId, mediaType, initialRating = 0 }: RatingTabPr
         }
         
         if (data) {
-          setRating(data.rating);
-          setReview(data.review || "");
+          setRating(data.user_rating || 0);
+          setReview(data.notes || "");
         }
       } catch (error) {
         console.error("Erreur lors de la récupération de la note:", error);

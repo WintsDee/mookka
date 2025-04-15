@@ -29,9 +29,10 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
       
       try {
         const { data, error } = await supabase
-          .from('media_ratings')
-          .select('rating')
-          .eq('media_id', mediaId);
+          .from('user_media')
+          .select('user_rating')
+          .eq('media_id', mediaId)
+          .not('user_rating', 'is', null);
           
         if (error) {
           console.error("Erreur lors de la récupération des notes:", error);
@@ -39,9 +40,12 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
         }
         
         if (data && data.length > 0) {
-          const total = data.reduce((sum, item) => sum + item.rating, 0);
-          setAverageRating(parseFloat((total / data.length).toFixed(1)));
-          setRatingsCount(data.length);
+          const ratings = data.map(item => item.user_rating).filter(Boolean);
+          if (ratings.length > 0) {
+            const total = ratings.reduce((sum, rating) => sum + (rating || 0), 0);
+            setAverageRating(parseFloat((total / ratings.length).toFixed(1)));
+            setRatingsCount(ratings.length);
+          }
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des notes:", error);

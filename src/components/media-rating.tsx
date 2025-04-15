@@ -52,12 +52,13 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
           return;
         }
         
+        // Utiliser user_media au lieu de media_ratings
         const { data, error } = await supabase
-          .from('media_ratings')
-          .select('rating, review')
+          .from('user_media')
+          .select('user_rating, notes')
           .eq('media_id', mediaId)
           .eq('user_id', user.user.id)
-          .single();
+          .maybeSingle();
           
         if (error && error.code !== 'PGRST116') {
           console.error("Erreur lors de la récupération de la note:", error);
@@ -65,10 +66,11 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
         }
         
         if (data) {
-          setUserRating(data.rating);
+          const userRating = data.user_rating || 0;
+          setUserRating(userRating);
           form.reset({
-            rating: data.rating,
-            review: data.review || ''
+            rating: userRating,
+            review: data.notes || ''
           });
         }
       } catch (error) {
@@ -100,35 +102,36 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
         throw new Error("Utilisateur non connecté");
       }
       
-      // Vérifier si l'utilisateur a déjà noté ce média
-      const { data: existingRating } = await supabase
-        .from('media_ratings')
+      // Vérifier si le média existe déjà dans la bibliothèque de l'utilisateur
+      const { data: existingMedia } = await supabase
+        .from('user_media')
         .select('id')
         .eq('media_id', mediaId)
         .eq('user_id', user.user.id)
         .maybeSingle();
       
-      if (existingRating) {
+      if (existingMedia) {
         // Mettre à jour la note existante
         const { error } = await supabase
-          .from('media_ratings')
+          .from('user_media')
           .update({
-            rating: values.rating,
-            review: values.review,
+            user_rating: values.rating,
+            notes: values.review,
             updated_at: new Date().toISOString()
           })
-          .eq('id', existingRating.id);
+          .eq('id', existingMedia.id);
           
         if (error) throw error;
       } else {
-        // Créer une nouvelle note
+        // Créer une nouvelle entrée
         const { error } = await supabase
-          .from('media_ratings')
+          .from('user_media')
           .insert({
             user_id: user.user.id,
             media_id: mediaId,
-            rating: values.rating,
-            review: values.review
+            user_rating: values.rating,
+            notes: values.review,
+            status: 'rated'
           });
           
         if (error) throw error;

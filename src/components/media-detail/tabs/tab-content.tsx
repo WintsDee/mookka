@@ -19,7 +19,9 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       <TabsContent value="overview" className="space-y-6 mt-4">
         <OverviewTab 
           description={formattedMedia.description} 
-          additionalInfo={additionalInfo} 
+          additionalInfo={additionalInfo}
+          mediaId={id}
+          mediaType={type}
         />
       </TabsContent>
       
