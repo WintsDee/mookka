@@ -12,21 +12,41 @@ export interface NewsItem {
   description?: string;
 }
 
-export async function fetchNews(type?: string, forceRefresh = false): Promise<NewsItem[]> {
+export interface NewsFilter {
+  type?: 'film' | 'serie' | 'book' | 'game' | 'general';
+  source?: string;
+}
+
+/**
+ * Fetch news items from the Supabase Edge Function
+ * @param filters - Optional filters (type, source)
+ * @param forceRefresh - Whether to bypass cache and fetch fresh data
+ * @returns Array of news items
+ */
+export async function fetchNews(
+  filters?: NewsFilter, 
+  forceRefresh = false
+): Promise<{news: NewsItem[], meta: any}> {
   try {
-    let queryParams = '';
+    const queryParams = new URLSearchParams();
     
-    // Ajouter le paramètre de type s'il est défini
-    if (type) {
-      queryParams += `?type=${type}`;
+    // Add filters to query params
+    if (filters?.type) {
+      queryParams.append('type', filters.type);
     }
     
-    // Ajouter le paramètre de rafraîchissement s'il est activé
+    if (filters?.source) {
+      queryParams.append('source', filters.source);
+    }
+    
+    // Add refresh parameter if needed
     if (forceRefresh) {
-      queryParams += queryParams ? '&refresh=true' : '?refresh=true';
+      queryParams.append('refresh', 'true');
     }
     
-    const { data, error } = await supabase.functions.invoke('fetch-news' + queryParams);
+    const { data, error } = await supabase.functions.invoke(
+      'fetch-news' + (queryParams.toString() ? `?${queryParams.toString()}` : '')
+    );
 
     if (error) {
       console.error("Erreur lors de la récupération des actualités:", error);
@@ -35,7 +55,7 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
 
     if (!data || !data.news || !Array.isArray(data.news)) {
       console.error("Format de données invalide:", data);
-      return [];
+      return { news: [], meta: { error: 'Format invalide' } };
     }
 
     // Vérification que chaque élément contient les propriétés requises
@@ -50,9 +70,35 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
       description: item.description || ""
     }));
 
-    return validatedNews;
+    return { 
+      news: validatedNews,
+      meta: data.meta || {}
+    };
   } catch (error) {
     console.error("Erreur dans fetchNews:", error);
+    return { news: [], meta: { error: error } };
+  }
+}
+
+/**
+ * Get all available news sources
+ * @returns Array of news source names
+ */
+export async function getNewsSources(): Promise<string[]> {
+  try {
+    const { news } = await fetchNews();
+    
+    // Extract unique sources
+    const sources = new Set<string>();
+    news.forEach(item => {
+      if (item.source) {
+        sources.add(item.source);
+      }
+    });
+    
+    return Array.from(sources).sort();
+  } catch (error) {
+    console.error("Erreur lors de la récupération des sources:", error);
     return [];
   }
 }

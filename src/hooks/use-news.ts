@@ -1,19 +1,38 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchNews, NewsItem } from "@/services/news-service";
+import { fetchNews, NewsItem, NewsFilter } from "@/services/news-service";
 import { toast } from "@/components/ui/sonner";
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 export const useNews = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [meta, setMeta] = useState<any>({});
+  
+  // User preferences
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedSource, setSelectedSource] = useLocalStorage<string | null>("news_selected_source", null);
+  const [availableSources, setAvailableSources] = useState<string[]>([]);
 
-  const loadNews = useCallback(async (type?: string, forceRefresh = false) => {
+  // Load news with filters
+  const loadNews = useCallback(async (filters?: NewsFilter, forceRefresh = false) => {
     try {
       setLoading(true);
-      const newsData = await fetchNews(type === "all" ? undefined : type, forceRefresh);
+      const { news: newsData, meta: metaData } = await fetchNews(filters, forceRefresh);
       setNews(newsData);
+      setMeta(metaData);
+      
+      // Extract all available sources for filtering
+      if (newsData.length > 0) {
+        const sources = new Set<string>();
+        newsData.forEach(item => {
+          if (item.source) {
+            sources.add(item.source);
+          }
+        });
+        setAvailableSources(Array.from(sources).sort());
+      }
     } catch (error) {
       console.error("Erreur lors du chargement des actualités:", error);
       toast.error("Impossible de charger les actualités");
@@ -22,37 +41,118 @@ export const useNews = () => {
     }
   }, []);
 
+  // Refresh news
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      await loadNews(activeTab === "all" ? undefined : activeTab, true);
+      const filters: NewsFilter = {};
+      
+      if (activeTab !== "all") {
+        filters.type = activeTab as any;
+      }
+      
+      if (selectedSource) {
+        filters.source = selectedSource;
+      }
+      
+      await loadNews(filters, true);
       toast.success("Actualités mises à jour");
     } catch (error) {
       toast.error("Échec de la mise à jour");
     } finally {
       setRefreshing(false);
     }
-  }, [activeTab, loadNews]);
+  }, [activeTab, selectedSource, loadNews]);
 
+  // Handle tab change
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
-    if (value === "all") {
-      loadNews();
-    } else {
-      loadNews(value);
+    
+    const filters: NewsFilter = {};
+    
+    if (value !== "all") {
+      filters.type = value as any;
     }
-  }, [loadNews]);
+    
+    if (selectedSource) {
+      filters.source = selectedSource;
+    }
+    
+    loadNews(filters);
+  }, [selectedSource, loadNews]);
 
+  // Handle source change
+  const handleSourceChange = useCallback((source: string | null) => {
+    setSelectedSource(source);
+    
+    const filters: NewsFilter = {};
+    
+    if (activeTab !== "all") {
+      filters.type = activeTab as any;
+    }
+    
+    if (source) {
+      filters.source = source;
+    }
+    
+    loadNews(filters);
+  }, [activeTab, setSelectedSource, loadNews]);
+
+  // Load news on initial mount
   useEffect(() => {
-    loadNews();
-  }, [loadNews]);
+    const filters: NewsFilter = {};
+    
+    if (activeTab !== "all") {
+      filters.type = activeTab as any;
+    }
+    
+    if (selectedSource) {
+      filters.source = selectedSource;
+    }
+    
+    loadNews(filters);
+  }, [loadNews, activeTab, selectedSource]);
 
   return {
     news,
     loading,
     refreshing,
     activeTab,
+    meta,
+    selectedSource,
+    availableSources,
     handleTabChange,
+    handleSourceChange,
     handleRefresh
   };
 };
+
+// Hook to store values in localStorage
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === "undefined") {
+      return initialValue;
+    }
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+}
