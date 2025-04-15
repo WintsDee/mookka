@@ -3,20 +3,180 @@ import { Media, MediaType } from "@/types";
 
 export async function searchMedia(type: MediaType, query: string): Promise<any> {
   try {
-    const { data, error } = await supabase.functions.invoke('fetch-media', {
+    // 1. D'abord, rechercher dans la base de données Mookka
+    const { data: localMedia, error: localError } = await supabase
+      .from('media')
+      .select('*')
+      .eq('type', type)
+      .ilike('title', `%${query}%`)
+      .order('rating', { ascending: false })
+      .limit(20);
+    
+    if (localError) {
+      console.error("Erreur lors de la recherche locale de médias:", localError);
+    }
+    
+    // 2. Ensuite, rechercher via l'API externe
+    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
       body: { type, query }
     });
 
-    if (error) {
-      console.error("Erreur lors de la recherche de médias:", error);
-      throw error;
+    if (apiError) {
+      console.error("Erreur lors de la recherche de médias:", apiError);
+      throw apiError;
     }
-
-    return data;
+    
+    // 3. Traiter les résultats de l'API
+    let apiResults: any[] = [];
+    if (apiData) {
+      switch (type) {
+        case 'film':
+          apiResults = apiData.results?.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.title,
+            type,
+            coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+            year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : null,
+            rating: item.vote_average || null,
+            popularity: item.popularity || 0,
+            externalData: item
+          })) || [];
+          
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'serie':
+          apiResults = apiData.results?.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.name,
+            type,
+            coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+            year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
+            rating: item.vote_average || null,
+            popularity: item.popularity || 0,
+            externalData: item
+          })) || [];
+          
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'book':
+          apiResults = apiData.items?.map((item: any) => {
+            const publishedDate = item.volumeInfo?.publishedDate;
+            const publishedYear = publishedDate ? parseInt(publishedDate.substring(0, 4)) : null;
+            
+            return {
+              id: item.id,
+              title: item.volumeInfo?.title || 'Sans titre',
+              type,
+              coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+              year: publishedYear,
+              author: item.volumeInfo?.authors ? item.volumeInfo.authors[0] : null,
+              // Calculer un score de popularité basé sur les ratings et review counts
+              popularity: (
+                (item.volumeInfo?.averageRating || 0) * 20 + 
+                (item.volumeInfo?.ratingsCount || 0) / 10 +
+                (item.volumeInfo?.pageCount ? Math.min(item.volumeInfo.pageCount / 1000, 10) : 0) +
+                // Favoriser les livres récents
+                (publishedYear && publishedYear > 2000 ? (publishedYear - 2000) / 5 : 0)
+              ),
+              externalData: item
+            };
+          }) || [];
+          
+          // Tri par popularité pour Google Books
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'game':
+          apiResults = apiData.results?.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.name,
+            type,
+            coverImage: item.background_image || '/placeholder.svg',
+            year: item.released ? parseInt(item.released.substring(0, 4)) : null,
+            rating: item.rating || null,
+            popularity: item.rating_top || 0,
+            externalData: item
+          })) || [];
+          
+          // Tri par popularité pour RAWG
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+      }
+    }
+    
+    // 4. Filtrer plus strictement les contenus inappropriés
+    apiResults = filterAdultContent(apiResults);
+    
+    // 5. Fusionner les résultats (base de données + API) en évitant les doublons
+    let mergedResults: any[] = [];
+    
+    // D'abord, ajouter les résultats locaux (Mookka)
+    if (localMedia && localMedia.length > 0) {
+      mergedResults = localMedia.map((item) => ({
+        id: item.id,
+        externalId: item.external_id,
+        title: item.title,
+        type: item.type,
+        coverImage: item.cover_image,
+        year: item.year,
+        rating: item.rating,
+        genres: item.genres,
+        description: item.description,
+        author: item.author,
+        director: item.director,
+        fromDatabase: true // Marquer comme venant de la base de données
+      }));
+    }
+    
+    // Ensuite, ajouter les résultats de l'API en évitant les doublons
+    const existingExternalIds = new Set(mergedResults.map(item => item.externalId));
+    
+    for (const apiItem of apiResults) {
+      if (!existingExternalIds.has(apiItem.id)) {
+        mergedResults.push(apiItem);
+      }
+    }
+    
+    // 6. Trier les résultats finaux par pertinence
+    mergedResults.sort((a, b) => {
+      // Donner priorité aux médias de la base de données
+      if (a.fromDatabase && !b.fromDatabase) return -1;
+      if (!a.fromDatabase && b.fromDatabase) return 1;
+      
+      // Ensuite, trier par popularité ou rating
+      const aRating = a.rating || 0;
+      const bRating = b.rating || 0;
+      return bRating - aRating;
+    });
+    
+    return { results: mergedResults };
   } catch (error) {
     console.error("Erreur dans searchMedia:", error);
     throw error;
   }
+}
+
+function filterAdultContent(mediaList: any[]): any[] {
+  const adultContentKeywords = [
+    'xxx', 'erotic', 'érotique', 'adult', 'adulte', 'sex', 'sexe', 'sexy', 'porn', 'porno',
+    'pornographique', 'nude', 'nu', 'nue', 'naked', 'mature', 'kinky', 'fetish', 'fétiche',
+    'bdsm', 'kamasutra', 'nudité', 'explicit', 'explicite', 'hot', 'sensual', 'sensuel',
+    'seduction', 'séduction'
+  ];
+  
+  return mediaList.filter(media => {
+    const title = (media.title || '').toLowerCase();
+    const description = (media.description || '').toLowerCase();
+    const genres = Array.isArray(media.genres) 
+      ? media.genres.map((g: string) => g.toLowerCase()).join(' ') 
+      : '';
+    
+    const contentText = `${title} ${description} ${genres}`;
+    
+    // Vérifier si le contenu contient des mots-clés inappropriés
+    return !adultContentKeywords.some(keyword => contentText.includes(keyword));
+  });
 }
 
 export async function getMediaById(type: MediaType, id: string): Promise<any> {

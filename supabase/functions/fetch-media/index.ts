@@ -36,22 +36,22 @@ Deno.serve(async (req) => {
       case 'serie':
         apiKey = Deno.env.get('TMDB_API_KEY') ?? ''
         if (id) {
-          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR`
+          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false`
         } else {
-          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1`
+          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false`
         }
         break
       case 'book':
         apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
         apiUrl = id 
           ? `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
-          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${apiKey}&langRestrict=fr`
+          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&key=${apiKey}&langRestrict=fr&orderBy=relevance&maxResults=30`
         break
       case 'game':
         apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
         apiUrl = id
           ? `https://api.rawg.io/api/games/${id}?key=${apiKey}`
-          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page=1&page_size=20`
+          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page=1&page_size=30&exclude_additions=true`
         break
       default:
         throw new Error('Type de média non pris en charge')
@@ -60,6 +60,28 @@ Deno.serve(async (req) => {
     // Fetch data from the appropriate API
     const response = await fetch(apiUrl)
     const data = await response.json()
+
+    // Filtrage supplémentaire des contenus pour adultes pour Google Books
+    if (type === 'book' && !id && data.items) {
+      const adultContentKeywords = [
+        'xxx', 'erotic', 'érotique', 'adult', 'adulte', 'sex', 'sexe', 'sexy', 'porn', 'porno',
+        'pornographique', 'nude', 'nu', 'nue', 'naked', 'mature', 'kinky', 'fetish', 'fétiche',
+        'bdsm', 'kamasutra', 'nudité', 'explicit', 'explicite', 'hot', 'sensual', 'sensuel',
+        'seduction', 'séduction'
+      ]
+      
+      data.items = data.items.filter((item: any) => {
+        const title = (item.volumeInfo?.title || '').toLowerCase()
+        const description = (item.volumeInfo?.description || '').toLowerCase()
+        const categories = Array.isArray(item.volumeInfo?.categories) 
+          ? item.volumeInfo.categories.join(' ').toLowerCase() 
+          : ''
+        
+        const contentText = `${title} ${description} ${categories}`
+        
+        return !adultContentKeywords.some(keyword => contentText.includes(keyword))
+      })
+    }
 
     // Return the response with CORS headers
     return new Response(JSON.stringify(data), {

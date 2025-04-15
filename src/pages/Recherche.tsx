@@ -8,7 +8,7 @@ import { Search, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { searchMedia } from "@/services/media-service";
-import { useDebounce, filterAdultContent } from "@/hooks/use-debounce";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 
@@ -30,51 +30,67 @@ const Recherche = () => {
           
           let formattedResults: any[] = [];
           
-          switch (selectedType) {
-            case 'film':
-              formattedResults = result.results?.map((item: any) => ({
-                id: item.id.toString(),
-                title: item.title,
-                type: selectedType,
-                coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
-                year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : null,
-                rating: item.vote_average || null,
-              }));
-              break;
-            case 'serie':
-              formattedResults = result.results?.map((item: any) => ({
-                id: item.id.toString(),
-                title: item.name,
-                type: selectedType,
-                coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
-                year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
-                rating: item.vote_average || null,
-              }));
-              break;
-            case 'book':
-              formattedResults = result.items?.map((item: any) => ({
-                id: item.id,
-                title: item.volumeInfo?.title || 'Sans titre',
-                type: selectedType,
-                coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
-                year: item.volumeInfo?.publishedDate ? parseInt(item.volumeInfo.publishedDate.substring(0, 4)) : null,
-                author: item.volumeInfo?.authors ? item.volumeInfo.authors[0] : null,
-              }));
-              break;
-            case 'game':
-              formattedResults = result.results?.map((item: any) => ({
-                id: item.id.toString(),
-                title: item.name,
-                type: selectedType,
-                coverImage: item.background_image || '/placeholder.svg',
-                year: item.released ? parseInt(item.released.substring(0, 4)) : null,
-                rating: item.rating || null,
-              }));
-              break;
+          if (result.results && result.results.length > 0) {
+            formattedResults = result.results.map((item: any) => {
+              // Si l'élément vient de la base de données, il est déjà formaté correctement
+              if (item.fromDatabase) {
+                return {
+                  id: item.id,
+                  title: item.title,
+                  type: item.type,
+                  coverImage: item.coverImage || '/placeholder.svg',
+                  year: item.year,
+                  rating: item.rating,
+                  author: item.author,
+                  fromDatabase: true
+                };
+              }
+              
+              // Sinon, formater selon le type
+              switch (selectedType) {
+                case 'film':
+                  return {
+                    id: item.id,
+                    title: item.title,
+                    type: selectedType,
+                    coverImage: item.coverImage || '/placeholder.svg',
+                    year: item.year,
+                    rating: item.rating
+                  };
+                case 'serie':
+                  return {
+                    id: item.id,
+                    title: item.title,
+                    type: selectedType,
+                    coverImage: item.coverImage || '/placeholder.svg',
+                    year: item.year,
+                    rating: item.rating
+                  };
+                case 'book':
+                  return {
+                    id: item.id,
+                    title: item.title,
+                    type: selectedType,
+                    coverImage: item.coverImage || '/placeholder.svg',
+                    year: item.year,
+                    author: item.author
+                  };
+                case 'game':
+                  return {
+                    id: item.id,
+                    title: item.title,
+                    type: selectedType,
+                    coverImage: item.coverImage || '/placeholder.svg',
+                    year: item.year,
+                    rating: item.rating
+                  };
+                default:
+                  return item;
+              }
+            });
           }
           
-          const filteredResults = filterAdultContent(formattedResults || []);
-          setSearchResults(filteredResults);
+          setSearchResults(formattedResults);
         } catch (error) {
           console.error("Erreur de recherche:", error);
           toast({
