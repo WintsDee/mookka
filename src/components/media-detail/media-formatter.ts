@@ -75,21 +75,51 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
       info.director = formattedMedia.director;
       info.studio = media.production_companies?.[0]?.name;
       info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
+      info.originalTitle = media.original_title;
+      info.language = media.original_language?.toUpperCase();
+      info.budget = media.budget ? `$${(media.budget / 1000000).toFixed(1)}M` : undefined;
+      info.revenue = media.revenue ? `$${(media.revenue / 1000000).toFixed(1)}M` : undefined;
+      info.productionCountries = media.production_countries?.map((c: any) => c.name).join(', ');
+      info.awards = media.awards || [];
       break;
+      
     case 'serie':
       info.seasons = media.number_of_seasons;
       info.episodes = media.number_of_episodes;
       info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
+      info.creators = media.created_by?.map((creator: any) => creator.name).join(', ');
+      info.status = media.status; // En cours, Terminée, etc.
+      info.networks = media.networks?.map((n: any) => n.name).join(', ');
+      info.originalTitle = media.original_name;
+      info.language = media.original_language?.toUpperCase();
+      info.nextEpisode = media.next_episode_to_air ? new Date(media.next_episode_to_air.air_date).toLocaleDateString() : undefined;
+      info.awards = media.awards || [];
       break;
+      
     case 'book':
       info.author = formattedMedia.author;
       info.publisher = media.volumeInfo?.publisher;
       info.pages = media.volumeInfo?.pageCount;
+      info.isbn = media.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13')?.identifier;
+      info.isbn10 = media.volumeInfo?.industryIdentifiers?.find((id: any) => id.type === 'ISBN_10')?.identifier;
+      info.language = media.volumeInfo?.language?.toUpperCase();
+      info.printType = media.volumeInfo?.printType;
+      info.maturityRating = media.volumeInfo?.maturityRating;
+      info.publishDate = media.volumeInfo?.publishedDate;
+      info.awards = media.awards || [];
       break;
+      
     case 'game':
       info.developer = media.developers?.[0]?.name;
       info.publisher = formattedMedia.publisher;
       info.platform = formattedMedia.platform;
+      info.esrbRating = media.esrb_rating?.name;
+      info.metacritic = media.metacritic;
+      info.genres = media.genres?.map((g: any) => g.name).join(', ');
+      info.releaseDate = media.released;
+      info.website = media.website;
+      info.tags = media.tags?.slice(0, 5).map((t: any) => t.name);
+      info.awards = media.awards || [];
       break;
   }
   
