@@ -66,6 +66,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           <RatingTab 
             mediaId={id} 
             mediaType={type} 
+            initialRating={formattedMedia.userRating}
           />
         </TabsContent>
         

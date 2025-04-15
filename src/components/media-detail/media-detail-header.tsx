@@ -6,6 +6,7 @@ import { Star, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
 import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
+import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 
 interface MediaDetailHeaderProps {
   media: any;
@@ -18,7 +19,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-52 w-full">
+    <div className="relative h-44 w-full">
       <Button 
         variant="ghost" 
         size="icon" 
@@ -30,6 +31,24 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       >
         <ArrowLeft className="text-white w-6 h-6" />
       </Button>
+      
+      {/* Rating Display in Top Right */}
+      <div className="absolute top-3 right-3 z-10 flex gap-2">
+        {formattedMedia.rating && (
+          <MediaRatingBadge 
+            rating={formattedMedia.rating} 
+            label="TMDB" 
+            size="large"
+          />
+        )}
+        {formattedMedia.userRating && formattedMedia.userRating > 0 && (
+          <MediaRatingBadge 
+            rating={formattedMedia.userRating} 
+            label="Ma note" 
+            size="large"
+          />
+        )}
+      </div>
       
       <div className="absolute inset-0">
         <img 
@@ -47,7 +66,14 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
         />
         <div className="flex-1 ml-4">
-          <h1 className={cn("text-2xl font-bold mb-1", enhanceTextVisibility('strong'))}>{formattedMedia.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className={cn("text-2xl font-bold", enhanceTextVisibility('strong'))}>
+              {formattedMedia.title}
+            </h1>
+            <Badge variant={type} className="capitalize">
+              {type}
+            </Badge>
+          </div>
           <div className="flex items-center mt-1 text-white/90 mb-2">
             {formattedMedia.year && <span className="text-sm mr-3">{formattedMedia.year}</span>}
             {formattedMedia.rating && (
@@ -64,7 +90,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
             )}
           </div>
           {formattedMedia.genres && formattedMedia.genres.length > 0 && (
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {formattedMedia.genres.map((genre: string) => (
                 <Badge 
                   key={genre} 
