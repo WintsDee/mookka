@@ -12,9 +12,10 @@ interface MediaCardProps {
   media: Media;
   size?: "small" | "medium" | "large";
   showDetails?: boolean;
+  from?: string;
 }
 
-const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProps) => {
+const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
   const { id, title, type, coverImage, year, rating, genres, status, duration } = media;
   const isMobile = useIsMobile();
   
@@ -72,7 +73,11 @@ const MediaCard = ({ media, size = "medium", showDetails = true }: MediaCardProp
   };
 
   return (
-    <Link to={`/media/${type}/${id}`} className="block animate-fade-in">
+    <Link 
+      to={`/media/${type}/${id}`} 
+      state={from ? { from } : undefined}
+      className="block animate-fade-in"
+    >
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
           {/* Cover image */}
