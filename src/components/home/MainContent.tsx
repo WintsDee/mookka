@@ -6,13 +6,13 @@ import MediaTypeIcons from "./MediaTypeIcons";
 
 const MainContent: React.FC = () => {
   return (
-    <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md animate-fade-in flex flex-col items-center p-6 rounded-xl">
+    <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center">
+      <div className="w-full max-w-md animate-fade-in flex flex-col items-center rounded-xl">
         <MookkaHeader />
-        <div className="mt-8">
+        <div className="mt-6">
           <ActionButtons />
         </div>
-        <div className="mt-8">
+        <div className="mt-6">
           <MediaTypeIcons />
         </div>
       </div>
