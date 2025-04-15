@@ -103,7 +103,7 @@ const MediaDetail = () => {
           onAddToCollection={() => setAddToCollectionOpen(true)} 
         />
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden pb-4">
           <MediaContent 
             id={id!} 
             type={type as MediaType} 

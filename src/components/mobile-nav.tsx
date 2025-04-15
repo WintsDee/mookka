@@ -29,6 +29,11 @@ const BookIcon = ({ size = 22, className = '' }) => (
 
 export function MobileNav() {
   const location = useLocation();
+  
+  // Hide navigation on media detail pages
+  if (location.pathname.startsWith('/media/')) {
+    return null;
+  }
 
   const navItems = [
     { path: '/bibliotheque', icon: BookIcon, label: 'Bibliothèque' },
