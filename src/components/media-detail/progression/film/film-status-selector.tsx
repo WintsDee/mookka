@@ -3,10 +3,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Clock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MediaStatus } from "@/types";
 
 interface FilmStatusSelectorProps {
-  status: string;
-  onStatusChange: (status: 'to-watch' | 'watching' | 'completed') => void;
+  status: MediaStatus;
+  onStatusChange: (status: MediaStatus) => void;
 }
 
 export function FilmStatusSelector({ status, onStatusChange }: FilmStatusSelectorProps) {

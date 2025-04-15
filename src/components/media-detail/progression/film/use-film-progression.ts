@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
+import { MediaStatus } from "@/types";
 
 interface FilmProgressionData {
   watched: boolean;
   watch_time: number;
-  status: 'to-watch' | 'watching' | 'completed';
+  status: MediaStatus;
 }
 
 export function useFilmProgression(
@@ -14,7 +15,7 @@ export function useFilmProgression(
 ) {
   const [watched, setWatched] = useState(initialProgression?.watched || false);
   const [watchTime, setWatchTime] = useState(initialProgression?.watch_time || 0);
-  const [status, setStatus] = useState(initialProgression?.status || 'to-watch');
+  const [status, setStatus] = useState<MediaStatus>(initialProgression?.status || 'to-watch');
 
   useEffect(() => {
     // Update when external progression changes
@@ -27,7 +28,7 @@ export function useFilmProgression(
 
   const updateWatched = (isWatched: boolean) => {
     setWatched(isWatched);
-    let newStatus = status;
+    let newStatus: MediaStatus = status;
     
     if (isWatched) {
       setWatchTime(totalDuration);
@@ -45,7 +46,7 @@ export function useFilmProgression(
     const newTime = time[0];
     setWatchTime(newTime);
     
-    let newStatus = 'to-watch';
+    let newStatus: MediaStatus = 'to-watch';
     let newWatched = false;
     
     if (newTime === 0) {
@@ -64,7 +65,7 @@ export function useFilmProgression(
     updateProgression(newWatched, newTime, newStatus);
   };
 
-  const updateStatus = (newStatus: 'to-watch' | 'watching' | 'completed') => {
+  const updateStatus = (newStatus: MediaStatus) => {
     setStatus(newStatus);
     
     let newWatched = watched;
@@ -86,7 +87,7 @@ export function useFilmProgression(
   const updateProgression = (
     watched: boolean,
     watch_time: number,
-    status: 'to-watch' | 'watching' | 'completed'
+    status: MediaStatus
   ) => {
     onProgressionUpdate({
       ...initialProgression,
