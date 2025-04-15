@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { MediaType } from "@/types";
 import { addMediaToLibrary } from "@/services/media-service";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn, floatingElement } from "@/lib/utils";
 
 interface MediaDetailActionsProps {
   media: any;
@@ -42,7 +43,10 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 bg-background/90 backdrop-blur-lg border-t border-border shadow-md">
+    <div className={cn(
+      "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 border-t border-border shadow-md",
+      "bg-background/80 backdrop-blur-md"
+    )}>
       <Button 
         variant="ghost" 
         size="sm" 

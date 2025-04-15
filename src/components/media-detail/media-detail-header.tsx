@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Star, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
 
 interface MediaDetailHeaderProps {
   media: any;
@@ -22,10 +22,8 @@ export function MediaDetailHeader({ media, formattedMedia, type }: MediaDetailHe
         variant="ghost" 
         size="icon" 
         className={cn(
-          "absolute top-4 left-4 z-10",
-          "bg-black/60 hover:bg-black/70 backdrop-blur-sm",
-          "rounded-full p-2 shadow-lg",
-          "transition-all duration-300 ease-in-out"
+          "absolute top-4 left-4 z-10 p-2",
+          floatingElement('button', 'medium')
         )}
         onClick={() => navigate(-1)}
       >
@@ -38,7 +36,7 @@ export function MediaDetailHeader({ media, formattedMedia, type }: MediaDetailHe
           alt={formattedMedia.title} 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/60 to-transparent" />
+        <div className={overlayGradient('to-top', 'medium')} />
       </div>
       
       <div className="absolute bottom-0 left-0 p-6 w-full">
@@ -49,7 +47,7 @@ export function MediaDetailHeader({ media, formattedMedia, type }: MediaDetailHe
             className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
           />
           <div>
-            <h1 className="text-2xl font-bold text-white drop-shadow-md">{formattedMedia.title}</h1>
+            <h1 className={cn("text-2xl font-bold", enhanceTextVisibility('strong'))}>{formattedMedia.title}</h1>
             <div className="flex items-center mt-1 text-white/90">
               {formattedMedia.year && <span className="text-sm mr-3">{formattedMedia.year}</span>}
               {formattedMedia.rating && (
@@ -71,7 +69,10 @@ export function MediaDetailHeader({ media, formattedMedia, type }: MediaDetailHe
                   <Badge 
                     key={genre} 
                     variant="outline" 
-                    className="text-xs py-0 border-white/30 text-white/90 bg-black/20"
+                    className={cn(
+                      "text-xs py-0",
+                      floatingElement('badge', 'medium')
+                    )}
                   >
                     {genre}
                   </Badge>
