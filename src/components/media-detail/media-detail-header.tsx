@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-72 w-full pt-8"> {/* Increased height from h-52 to h-72 */}
+    <div className="relative h-52 w-full pt-8">
       <Button 
         variant="ghost" 
         size="icon" 
@@ -60,9 +59,9 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <img 
           src={formattedMedia.coverImage} 
           alt={formattedMedia.title} 
-          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-8" // Increased mt-4 to mt-8
+          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4"
         />
-        <div className="flex-1 ml-4 mt-8"> {/* Increased mt-2 to mt-8 */}
+        <div className="flex-1 ml-4 mt-2">
           <div className="flex items-center gap-2">
             <h1 className={cn("text-2xl font-bold text-white drop-shadow-md", enhanceTextVisibility('strong'))}>
               {formattedMedia.title}
