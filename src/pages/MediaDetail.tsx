@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
-import { getMediaById } from "@/services/media-service";
+import { getMediaById } from "@/services/media"; // Updated import path
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";

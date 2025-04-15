@@ -4,7 +4,7 @@ import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaTypeSelector } from "@/components/media-type-selector";
 import { MediaType } from "@/types";
-import { searchMedia } from "@/services/media-service";
+import { searchMedia } from "@/services/media"; // Updated import path
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
