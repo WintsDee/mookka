@@ -11,7 +11,7 @@ export async function getCollectionById(id: string): Promise<Collection | null> 
       .from("collections")
       .select(`
         *,
-        profile:owner_id (
+        profile:profiles(
           username,
           avatar_url
         )
@@ -71,8 +71,25 @@ export async function getCollectionById(id: string): Promise<Collection | null> 
       platform: item.media.platform
     }));
 
-    // Cast to CollectionData to ensure type safety
-    const collectionData = collection as unknown as CollectionData;
+    // Cast and sanitize the collection data to ensure it matches our expected type
+    const collectionData: CollectionData = {
+      id: collection.id,
+      name: collection.name,
+      description: collection.description,
+      cover_image: collection.cover_image,
+      type: collection.type,
+      visibility: collection.visibility,
+      created_at: collection.created_at,
+      updated_at: collection.updated_at,
+      owner_id: collection.owner_id,
+      // Handle the case where profile might be a SelectQueryError
+      profile: collection.profile && typeof collection.profile === 'object' && !Array.isArray(collection.profile) 
+        ? { 
+            username: collection.profile.username, 
+            avatar_url: collection.profile.avatar_url 
+          } 
+        : null
+    };
     
     // Use the mapCollectionFromDB utility to convert the DB format to our app format
     const mappedCollection = mapCollectionFromDB(collectionData);
