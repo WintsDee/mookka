@@ -8,7 +8,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 
-// Custom Book Icon Component matching the provided style
+// Custom Library/Bookshelf Icon Component matching the provided style
 const BookIcon = ({ size = 22, className = '' }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -22,9 +22,13 @@ const BookIcon = ({ size = 22, className = '' }) => (
     strokeLinejoin="round" 
     className={className}
   >
-    <path d="M4 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8" />
-    <path d="M12 6V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" />
-    <path d="M12 6h8v6" strokeWidth="2" />
+    <path d="M5 4v16" />
+    <path d="M19 4v16" />
+    <path d="M5 4h14" />
+    <path d="M5 20h14" />
+    <path d="M9 8v8" />
+    <path d="M12 8v8" />
+    <path d="M15 8v8" />
   </svg>
 );
 
@@ -58,4 +62,3 @@ export function MobileNav() {
     </nav>
   );
 }
-
