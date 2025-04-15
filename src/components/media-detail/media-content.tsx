@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
-import { RatingTab } from "@/components/media-detail/tabs/rating-tab";
+import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
 import { ProgressionTab } from "@/components/media-detail/tabs/progression-tab";
 import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch-tab";
 import { MediaType } from "@/types";
@@ -34,7 +34,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           Aperçu
         </TabsTrigger>
         <TabsTrigger 
-          value="rating" 
+          value="critique" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
         >
           Critique
@@ -64,8 +64,8 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
             />
           </TabsContent>
           
-          <TabsContent value="rating" className="mt-0 mb-0">
-            <RatingTab 
+          <TabsContent value="critique" className="mt-0 mb-0">
+            <CritiqueTab 
               mediaId={id} 
               mediaType={type} 
               initialRating={formattedMedia.userRating}
