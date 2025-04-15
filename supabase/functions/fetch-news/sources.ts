@@ -27,6 +27,12 @@ export const SOURCES: NewsSource[] = [
     category: 'film',
     rss: 'https://www.cinemateaser.com/feed/'
   },
+  {
+    name: 'Ecran Large',
+    url: 'https://www.ecranlarge.com/',
+    category: 'film',
+    rss: 'https://www.ecranlarge.com/rss'
+  },
   
   // Livres
   {
@@ -72,6 +78,12 @@ export const SOURCES: NewsSource[] = [
     url: 'https://www.gamekult.com/',
     category: 'game',
     rss: 'https://www.gamekult.com/rss.xml'
+  },
+  {
+    name: 'Canard PC',
+    url: 'https://www.canardpc.com/',
+    category: 'game',
+    rss: 'https://www.canardpc.com/flux-rss/'
   },
   
   // Sources généralistes

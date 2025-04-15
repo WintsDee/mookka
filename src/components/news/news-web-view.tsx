@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { X, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,13 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   const [loading, setLoading] = useState(true);
   const [textOnly, setTextOnly] = useLocalStorage("news-text-only", false);
   const [articleContent, setArticleContent] = useState<string>("");
+  const [isFirefox, setIsFirefox] = useState(false);
   
   useEffect(() => {
+    // Detect Firefox browser
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsFirefox(userAgent.includes('firefox'));
+    
     if (textOnly) {
       fetchTextContent(url);
     } else {
@@ -69,6 +75,24 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
     }
   };
 
+  // Function to create a more compatible URL for Firefox
+  const getCompatibleUrl = (originalUrl: string) => {
+    // For Firefox, we'll try to use a proxy service or direct link when available
+    if (isFirefox) {
+      // First check if the URL is from a known service that blocks embedding
+      if (originalUrl.includes('ecranlarge.com') || 
+          originalUrl.includes('canardpc.com') ||
+          originalUrl.includes('jeuxvideo.com')) {
+        // Default to text mode for problematic sites
+        if (!textOnly) {
+          setTextOnly(true);
+          return originalUrl;
+        }
+      }
+    }
+    return originalUrl;
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       <header className="flex items-center justify-between p-4 border-b">
@@ -106,13 +130,21 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
           />
         ) : (
           <iframe 
-            src={url}
+            src={getCompatibleUrl(url)}
             className="w-full h-full border-0"
             onLoad={() => setLoading(false)}
             title={title}
+            referrerPolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
           />
         )}
       </div>
+      
+      {isFirefox && !textOnly && (
+        <div className="bg-amber-500/10 p-2 text-center text-xs text-amber-800 dark:text-amber-300">
+          <p>Firefox peut bloquer certains contenus. Si rien ne s'affiche, utilisez le mode texte.</p>
+        </div>
+      )}
     </div>
   );
 };
