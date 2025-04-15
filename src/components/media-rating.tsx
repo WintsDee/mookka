@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,8 @@ import { Star, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/use-profile";
 
 interface MediaRatingProps {
   mediaId: string;
@@ -25,7 +27,9 @@ interface RatingFormValues {
 export function MediaRating({ mediaId, mediaType, initialRating = 0, initialReview = "" }: MediaRatingProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRating, setUserRating] = useState(initialRating);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { isAuthenticated } = useProfile();
   
   const form = useForm<RatingFormValues>({
     defaultValues: {
@@ -34,13 +38,101 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     }
   });
   
+  // Charger la note existante lors du chargement du composant
+  useEffect(() => {
+    const fetchRating = async () => {
+      if (!isAuthenticated || !mediaId) return;
+      
+      try {
+        setIsLoading(true);
+        const { data: user } = await supabase.auth.getUser();
+        
+        if (!user.user) {
+          setIsLoading(false);
+          return;
+        }
+        
+        const { data, error } = await supabase
+          .from('media_ratings')
+          .select('rating, review')
+          .eq('media_id', mediaId)
+          .eq('user_id', user.user.id)
+          .single();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error("Erreur lors de la récupération de la note:", error);
+          return;
+        }
+        
+        if (data) {
+          setUserRating(data.rating);
+          form.reset({
+            rating: data.rating,
+            review: data.review || ''
+          });
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération de la note:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRating();
+  }, [mediaId, isAuthenticated, form]);
+
   const onSubmit = async (values: RatingFormValues) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour noter ce média",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulating API call to save rating
     try {
-      // This would be replaced with an actual API call in a real implementation
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user) {
+        throw new Error("Utilisateur non connecté");
+      }
+      
+      // Vérifier si l'utilisateur a déjà noté ce média
+      const { data: existingRating } = await supabase
+        .from('media_ratings')
+        .select('id')
+        .eq('media_id', mediaId)
+        .eq('user_id', user.user.id)
+        .maybeSingle();
+      
+      if (existingRating) {
+        // Mettre à jour la note existante
+        const { error } = await supabase
+          .from('media_ratings')
+          .update({
+            rating: values.rating,
+            review: values.review,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingRating.id);
+          
+        if (error) throw error;
+      } else {
+        // Créer une nouvelle note
+        const { error } = await supabase
+          .from('media_ratings')
+          .insert({
+            user_id: user.user.id,
+            media_id: mediaId,
+            rating: values.rating,
+            review: values.review
+          });
+          
+        if (error) throw error;
+      }
       
       setUserRating(values.rating);
       
@@ -52,7 +144,8 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
           mediaType === 'book' ? 'livre' : 'jeu'
         } ${values.rating}/10`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Erreur lors de l'enregistrement de la note:", error);
       toast({
         title: "Erreur",
         description: "Impossible d'enregistrer votre note",
@@ -63,88 +156,104 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-medium mb-2 flex items-center gap-2">
-        <Star className="h-5 w-5 text-yellow-500" />
-        Votre évaluation
-      </h2>
-      
-      <Card className="bg-secondary/40 border-border">
-        <CardContent className="p-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="rating"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between mb-2">
-                      <FormLabel className="text-sm">Note</FormLabel>
-                      <div className={cn(
-                        "flex items-center justify-center w-10 h-10 rounded-full border",
-                        userRating >= 7 ? "bg-green-500/20 border-green-500/40 text-green-400" :
-                        userRating >= 4 ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
-                        "bg-red-500/20 border-red-500/40 text-red-400"
-                      )}>
-                        <span className="font-bold">{field.value}</span>
+      {!isAuthenticated ? (
+        <Card className="bg-secondary/40 border-border">
+          <CardContent className="p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              Vous devez être connecté pour noter ce média
+            </p>
+            <Button variant="default" size="sm">
+              Se connecter
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-secondary/40 border-border">
+          <CardContent className="p-4">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="rating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between mb-2">
+                        <FormLabel className="text-sm">Note</FormLabel>
+                        <div className={cn(
+                          "flex items-center justify-center w-10 h-10 rounded-full border",
+                          userRating >= 7 ? "bg-green-500/20 border-green-500/40 text-green-400" :
+                          userRating >= 4 ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-400" :
+                          "bg-red-500/20 border-red-500/40 text-red-400"
+                        )}>
+                          <span className="font-bold">{field.value}</span>
+                        </div>
                       </div>
-                    </div>
-                    <FormControl>
-                      <Slider
-                        defaultValue={[field.value]}
-                        max={10}
-                        step={1}
-                        onValueChange={(vals) => {
-                          field.onChange(vals[0]);
-                        }}
-                        className="py-4"
-                      />
-                    </FormControl>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>1</span>
-                      <span>5</span>
-                      <span>10</span>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="review"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm">Avis (optionnel)</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Partagez votre avis sur ce média..."
-                        className="resize-none bg-background/60"
-                        {...field}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
-                  </>
-                ) : (
-                  "Enregistrer ma note"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                      <FormControl>
+                        <Slider
+                          defaultValue={[field.value]}
+                          max={10}
+                          step={1}
+                          onValueChange={(vals) => {
+                            field.onChange(vals[0]);
+                          }}
+                          className="py-4"
+                        />
+                      </FormControl>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>1</span>
+                        <span>5</span>
+                        <span>10</span>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="review"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Avis (optionnel)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Partagez votre avis sur ce média..."
+                          className="resize-none bg-background/60"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    "Enregistrer ma note"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
