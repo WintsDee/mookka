@@ -5,6 +5,7 @@ import { Heart, BookmarkPlus, FolderPlus, Share, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { MediaType } from "@/types";
 import { addMediaToLibrary } from "@/services/media-service";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MediaDetailActionsProps {
   media: any;
@@ -16,6 +17,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   const [isLiked, setIsLiked] = useState(false);
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleAddToLibrary = async () => {
     if (!media) return;
@@ -41,14 +43,20 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
 
   return (
     <div className="flex justify-around py-4 px-2 bg-secondary/40 backdrop-blur-sm border-y border-border">
-      <Button variant="ghost" size="sm" className="flex flex-col items-center" onClick={() => setIsLiked(!isLiked)}>
-        <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-        <span className="text-xs mt-1">J'aime</span>
-      </Button>
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center"
+        className="flex flex-col items-center space-y-1 h-auto py-2" 
+        onClick={() => setIsLiked(!isLiked)}
+      >
+        <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+        <span className="text-xs">J'aime</span>
+      </Button>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex flex-col items-center space-y-1 h-auto py-2"
         onClick={handleAddToLibrary}
         disabled={isAddingToLibrary}
       >
@@ -57,20 +65,26 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
         ) : (
           <BookmarkPlus className="h-5 w-5" />
         )}
-        <span className="text-xs mt-1">Ajouter</span>
+        <span className="text-xs">Ajouter</span>
       </Button>
+      
       <Button 
         variant="ghost" 
         size="sm" 
-        className="flex flex-col items-center"
+        className="flex flex-col items-center space-y-1 h-auto py-2"
         onClick={onAddToCollection}
       >
         <FolderPlus className="h-5 w-5" />
-        <span className="text-xs mt-1">Collection</span>
+        <span className="text-xs">Collection</span>
       </Button>
-      <Button variant="ghost" size="sm" className="flex flex-col items-center">
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex flex-col items-center space-y-1 h-auto py-2"
+      >
         <Share className="h-5 w-5" />
-        <span className="text-xs mt-1">Partager</span>
+        <span className="text-xs">Partager</span>
       </Button>
     </div>
   );

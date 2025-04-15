@@ -6,9 +6,11 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { fetchNews } from "@/services/news-service";
 
 interface NewsTabProps {
   type: MediaType;
+  title?: string;
 }
 
 interface NewsItem {
@@ -21,26 +23,42 @@ interface NewsItem {
   description?: string;
 }
 
-export function NewsTab({ type }: NewsTabProps) {
+export function NewsTab({ type, title }: NewsTabProps) {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchNews = async () => {
+    const fetchMediaNews = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('fetch-news', {
-          body: { type }
-        });
+        let mediaNews: NewsItem[] = [];
         
-        if (error) {
-          console.error("Erreur lors de la récupération des actualités:", error);
-          return;
+        // Si nous avons un titre, nous recherchons des actualités spécifiques
+        if (title) {
+          const searchTerm = title.split(" ").slice(0, 2).join(" "); // Utiliser les 2 premiers mots du titre
+          // Récupérer les actualités avec le type et le titre
+          const { data, error } = await supabase.functions.invoke('fetch-news', {
+            body: { 
+              type,
+              query: searchTerm
+            }
+          });
+          
+          if (error) {
+            console.error("Erreur lors de la récupération des actualités spécifiques:", error);
+          } else if (data?.news) {
+            mediaNews = data.news;
+          }
         }
         
-        if (data && data.news) {
-          setNews(data.news.slice(0, 10));
+        // Si nous n'avons pas pu trouver des actualités spécifiques ou si le tableau est vide
+        if (mediaNews.length === 0) {
+          // Récupérer les actualités générales pour le type de média
+          const allNews = await fetchNews(type);
+          mediaNews = allNews;
         }
+        
+        setNews(mediaNews.slice(0, 10));
       } catch (error) {
         console.error("Erreur lors de la récupération des actualités:", error);
       } finally {
@@ -48,8 +66,8 @@ export function NewsTab({ type }: NewsTabProps) {
       }
     };
     
-    fetchNews();
-  }, [type]);
+    fetchMediaNews();
+  }, [type, title]);
 
   // Formatage de la date
   const formatDate = (dateString: string) => {
@@ -74,7 +92,7 @@ export function NewsTab({ type }: NewsTabProps) {
       <div className="text-center py-8">
         <h2 className="text-lg font-medium mb-4">Actualités</h2>
         <p className="text-muted-foreground">
-          Aucune actualité trouvée pour ce type de média
+          Aucune actualité trouvée pour ce média
         </p>
       </div>
     );
@@ -82,7 +100,9 @@ export function NewsTab({ type }: NewsTabProps) {
 
   return (
     <div>
-      <h2 className="text-lg font-medium mb-4">Actualités récentes</h2>
+      <h2 className="text-lg font-medium mb-4">
+        {title ? `Actualités liées à "${title}"` : "Actualités récentes"}
+      </h2>
       <div className="space-y-4">
         {news.map((item) => (
           <Card key={item.id} className="overflow-hidden">
@@ -94,7 +114,7 @@ export function NewsTab({ type }: NewsTabProps) {
                     alt={item.title} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder.svg';
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}
                   />
                 </div>

@@ -22,6 +22,8 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
   const [ratingsCount, setRatingsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  
+  const formattedDescription = description ? description.replace(/<br>/g, '\n') : '';
 
   useEffect(() => {
     const fetchRatings = async () => {
@@ -57,10 +59,10 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
 
   return (
     <div className="space-y-6">
-      {description && (
+      {formattedDescription && (
         <div>
           <h2 className="text-lg font-medium mb-2">Synopsis</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">{formattedDescription}</p>
         </div>
       )}
       

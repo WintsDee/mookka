@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -128,7 +129,7 @@ const Recherche = () => {
   return (
     <Background>
       <MobileHeader title="Recherche" />
-      <div className="pb-24 pt-safe mt-16">
+      <div className="flex flex-col h-[calc(100vh-64px)] pb-16 pt-safe mt-16">
         <header className="px-6 mb-4">
           <MediaTypeSelector 
             selectedType={selectedType}
@@ -154,40 +155,42 @@ const Recherche = () => {
           </div>
         </header>
         
-        <ScrollArea className="h-[calc(100vh-260px)] mt-6">
-          {selectedType && searchResults.length > 0 ? (
-            <div className="px-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {searchResults.map((media) => (
-                <MediaCard key={media.id} media={media} size="medium" />
-              ))}
-            </div>
-          ) : isLoading ? (
-            <div className="flex flex-col items-center justify-center h-40">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              <p className="text-muted-foreground mt-2">Recherche en cours...</p>
-            </div>
-          ) : selectedType && searchQuery ? (
-            <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-              <p className="text-muted-foreground">
-                Aucun résultat trouvé pour "{searchQuery}"
-              </p>
-            </div>
-          ) : selectedType ? (
-            <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-              <p className="text-muted-foreground">
-                Commencez à taper pour rechercher des {selectedType === "film" ? "films" : 
-                selectedType === "serie" ? "séries" : 
-                selectedType === "book" ? "livres" : "jeux"}
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-              <p className="text-muted-foreground">
-                Sélectionnez un type de média pour commencer votre recherche
-              </p>
-            </div>
-          )}
-        </ScrollArea>
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full px-6">
+            {selectedType && searchResults.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 mb-24">
+                {searchResults.map((media) => (
+                  <MediaCard key={media.id} media={media} size="medium" />
+                ))}
+              </div>
+            ) : isLoading ? (
+              <div className="flex flex-col items-center justify-center h-40">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                <p className="text-muted-foreground mt-2">Recherche en cours...</p>
+              </div>
+            ) : selectedType && searchQuery ? (
+              <div className="flex flex-col items-center justify-center h-40 text-center">
+                <p className="text-muted-foreground">
+                  Aucun résultat trouvé pour "{searchQuery}"
+                </p>
+              </div>
+            ) : selectedType ? (
+              <div className="flex flex-col items-center justify-center h-40 text-center">
+                <p className="text-muted-foreground">
+                  Commencez à taper pour rechercher des {selectedType === "film" ? "films" : 
+                  selectedType === "serie" ? "séries" : 
+                  selectedType === "book" ? "livres" : "jeux"}
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 text-center">
+                <p className="text-muted-foreground">
+                  Sélectionnez un type de média pour commencer votre recherche
+                </p>
+              </div>
+            )}
+          </ScrollArea>
+        </div>
       </div>
       
       <MobileNav />

@@ -30,6 +30,12 @@ const MediaDetail = () => {
         setIsLoading(true);
         try {
           const mediaData = await getMediaById(type as MediaType, id);
+          
+          // Convertir les <br> en saut de ligne pour le détail du média
+          if (mediaData && mediaData.description) {
+            mediaData.description = mediaData.description.replace(/<br>/g, '\n');
+          }
+          
           setMedia(mediaData);
         } catch (error) {
           console.error("Erreur lors de la récupération du média:", error);

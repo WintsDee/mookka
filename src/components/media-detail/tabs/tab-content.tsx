@@ -3,7 +3,7 @@ import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { OverviewTab } from "./overview-tab";
 import { RatingTab } from "./rating-tab";
-import { CollectionsTab } from "./collections-tab";
+import { WhereToWatchTab } from "./where-to-watch-tab";
 import { MediaType } from "@/types";
 
 interface TabContentProps {
@@ -18,7 +18,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
     <>
       <TabsContent value="overview" className="space-y-6 mt-4">
         <OverviewTab 
-          description={formattedMedia.description} 
+          description={formattedMedia.description?.replace(/<br>/g, '\n')} 
           additionalInfo={additionalInfo}
           mediaId={id}
           mediaType={type}
@@ -30,14 +30,17 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
           <RatingTab
             mediaId={id}
             mediaType={type}
-            initialRating={0}
           />
         )}
       </TabsContent>
       
-      <TabsContent value="collections" className="space-y-6 mt-4">
+      <TabsContent value="whereto" className="space-y-6 mt-4">
         {id && (
-          <CollectionsTab mediaId={id} />
+          <WhereToWatchTab 
+            mediaId={id} 
+            mediaType={type} 
+            title={formattedMedia.title || ""}
+          />
         )}
       </TabsContent>
     </>

@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
 import { RatingTab } from "@/components/media-detail/tabs/rating-tab";
-import { CollectionsTab } from "@/components/media-detail/tabs/collections-tab";
 import { NewsTab } from "@/components/media-detail/tabs/news-tab";
+import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch-tab";
 import { MediaType } from "@/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MediaContentProps {
   id: string;
@@ -16,6 +17,7 @@ interface MediaContentProps {
 
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const isMobile = useIsMobile();
 
   return (
     <Tabs 
@@ -37,10 +39,10 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           Noter
         </TabsTrigger>
         <TabsTrigger 
-          value="collections" 
+          value="whereto" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
         >
-          Collections
+          {isMobile ? "Voir/Acheter" : "Où voir/acheter"}
         </TabsTrigger>
         <TabsTrigger 
           value="news" 
@@ -53,7 +55,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       <div className="overflow-y-auto overflow-x-hidden p-4 flex-1">
         <TabsContent value="overview" className="mt-0 h-full">
           <OverviewTab 
-            description={formattedMedia.description} 
+            description={formattedMedia.description?.replace(/<br>/g, '\n')} 
             additionalInfo={additionalInfo} 
             mediaId={id}
             mediaType={type}
@@ -67,8 +69,12 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           />
         </TabsContent>
         
-        <TabsContent value="collections" className="mt-0 h-full">
-          <CollectionsTab mediaId={id} />
+        <TabsContent value="whereto" className="mt-0 h-full">
+          <WhereToWatchTab 
+            mediaId={id} 
+            mediaType={type} 
+            title={formattedMedia.title || ""}
+          />
         </TabsContent>
         
         <TabsContent value="news" className="mt-0 h-full">
