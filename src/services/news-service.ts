@@ -12,41 +12,21 @@ export interface NewsItem {
   description?: string;
 }
 
-export interface NewsFilter {
-  type?: 'film' | 'serie' | 'book' | 'game' | 'general';
-  source?: string;
-}
-
-/**
- * Fetch news items from the Supabase Edge Function
- * @param filters - Optional filters (type, source)
- * @param forceRefresh - Whether to bypass cache and fetch fresh data
- * @returns Array of news items
- */
-export async function fetchNews(
-  filters?: NewsFilter, 
-  forceRefresh = false
-): Promise<{news: NewsItem[], meta: any}> {
+export async function fetchNews(type?: string, forceRefresh = false): Promise<NewsItem[]> {
   try {
-    const queryParams = new URLSearchParams();
+    let queryParams = '';
     
-    // Add filters to query params
-    if (filters?.type) {
-      queryParams.append('type', filters.type);
+    // Ajouter le paramètre de type s'il est défini
+    if (type) {
+      queryParams += `?type=${type}`;
     }
     
-    if (filters?.source) {
-      queryParams.append('source', filters.source);
-    }
-    
-    // Add refresh parameter if needed
+    // Ajouter le paramètre de rafraîchissement s'il est activé
     if (forceRefresh) {
-      queryParams.append('refresh', 'true');
+      queryParams += queryParams ? '&refresh=true' : '?refresh=true';
     }
     
-    const { data, error } = await supabase.functions.invoke(
-      'fetch-news' + (queryParams.toString() ? `?${queryParams.toString()}` : '')
-    );
+    const { data, error } = await supabase.functions.invoke('fetch-news' + queryParams);
 
     if (error) {
       console.error("Erreur lors de la récupération des actualités:", error);
@@ -55,7 +35,7 @@ export async function fetchNews(
 
     if (!data || !data.news || !Array.isArray(data.news)) {
       console.error("Format de données invalide:", data);
-      return { news: [], meta: { error: 'Format invalide' } };
+      return [];
     }
 
     // Vérification que chaque élément contient les propriétés requises
@@ -70,35 +50,9 @@ export async function fetchNews(
       description: item.description || ""
     }));
 
-    return { 
-      news: validatedNews,
-      meta: data.meta || {}
-    };
+    return validatedNews;
   } catch (error) {
     console.error("Erreur dans fetchNews:", error);
-    return { news: [], meta: { error: error } };
-  }
-}
-
-/**
- * Get all available news sources
- * @returns Array of news source names
- */
-export async function getNewsSources(): Promise<string[]> {
-  try {
-    const { news } = await fetchNews();
-    
-    // Extract unique sources
-    const sources = new Set<string>();
-    news.forEach(item => {
-      if (item.source) {
-        sources.add(item.source);
-      }
-    });
-    
-    return Array.from(sources).sort();
-  } catch (error) {
-    console.error("Erreur lors de la récupération des sources:", error);
     return [];
   }
 }

@@ -1,12 +1,13 @@
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 import { fetchAllNews } from './news-fetcher.ts';
 import { corsHeaders } from './cors.ts';
 import { NewsItem } from './types.ts';
 
-// Cache the news results for 10 minutes
+// Cache the news results for 15 minutes (reduced from 30 minutes for testing)
 let cachedNews: NewsItem[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -18,21 +19,17 @@ Deno.serve(async (req) => {
     console.log('Received request for news');
     const currentTime = Date.now();
     let news: NewsItem[];
-    let freshFetch = false;
     
-    // Get URL parameters
+    // Force fetch fresh news by adding a refresh query parameter
     const url = new URL(req.url);
     const forceRefresh = url.searchParams.get('refresh') === 'true';
-    const source = url.searchParams.get('source');
-    const type = url.searchParams.get('type');
     
     // Check if we need to fetch fresh news or can use cached
     if (forceRefresh || !cachedNews || (currentTime - lastFetchTime > CACHE_DURATION)) {
       console.log(`Fetching fresh news... (forceRefresh: ${forceRefresh}, hasCachedNews: ${!!cachedNews}, cacheAge: ${(currentTime - lastFetchTime) / 1000} seconds)`);
       news = await fetchAllNews();
-      freshFetch = true;
       
-      // Only update cache if we actually got news
+      // Only update cache if we actually got some news
       if (news.length > 0) {
         console.log(`Caching ${news.length} news items`);
         cachedNews = news;
@@ -50,44 +47,23 @@ Deno.serve(async (req) => {
       news = cachedNews;
     }
     
-    // Apply filters if specified
-    let filteredNews = [...news];
-    
-    // Filter by source if specified
-    if (source) {
-      console.log(`Filtering news by source: ${source}`);
-      filteredNews = filteredNews.filter(item => 
-        item.source.toLowerCase() === source.toLowerCase()
-      );
-      console.log(`Filtered to ${filteredNews.length} news items`);
-    }
+    // Get type from query parameter
+    const type = url.searchParams.get('type');
     
     // Filter by type if specified
     if (type && ['film', 'serie', 'book', 'game', 'general'].includes(type)) {
       console.log(`Filtering news by type: ${type}`);
-      filteredNews = filteredNews.filter(item => item.category === type);
-      console.log(`Filtered to ${filteredNews.length} news items`);
+      news = news.filter(item => item.category === type);
+      console.log(`Filtered to ${news.length} news items`);
     }
     
-    // Return the response with metadata about the fetch
-    return new Response(JSON.stringify({ 
-      news: filteredNews,
-      meta: {
-        total: filteredNews.length,
-        freshFetch,
-        timestamp: new Date().toISOString(),
-        cached: !freshFetch
-      }
-    }), {
+    return new Response(JSON.stringify({ news }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
     console.error('Error in fetch-news function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      news: [] 
-    }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });

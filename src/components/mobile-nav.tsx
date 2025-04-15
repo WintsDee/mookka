@@ -16,7 +16,7 @@ const MobileNav = () => {
   ];
 
   return (
-    <div className="mobile-nav fixed bottom-0 left-0 right-0 flex justify-around bg-background border-t border-border p-4 pb-8 ios-safe-area-pb">
+    <div className="mobile-nav fixed bottom-0 left-0 right-0 flex justify-around bg-background border-t border-border p-2 pb-safe">
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         
