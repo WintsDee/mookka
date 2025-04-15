@@ -14,7 +14,7 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
   const formattedDescription = description ? description.replace(/<br>/g, '\n') : '';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
       {formattedDescription && (
         <div>
           <h2 className="text-lg font-medium mb-2">Synopsis</h2>

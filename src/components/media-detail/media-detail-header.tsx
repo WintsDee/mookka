@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Clock, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
 import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
@@ -56,7 +56,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           alt={formattedMedia.title} 
           className="w-full h-full object-cover"
         />
-        <div className={overlayGradient('to-top', 'medium')} />
+        <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/60")} />
       </div>
       
       <div className="absolute bottom-0 left-0 p-6 w-full flex items-end">
@@ -67,24 +67,18 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         />
         <div className="flex-1 ml-4">
           <div className="flex items-center gap-2">
-            <h1 className={cn("text-2xl font-bold", enhanceTextVisibility('strong'))}>
+            <h1 className={cn("text-2xl font-bold text-white drop-shadow-md", enhanceTextVisibility('strong'))}>
               {formattedMedia.title}
             </h1>
-            <Badge variant={type} className="capitalize">
+            <Badge variant={type} className="capitalize shadow-md">
               {type}
             </Badge>
           </div>
-          <div className="flex items-center mt-1 text-white/90 mb-2">
+          <div className="flex items-center mt-1 text-white mb-2 font-medium drop-shadow-md">
             {formattedMedia.year && <span className="text-sm mr-3">{formattedMedia.year}</span>}
-            {formattedMedia.rating && (
-              <div className="flex items-center mr-3">
-                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                <span className="text-sm">{formattedMedia.rating}</span>
-              </div>
-            )}
             {formattedMedia.duration && (
               <div className="flex items-center">
-                <Clock className="h-4 w-4 text-white/80 mr-1" />
+                <Clock className="h-4 w-4 text-white mr-1" />
                 <span className="text-sm">{formattedMedia.duration}</span>
               </div>
             )}
@@ -96,7 +90,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
                   key={genre} 
                   variant="outline" 
                   className={cn(
-                    "text-xs py-0",
+                    "text-xs py-0 bg-black/40 backdrop-blur-sm border-white/20 text-white font-medium shadow-md",
                     floatingElement('badge', 'medium')
                   )}
                 >

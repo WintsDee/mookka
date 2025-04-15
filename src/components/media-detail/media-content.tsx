@@ -7,6 +7,7 @@ import { NewsTab } from "@/components/media-detail/tabs/news-tab";
 import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch-tab";
 import { MediaType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MediaContentProps {
   id: string;
@@ -25,7 +26,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       onValueChange={setActiveTab}
       className="w-full h-full flex flex-col overflow-hidden"
     >
-      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border rounded-none p-0">
+      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border rounded-none p-0">
         <TabsTrigger 
           value="overview" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
@@ -52,36 +53,38 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
         </TabsTrigger>
       </TabsList>
       
-      <div className="overflow-y-auto overflow-x-hidden px-4 py-3 flex-1 pb-16">
-        <TabsContent value="overview" className="mt-0 h-full">
-          <OverviewTab 
-            description={formattedMedia.description?.replace(/<br>/g, '\n')} 
-            additionalInfo={additionalInfo} 
-            mediaId={id}
-            mediaType={type}
-          />
-        </TabsContent>
-        
-        <TabsContent value="rating" className="mt-0 h-full">
-          <RatingTab 
-            mediaId={id} 
-            mediaType={type} 
-            initialRating={formattedMedia.userRating}
-          />
-        </TabsContent>
-        
-        <TabsContent value="whereto" className="mt-0 h-full">
-          <WhereToWatchTab 
-            mediaId={id} 
-            mediaType={type} 
-            title={formattedMedia.title || ""}
-          />
-        </TabsContent>
-        
-        <TabsContent value="news" className="mt-0 h-full">
-          <NewsTab type={type} />
-        </TabsContent>
-      </div>
+      <ScrollArea className="flex-1 h-full">
+        <div className="px-4 py-3 pb-20">
+          <TabsContent value="overview" className="mt-0">
+            <OverviewTab 
+              description={formattedMedia.description?.replace(/<br>/g, '\n')} 
+              additionalInfo={additionalInfo} 
+              mediaId={id}
+              mediaType={type}
+            />
+          </TabsContent>
+          
+          <TabsContent value="rating" className="mt-0">
+            <RatingTab 
+              mediaId={id} 
+              mediaType={type} 
+              initialRating={formattedMedia.userRating}
+            />
+          </TabsContent>
+          
+          <TabsContent value="whereto" className="mt-0">
+            <WhereToWatchTab 
+              mediaId={id} 
+              mediaType={type} 
+              title={formattedMedia.title || ""}
+            />
+          </TabsContent>
+          
+          <TabsContent value="news" className="mt-0">
+            <NewsTab type={type} />
+          </TabsContent>
+        </div>
+      </ScrollArea>
     </Tabs>
   );
 }
