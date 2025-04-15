@@ -5,8 +5,8 @@ import {
   Library, 
   Search, 
   Users, 
-  Newspaper,  // Icône pour Actualités
-  Bookmark,   // Nouvelle icône pour Collections
+  Newspaper,
+  Bookmark,
 } from 'lucide-react';
 
 export function MobileNav() {
@@ -14,14 +14,14 @@ export function MobileNav() {
 
   const navItems = [
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
-    { path: '/collections', icon: Bookmark, label: 'Collections' }, // Changement d'icône
+    { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: Users, label: 'Social' },
-    { path: '/actualites', icon: Newspaper, label: 'Actualités' }, // Ajout de Actualités
+    { path: '/actualites', icon: Newspaper, label: 'Actualités' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t pb-safe">
       <div className="grid grid-cols-5 gap-2 py-2">
         {navItems.map((item) => (
           <Link 
