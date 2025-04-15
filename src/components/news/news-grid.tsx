@@ -144,19 +144,18 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
             <Badge className={`${getCategoryBadge(item.category)} text-xs font-medium px-2 py-0.5`}>
               {getCategoryName(item.category)}
             </Badge>
+            
+            <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-border/30 text-xs">
+              {item.source}
+            </Badge>
           </div>
         </div>
         
         <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
           <div>
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                {title}
-              </h3>
-              <Badge variant="outline" className="ml-2 shrink-0 bg-background/50 backdrop-blur-sm border-border/30">
-                {item.source}
-              </Badge>
-            </div>
+            <h3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
             
             {description && (
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3 mt-1">

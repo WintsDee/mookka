@@ -14,6 +14,7 @@ export const useNews = () => {
   const [activeSources, setActiveSources] = useState<string[]>([]);
   const [sources, setSources] = useState<string[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Store user preferences in local storage
   const [storedPreferences, setStoredPreferences] = useLocalStorage("news-preferences", {
@@ -107,8 +108,10 @@ export const useNews = () => {
     setSelectedArticle(null);
   }, []);
 
-  // Initial load based on stored preferences
+  // Initial load based on stored preferences - only run once
   useEffect(() => {
+    if (!isInitialLoad) return;
+    
     if (storedPreferences) {
       setActiveTab(storedPreferences.lastTab);
       setActiveSource(storedPreferences.lastSource);
@@ -119,7 +122,9 @@ export const useNews = () => {
     } else {
       loadNews();
     }
-  }, [loadNews, storedPreferences]);
+    
+    setIsInitialLoad(false);
+  }, [isInitialLoad, loadNews, storedPreferences]);
   
   // Apply source filter when activeSource or activeSources changes
   useEffect(() => {
