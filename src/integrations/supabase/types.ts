@@ -9,6 +9,145 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      collection_contributors: {
+        Row: {
+          added_at: string
+          collection_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          collection_id: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          collection_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_contributors_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_followers: {
+        Row: {
+          collection_id: string
+          followed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          collection_id: string
+          followed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          collection_id?: string
+          followed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_followers_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_items: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          collection_id: string
+          id: string
+          media_id: string
+          position: number
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          collection_id: string
+          id?: string
+          media_id: string
+          position?: number
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          collection_id?: string
+          id?: string
+          media_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_items_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          type: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          type: string
+          updated_at?: string
+          visibility: string
+        }
+        Update: {
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          type?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           author: string | null

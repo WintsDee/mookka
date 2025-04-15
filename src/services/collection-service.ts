@@ -1,6 +1,10 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { Collection, CollectionItem, CollectionType, CollectionVisibility } from "@/types/collection";
+import { 
+  Collection, 
+  CollectionItem, 
+  CollectionType, 
+  CollectionVisibility 
+} from "@/types/collection";
 import { Media } from "@/types";
 
 export async function getMyCollections() {
@@ -15,7 +19,6 @@ export async function getMyCollections() {
 
   if (error) throw error;
 
-  // Format the data to match our types
   return data.map(collection => ({
     id: collection.id,
     name: collection.name,
@@ -26,7 +29,7 @@ export async function getMyCollections() {
     createdAt: collection.created_at,
     updatedAt: collection.updated_at,
     ownerId: collection.owner_id,
-    itemCount: collection.items_count?.[0]?.count || 0
+    itemCount: collection.items_count?.[0]?.count ?? 0
   }));
 }
 
@@ -42,7 +45,6 @@ export async function getPublicCollections() {
 
   if (error) throw error;
 
-  // Format the data to match our types
   return data.map(collection => ({
     id: collection.id,
     name: collection.name,
@@ -53,8 +55,38 @@ export async function getPublicCollections() {
     createdAt: collection.created_at,
     updatedAt: collection.updated_at,
     ownerId: collection.owner_id,
-    itemCount: collection.items_count?.[0]?.count || 0
+    itemCount: collection.items_count?.[0]?.count ?? 0
   }));
+}
+
+export async function createCollection(collectionData: Partial<Collection>) {
+  const { data, error } = await supabase
+    .from('collections')
+    .insert({
+      name: collectionData.name,
+      description: collectionData.description || '',
+      cover_image: collectionData.coverImage,
+      type: collectionData.type || 'thematic',
+      visibility: collectionData.visibility || 'private',
+      owner_id: (await supabase.auth.getUser()).data.user?.id
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    coverImage: data.cover_image,
+    type: data.type as CollectionType,
+    visibility: data.visibility as CollectionVisibility,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    ownerId: data.owner_id,
+    itemCount: 0
+  };
 }
 
 export async function getFollowedCollections() {
@@ -68,7 +100,6 @@ export async function getFollowedCollections() {
 
   if (error) throw error;
 
-  // Format the data to match our types
   return data.map(follower => ({
     id: follower.collection.id,
     name: follower.collection.name,
@@ -97,7 +128,6 @@ export async function getCollectionById(id: string) {
 
   if (error) throw error;
 
-  // Format the data to match our types
   const collection: Collection = {
     id: data.id,
     name: data.name,
@@ -137,36 +167,6 @@ export async function getCollectionById(id: string) {
   }));
 
   return { collection, items };
-}
-
-export async function createCollection(collectionData: Partial<Collection>) {
-  const { data, error } = await supabase
-    .from('collections')
-    .insert({
-      name: collectionData.name,
-      description: collectionData.description || '',
-      cover_image: collectionData.coverImage,
-      type: collectionData.type || 'thematic',
-      visibility: collectionData.visibility || 'private',
-      owner_id: (await supabase.auth.getUser()).data.user?.id
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  
-  return {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    coverImage: data.cover_image,
-    type: data.type as CollectionType,
-    visibility: data.visibility as CollectionVisibility,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    ownerId: data.owner_id,
-    itemCount: 0
-  };
 }
 
 export async function updateCollection(id: string, collectionData: Partial<Collection>) {
@@ -210,7 +210,6 @@ export async function deleteCollection(id: string) {
 }
 
 export async function addMediaToCollection(collectionId: string, mediaId: string, position?: number) {
-  // Get the current max position if not provided
   let newPosition = position;
   
   if (newPosition === undefined) {
@@ -304,7 +303,6 @@ export async function getCollectionsForMedia(mediaId: string) {
 
   if (error) throw error;
 
-  // Format the data to match our types
   return data.map(item => ({
     id: item.collection.id,
     name: item.collection.name,
