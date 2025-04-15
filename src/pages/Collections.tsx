@@ -5,14 +5,13 @@ import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionGrid } from "@/components/collections/collection-grid";
-import { CollectionTypeSelector } from "@/components/collections/collection-type-selector";
-import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
-import { useCollections } from "@/hooks/use-collections";
 import { CollectionType, CollectionVisibility } from "@/types/collection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PlusIcon, Search } from "lucide-react";
+import { useCollections } from "@/hooks/use-collections";
+import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 
 const Collections = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +60,16 @@ const Collections = () => {
 
   return (
     <Background>
-      <MobileHeader title="Collections" />
+      <MobileHeader title="Collections">
+        <Button 
+          variant="ghost" 
+          className="ml-auto"
+          onClick={() => setCreateDialogOpen(true)}
+        >
+          <PlusIcon size={20} />
+        </Button>
+      </MobileHeader>
+      
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
           <div className="mt-4 relative">
@@ -88,13 +96,6 @@ const Collections = () => {
                   Communauté
                 </TabsTrigger>
               </TabsList>
-              
-              <div className="mt-4">
-                <CollectionTypeSelector
-                  selectedType={collectionType}
-                  onSelectType={setCollectionType}
-                />
-              </div>
               
               <ScrollArea className="h-[calc(100vh-260px)] mt-4">
                 <TabsContent value="personal" className="mt-2">
@@ -127,17 +128,6 @@ const Collections = () => {
             </Tabs>
           </div>
         </header>
-      </div>
-      
-      {/* Create collection button */}
-      <div className="fixed bottom-24 right-6 z-10">
-        <Button 
-          size="lg" 
-          className="rounded-full w-14 h-14 shadow-lg"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          <PlusIcon size={24} />
-        </Button>
       </div>
       
       {/* Create collection dialog */}

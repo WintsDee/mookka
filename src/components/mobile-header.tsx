@@ -8,9 +8,10 @@ import { currentUser } from "@/data/mockData";
 
 interface MobileHeaderProps {
   title?: string;
+  children?: React.ReactNode;
 }
 
-const MobileHeader = ({ title }: MobileHeaderProps) => {
+const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();
   const isProfileActive = location.pathname === "/profil";
   const isNotificationsActive = location.pathname === "/notifications";
@@ -47,6 +48,7 @@ const MobileHeader = ({ title }: MobileHeaderProps) => {
       </div>
       
       <div className="flex items-center gap-4">
+        {children}
         <Link to="/notifications" className={cn(
           "relative",
           isNotificationsActive ? "text-primary" : "text-muted-foreground"
