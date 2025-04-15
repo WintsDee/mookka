@@ -45,7 +45,9 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   return (
     <div className={cn(
       "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 border-t border-border shadow-md",
-      "bg-background/80 backdrop-blur-md"
+      "bg-background/80 backdrop-blur-md",
+      "pb-safe-area", // Ajout de padding au bas de l'écran
+      "py-4" // Augmentation du padding vertical
     )}>
       <Button 
         variant="ghost" 
