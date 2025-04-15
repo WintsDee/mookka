@@ -7,6 +7,8 @@ import { useNews } from "@/hooks/use-news";
 import { NewsTabs } from "@/components/news/news-tabs";
 import { NewsWebView } from "@/components/news/news-web-view";
 import { NewsSourceSelector } from "@/components/news/news-source-selector";
+import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCw } from "lucide-react";
 
 const Actualites = () => {
   const { 
@@ -39,11 +41,23 @@ const Actualites = () => {
             <p className="text-sm text-muted-foreground">
               {news.length} articles disponibles
             </p>
-            <NewsSourceSelector 
-              sources={sources}
-              activeSource={activeSource}
-              onSourceChange={handleSourceChange}
-            />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="h-8"
+              >
+                {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                <span className="sr-only">Rafraîchir</span>
+              </Button>
+              <NewsSourceSelector 
+                sources={sources}
+                activeSource={activeSource}
+                onSourceChange={handleSourceChange}
+              />
+            </div>
           </div>
         </header>
         

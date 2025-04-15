@@ -3,11 +3,12 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, RefreshCw, Calendar, ExternalLink } from "lucide-react";
+import { Loader2, Calendar, ExternalLink, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { NewsItem } from "@/services/news-service";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsGridProps {
   items: NewsItem[];
@@ -39,41 +40,22 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
         <p className="text-muted-foreground">
           Aucune actualité trouvée pour cette catégorie
         </p>
-        <Button variant="outline" className="mt-4" onClick={onRefresh} disabled={refreshing}>
-          {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-          Rafraîchir
-        </Button>
       </div>
     );
   }
 
   return (
-    <div className="relative">
-      <div className="flex justify-end mb-4">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="flex items-center gap-1"
-        >
-          {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          <span className="hidden sm:inline">Rafraîchir</span>
-        </Button>
+    <ScrollArea className="h-[calc(100vh-250px)]">
+      <div className="grid grid-cols-1 gap-5 px-2 pb-24">
+        {items.map((item) => (
+          <NewsCard 
+            key={item.id} 
+            item={item} 
+            onSelect={() => onArticleSelect(item)}
+          />
+        ))}
       </div>
-      
-      <ScrollArea className="h-[calc(100vh-270px)]">
-        <div className="space-y-5 px-2 pb-20">
-          {items.map((item) => (
-            <NewsCard 
-              key={item.id} 
-              item={item} 
-              onSelect={() => onArticleSelect(item)}
-            />
-          ))}
-        </div>
-      </ScrollArea>
-    </div>
+    </ScrollArea>
   );
 };
 
@@ -84,7 +66,6 @@ interface NewsCardProps {
 
 const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
   const [imageError, setImageError] = React.useState(false);
-  const placeholderUrl = '/placeholder.svg';
   
   const handleImageError = () => {
     setImageError(true);
@@ -107,7 +88,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
       case 'serie': return 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?q=80&w=500&auto=format';
       case 'book': return 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=500&auto=format';
       case 'game': return 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?q=80&w=500&auto=format';
-      default: return placeholderUrl;
+      default: return '/placeholder.svg';
     }
   };
 
@@ -119,71 +100,95 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
   };
 
   const title = decodeHtmlEntities(item.title);
+  const description = item.description ? decodeHtmlEntities(item.description) : '';
   
-  const getCategoryColor = (category: string) => {
+  // Obtenir les couleurs de badge pour chaque catégorie
+  const getCategoryBadge = (category: string) => {
     switch(category) {
-      case 'film': return 'bg-media-film';
-      case 'serie': return 'bg-media-serie';
-      case 'book': return 'bg-media-book';
-      case 'game': return 'bg-media-game';
-      default: return 'bg-slate-500';
+      case 'film': return "bg-media-film/90 text-white";
+      case 'serie': return "bg-media-serie/90 text-white";
+      case 'book': return "bg-media-book/90 text-white";
+      case 'game': return "bg-media-game/90 text-white";
+      default: return "bg-slate-500/90 text-white";
+    }
+  };
+  
+  // Formater le nom de la catégorie pour l'affichage
+  const getCategoryName = (category: string) => {
+    switch(category) {
+      case 'film': return 'Film';
+      case 'serie': return 'Série';
+      case 'book': return 'Livre';
+      case 'game': return 'Jeu';
+      default: return 'Actu';
     }
   };
 
   return (
     <Card 
-      className="overflow-hidden bg-card/50 backdrop-blur-sm border-border/30 
-                hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-300"
+      className="overflow-hidden border-border/20 bg-black/5 backdrop-blur-sm hover:shadow-lg hover:scale-[1.01] 
+                active:scale-[0.99] transition-all duration-300 group"
       onClick={onSelect}
     >
-      <div className="relative h-48 sm:h-52">
-        <img 
-          src={getImageUrl()}
-          alt={title}
-          className="w-full h-full object-cover"
-          onError={handleImageError}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
+      <div className="flex flex-col sm:flex-row h-full relative">
+        <div className="w-full sm:w-2/5 h-48 sm:h-auto relative">
+          <img 
+            src={getImageUrl()}
+            alt={title}
+            className="w-full h-full object-cover"
+            onError={handleImageError}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent sm:hidden" />
+          
+          <div className="absolute top-2 left-2 flex gap-1.5">
+            <Badge className={`${getCategoryBadge(item.category)} text-xs font-medium px-2 py-0.5`}>
+              {getCategoryName(item.category)}
+            </Badge>
+          </div>
+        </div>
         
-        <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-1.5">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-medium text-white px-2 py-0.5 rounded-full ${getCategoryColor(item.category)}`}>
-                {item.category === 'film' ? 'Film' : 
-                 item.category === 'serie' ? 'Série' : 
-                 item.category === 'book' ? 'Livre' : 
-                 item.category === 'game' ? 'Jeu' : 'Actu'}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-white/90 font-medium">
-                <Calendar className="h-3 w-3" />
+        <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-lg font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                {title}
+              </h3>
+              <Badge variant="outline" className="ml-2 shrink-0 bg-background/50 backdrop-blur-sm border-border/30">
+                {item.source}
+              </Badge>
+            </div>
+            
+            {description && (
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-3 mt-1">
+                {description}
+              </p>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center mt-auto pt-2 border-t border-border/10">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>
                 {formatDistanceToNow(new Date(item.date), { 
                   addSuffix: true,
-                  locale: fr
+                  locale: fr 
                 })}
               </span>
             </div>
-            <span className="text-xs text-white font-medium bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
-              {item.source}
-            </span>
+            
+            <Button 
+              size="sm" 
+              variant="secondary"
+              className="gap-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(item.link, '_blank');
+              }}
+            >
+              <span>Lire</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
           </div>
-          
-          <h3 className="text-white font-bold text-lg leading-tight drop-shadow-md">{title}</h3>
-          
-          {item.description && (
-            <p className="text-white/90 text-sm line-clamp-2 leading-snug drop-shadow-sm font-medium mt-1">
-              {decodeHtmlEntities(item.description)}
-            </p>
-          )}
-          
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            className="mt-2 w-fit bg-white/30 hover:bg-white/40 backdrop-blur-sm text-white border border-white/20 font-medium"
-          >
-            <span className="flex items-center gap-1">
-              Lire l'article <ExternalLink className="h-3 w-3" />
-            </span>
-          </Button>
         </div>
       </div>
     </Card>

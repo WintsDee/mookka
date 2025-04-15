@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 
 interface NewsSourceSelectorProps {
   sources: string[];
@@ -29,12 +28,12 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
           {activeSource ? (
             <div className="flex items-center gap-1">
               <Filter className="h-3.5 w-3.5 text-primary" />
-              <span className="max-w-[110px] truncate">{activeSource}</span>
+              <span className="max-w-[100px] truncate">{activeSource}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1">
               <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Sources</span>
+              <span className="hidden sm:inline">Sources</span>
             </div>
           )}
           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
