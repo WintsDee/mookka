@@ -13,7 +13,9 @@ interface CollectionGridProps {
   emptyMessage?: string;
   className?: string;
   onCreateNew?: () => void;
-  locationState?: { from: string };
+  from?: string;
+  columns?: number;
+  cardSize?: string;
 }
 
 export const CollectionGrid = ({
@@ -22,11 +24,13 @@ export const CollectionGrid = ({
   emptyMessage = "Aucune collection trouvée.",
   className = "",
   onCreateNew,
-  locationState
+  from,
+  columns = 2,
+  cardSize = "default"
 }: CollectionGridProps) => {
   if (loading) {
     return (
-      <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
+      <div className={`grid grid-cols-${columns} gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
         {[...Array(4)].map((_, i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="w-full h-32 rounded-lg" />
@@ -54,14 +58,14 @@ export const CollectionGrid = ({
   }
 
   return (
-    <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
+    <div className={`grid grid-cols-${columns} gap-4 sm:grid-cols-3 md:grid-cols-4 ${className}`}>
       {collections.map((collection) => (
         <Link 
           key={collection.id} 
           to={`/collections/${collection.id}`}
-          state={locationState}
+          state={from ? { from } : undefined}
         >
-          <CollectionCard collection={collection} />
+          <CollectionCard collection={collection} size={cardSize} />
         </Link>
       ))}
     </div>

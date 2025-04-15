@@ -1,59 +1,67 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType } from "@/types";
+import { Collection } from "@/types/collection";
+import { mapCollectionFromDB, CollectionData } from "./collection-types";
+import { Media } from "@/types";
 
-export async function getCollectionById(id: string) {
-  const { data, error } = await supabase
+export async function getCollectionById(collectionId: string): Promise<{ collection: Collection; items: Media[] }> {
+  // Get collection data
+  const { data: collectionData, error: collectionError } = await supabase
     .from('collections')
     .select(`
       *,
-      items:collection_items(
-        *,
-        media(*)
-      )
+      items_count:collection_items(count),
+      owner:profiles(username, avatar_url)
     `)
-    .eq('id', id)
+    .eq('id', collectionId)
     .single();
 
-  if (error) throw error;
+  if (collectionError) throw collectionError;
 
-  const collection = {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    coverImage: data.cover_image,
-    type: data.type,
-    visibility: data.visibility,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-    ownerId: data.owner_id,
-    itemCount: data.items?.length || 0
+  // Get collection items with media details
+  const { data: itemsData, error: itemsError } = await supabase
+    .from('collection_items')
+    .select(`
+      id, position, added_at, added_by,
+      media(*)
+    `)
+    .eq('collection_id', collectionId)
+    .order('position', { ascending: true });
+
+  if (itemsError) throw itemsError;
+
+  // Format the collection items to match the Media type
+  const items: Media[] = itemsData.map((item) => {
+    const media = item.media;
+    
+    // Map media to the Media type
+    return {
+      id: media.id,
+      title: media.title,
+      type: media.type,
+      coverImage: media.cover_image,
+      year: media.year,
+      description: media.description,
+      genres: media.genres,
+      director: media.director,
+      author: media.author,
+      publisher: media.publisher,
+      platform: media.platform,
+      duration: media.duration,
+      rating: media.rating,
+      // Don't include status as it's not in the media table
+      externalId: media.external_id,
+      createdAt: media.created_at,
+      ownerId: media.owner_id
+    };
+  });
+
+  return {
+    collection: {
+      ...mapCollectionFromDB(collectionData as CollectionData),
+      ownerUsername: collectionData.owner?.username || "Unknown",
+      ownerAvatar: collectionData.owner?.avatar_url || null
+    },
+    items
   };
-
-  const items = data.items.map(item => ({
-    id: item.id,
-    collectionId: item.collection_id,
-    mediaId: item.media_id,
-    position: item.position,
-    addedAt: item.added_at,
-    addedBy: item.added_by,
-    media: {
-      id: item.media.id,
-      title: item.media.title,
-      type: item.media.type as MediaType,
-      coverImage: item.media.cover_image,
-      year: item.media.year,
-      rating: item.media.rating,
-      genres: item.media.genres,
-      description: item.media.description,
-      status: item.media.status || 'to-watch', // Default value if not present
-      duration: item.media.duration,
-      director: item.media.director,
-      author: item.media.author,
-      publisher: item.media.publisher,
-      platform: item.media.platform
-    }
-  }));
-
-  return { collection, items };
 }

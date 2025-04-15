@@ -10,8 +10,8 @@ interface MediaRecommendationsProps {
   medias: Media[];
   type?: MediaType;
   onSeeMore?: () => void;
-  // Add the locationState prop for navigation
-  locationState?: { from: string };
+  // Change locationState to from
+  from?: string;
 }
 
 export const MediaRecommendations = ({ 
@@ -19,7 +19,7 @@ export const MediaRecommendations = ({
   medias, 
   type, 
   onSeeMore,
-  locationState
+  from
 }: MediaRecommendationsProps) => {
   const filteredMedias = type ? medias.filter(media => media.type === type) : medias;
   
@@ -39,7 +39,7 @@ export const MediaRecommendations = ({
             key={media.id} 
             media={media} 
             size="medium" 
-            state={locationState}
+            from={from}
           />
         ))}
       </div>
