@@ -26,6 +26,7 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
       queryParams += queryParams ? '&refresh=true' : '?refresh=true';
     }
     
+    console.log(`Fetching news with params: ${queryParams}`);
     const { data, error } = await supabase.functions.invoke('fetch-news' + queryParams);
 
     if (error) {

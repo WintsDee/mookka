@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface NewsSourceSelectorProps {
   sources: string[];
@@ -25,11 +26,21 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1">
-          {activeSource ? `Source: ${activeSource}` : "Toutes les sources"}
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          {activeSource ? (
+            <div className="flex items-center gap-1">
+              <Filter className="h-3.5 w-3.5 text-primary" />
+              <span className="max-w-[110px] truncate">{activeSource}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <span>Sources</span>
+            </div>
+          )}
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-64 max-h-[400px] overflow-auto">
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => onSourceChange(null)}
@@ -45,7 +56,7 @@ export const NewsSourceSelector: React.FC<NewsSourceSelectorProps> = ({
               onClick={() => onSourceChange(source)}
               className="flex items-center justify-between"
             >
-              <span>{source}</span>
+              <span className="truncate">{source}</span>
               {activeSource === source && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}

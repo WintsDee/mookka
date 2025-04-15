@@ -127,23 +127,10 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     }
   };
 
-  const getBorderGlow = (category: string) => {
-    switch(category) {
-      case 'film': return 'shadow-blue-500/20';
-      case 'serie': return 'shadow-purple-500/20';
-      case 'book': return 'shadow-emerald-500/20';
-      case 'game': return 'shadow-amber-500/20';
-      default: return 'shadow-slate-500/20';
-    }
-  };
-
   return (
     <Card 
-      className={cn(
-        "overflow-hidden bg-card/50 backdrop-blur-sm border-border/30",
-        "transition-all duration-300 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]",
-        getBorderGlow(item.category)
-      )}
+      className="overflow-hidden bg-card/50 backdrop-blur-sm border-border/30 
+                hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-300"
       onClick={onSelect}
     >
       <div className="relative h-48 sm:h-52">
@@ -153,7 +140,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
           className="w-full h-full object-cover"
           onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent" />
         
         <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-1.5">
           <div className="flex items-center justify-between mb-1">
@@ -164,7 +151,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
                  item.category === 'book' ? 'Livre' : 
                  item.category === 'game' ? 'Jeu' : 'Actu'}
               </span>
-              <span className="flex items-center gap-1 text-xs text-white/80">
+              <span className="flex items-center gap-1 text-xs text-white/90 font-medium">
                 <Calendar className="h-3 w-3" />
                 {formatDistanceToNow(new Date(item.date), { 
                   addSuffix: true,
@@ -172,7 +159,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
                 })}
               </span>
             </div>
-            <span className="text-xs text-white/90 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
+            <span className="text-xs text-white font-medium bg-black/50 px-2 py-0.5 rounded-full backdrop-blur-sm">
               {item.source}
             </span>
           </div>
@@ -180,7 +167,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
           <h3 className="text-white font-bold text-lg leading-tight drop-shadow-md">{title}</h3>
           
           {item.description && (
-            <p className="text-white/80 text-sm line-clamp-2 leading-snug drop-shadow-sm">
+            <p className="text-white/90 text-sm line-clamp-2 leading-snug drop-shadow-sm font-medium mt-1">
               {decodeHtmlEntities(item.description)}
             </p>
           )}
@@ -188,7 +175,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
           <Button 
             variant="secondary" 
             size="sm" 
-            className="mt-1.5 w-fit bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white/90 border border-white/10"
+            className="mt-2 w-fit bg-white/30 hover:bg-white/40 backdrop-blur-sm text-white border border-white/20 font-medium"
           >
             <span className="flex items-center gap-1">
               Lire l'article <ExternalLink className="h-3 w-3" />
