@@ -3,7 +3,6 @@ import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
-import { PageTitle } from "@/components/page-title";
 import { useNews } from "@/hooks/use-news";
 import { NewsTabs } from "@/components/news/news-tabs";
 import { NewsWebView } from "@/components/news/news-web-view";
@@ -27,10 +26,9 @@ const Actualites = () => {
   
   return (
     <Background>
-      <MobileHeader />
+      <MobileHeader title="Actualités" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
-          <PageTitle title="Actualités" />
           <div className="flex justify-between items-center mt-4 mb-2">
             <NewsTabs 
               activeTab={activeTab}

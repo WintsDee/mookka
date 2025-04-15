@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -9,17 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { PageTitle } from "@/components/page-title";
 import { MobileHeader } from "@/components/mobile-header";
 
 const Social = () => {
   return (
     <Background>
-      <MobileHeader />
+      <MobileHeader title="Social" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
-          <PageTitle title="Social" />
-          
           <div className="mt-4">
             <Tabs defaultValue="activity" className="w-full">
               <TabsList className="w-full grid grid-cols-3">

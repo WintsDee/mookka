@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -11,7 +10,6 @@ import { MediaType } from "@/types";
 import { searchMedia } from "@/services/media-service";
 import { useDebounce, filterAdultContent } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
-import { PageTitle } from "@/components/page-title";
 import { MobileHeader } from "@/components/mobile-header";
 
 const Recherche = () => {
@@ -113,11 +111,9 @@ const Recherche = () => {
 
   return (
     <Background>
-      <MobileHeader />
+      <MobileHeader title="Recherche" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-4">
-          <PageTitle title="Recherche" />
-          
           <MediaTypeSelector 
             selectedType={selectedType}
             onSelectType={(type) => setSelectedType(type as MediaType)}

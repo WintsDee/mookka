@@ -23,7 +23,7 @@ const Profil = () => {
 
   return (
     <Background>
-      <MobileHeader />
+      <MobileHeader title="Profil" />
       <div className="pt-safe pb-24 mt-16">
         {/* Header avec couverture */}
         <div className="h-40 bg-gradient-to-r from-blue-600 to-purple-600 relative">
