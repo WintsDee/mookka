@@ -18,7 +18,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-64 w-full">
+    <div className="relative h-56 w-full">
       <Button 
         variant="ghost" 
         size="icon" 
