@@ -11,6 +11,8 @@ interface CollectionGridProps {
   emptyMessage: string;
   className?: string;
   from?: string;
+  columns?: number;
+  cardSize?: string;
 }
 
 export const CollectionGrid = ({
@@ -18,15 +20,21 @@ export const CollectionGrid = ({
   loading,
   emptyMessage,
   className = "",
-  from
+  from,
+  columns = 2,
+  cardSize = "medium"
 }: CollectionGridProps) => {
   if (loading) {
     return (
-      <div className={`grid grid-cols-2 gap-4 ${className}`}>
+      <div className={`grid grid-cols-${columns} gap-4 ${className}`}>
         <CollectionLoading />
         <CollectionLoading />
-        <CollectionLoading />
-        <CollectionLoading />
+        {columns > 2 && (
+          <>
+            <CollectionLoading />
+            <CollectionLoading />
+          </>
+        )}
       </div>
     );
   }
@@ -40,12 +48,13 @@ export const CollectionGrid = ({
   }
 
   return (
-    <div className={`grid grid-cols-2 gap-4 ${className}`}>
+    <div className={`grid grid-cols-${columns} gap-4 ${className}`}>
       {collections.map((collection) => (
         <CollectionCard 
           key={collection.id} 
           collection={collection}
           from={from} 
+          size={cardSize}
         />
       ))}
     </div>

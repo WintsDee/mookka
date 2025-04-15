@@ -12,7 +12,11 @@ import { useLocation } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchResults } from "@/components/search/search-results";
-import { getSearchPlaceholder, getSelectedTypeColor, formatSearchResult } from "@/components/search/search-utils";
+import { 
+  getSearchPlaceholder, 
+  getSelectedTypeColor, 
+  formatSearchResults 
+} from "@/components/search/search-utils";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -30,15 +34,12 @@ const Recherche = () => {
         try {
           const result = await searchMedia(selectedType, debouncedSearchTerm);
           
-          let formattedResults: any[] = [];
-          
           if (result.results && result.results.length > 0) {
-            formattedResults = result.results.map((item: any) => {
-              return formatSearchResult(item, selectedType);
-            });
+            const formattedResults = formatSearchResults(result.results, selectedType);
+            setSearchResults(formattedResults);
+          } else {
+            setSearchResults([]);
           }
-          
-          setSearchResults(formattedResults);
         } catch (error) {
           console.error("Erreur de recherche:", error);
           toast({
@@ -86,7 +87,7 @@ const Recherche = () => {
               isLoading={isLoading}
               searchQuery={searchQuery}
               selectedType={selectedType}
-              locationPathname={location.pathname}
+              from={location.pathname}
             />
           </ScrollArea>
         </div>

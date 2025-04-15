@@ -71,3 +71,11 @@ export function formatSearchResult(item: any, selectedType: MediaType): any {
       return item;
   }
 }
+
+export function formatSearchResults(results: any[], selectedType: MediaType): any[] {
+  if (!results || results.length === 0) {
+    return [];
+  }
+  
+  return results.map(item => formatSearchResult(item, selectedType));
+}

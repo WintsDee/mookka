@@ -108,7 +108,7 @@ const Bibliotheque = () => {
                 title="En cours" 
                 medias={mediaByStatus.current}
                 onSeeMore={() => console.log("Voir plus - En cours")}
-                locationState={{ from: location.pathname }}
+                from={location.pathname}
               />
             )}
             
@@ -118,7 +118,7 @@ const Bibliotheque = () => {
                 title="À découvrir" 
                 medias={mediaByStatus.pending}
                 onSeeMore={() => console.log("Voir plus - À découvrir")}
-                locationState={{ from: location.pathname }}
+                from={location.pathname}
               />
             )}
             
@@ -128,7 +128,7 @@ const Bibliotheque = () => {
                 title="Terminés" 
                 medias={mediaByStatus.completed}
                 onSeeMore={() => console.log("Voir plus - Terminés")}
-                locationState={{ from: location.pathname }}
+                from={location.pathname}
               />
             )}
             
