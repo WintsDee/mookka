@@ -1,76 +1,55 @@
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
-import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { User, Bell } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/data/mockData";
+interface MobileHeaderProps {
+  title: string;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
+  className?: string;
+  children?: React.ReactNode;
+}
 
-const MobileHeader = ({ title }: { title?: string }) => {
-  const location = useLocation();
-  const isProfileActive = location.pathname === "/profil";
-  const isNotificationsActive = location.pathname === "/notifications";
-  
-  // Avatar aléatoire pour les visiteurs (non connectés)
-  const [randomAvatar, setRandomAvatar] = useState("");
-  
-  useEffect(() => {
-    // Liste d'avatars aléatoires
-    const avatarOptions = [
-      "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=150&h=150&auto=format",
-      "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=150&h=150&auto=format",
-      "https://images.unsplash.com/photo-1501286353178-1ec881214838?w=150&h=150&auto=format",
-      "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=150&h=150&auto=format"
-    ];
-    
-    // Sélection aléatoire d'un avatar
-    const randomIndex = Math.floor(Math.random() * avatarOptions.length);
-    setRandomAvatar(avatarOptions[randomIndex]);
-  }, []);
-  
+export function MobileHeader({
+  title,
+  showBackButton = true,
+  onBackClick,
+  className,
+  children
+}: MobileHeaderProps) {
+  const navigate = useNavigate();
+
+  const handleBackClick = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16">
-      {title && <h1 className="text-lg font-semibold">{title}</h1>}
-      
-      <div className="w-8 h-8 flex-shrink-0">
-        {!title && (
-          <img 
-            src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
-            alt="Mookka Logo" 
-            className="w-full h-full object-contain"
-          />
+    <header
+      className={cn(
+        'fixed top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-md border-b pt-safe',
+        className
+      )}
+    >
+      <div className="flex items-center h-16 px-4">
+        {showBackButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2"
+            onClick={handleBackClick}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
         )}
+        <h1 className="text-lg font-semibold">{title}</h1>
+        {children}
       </div>
-      
-      <div className="flex items-center gap-4">
-        <Link to="/notifications" className={cn(
-          "relative",
-          isNotificationsActive ? "text-primary" : "text-muted-foreground"
-        )}>
-          <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
-          {/* Notification indicator */}
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
-        </Link>
-        
-        <Link
-          to="/profil"
-          className={cn(
-            "flex items-center justify-center",
-            isProfileActive 
-              ? "text-primary" 
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={currentUser.avatar || randomAvatar} alt={currentUser.name} />
-            <AvatarFallback>
-              <User size={20} />
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-      </div>
-    </div>
+    </header>
   );
-};
-
-export { MobileHeader };
+}

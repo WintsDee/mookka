@@ -6,20 +6,18 @@ import { MobileHeader } from "@/components/mobile-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionGrid } from "@/components/collections/collection-grid";
 import { CollectionTypeSelector } from "@/components/collections/collection-type-selector";
-import { CollectionVisibilitySelector } from "@/components/collections/collection-visibility-selector";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { useCollections } from "@/hooks/use-collections";
-import { CollectionType, CollectionVisibility } from "@/types/collection";
+import { CollectionType } from "@/types/collection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusIcon, Search } from "lucide-react";
+import { PlusCircle, Search } from "lucide-react";
 
 const Collections = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"personal" | "followed" | "community">("personal");
   const [collectionType, setCollectionType] = useState<CollectionType | "all">("all");
-  const [collectionVisibility, setCollectionVisibility] = useState<CollectionVisibility | "all">("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
   const {
@@ -43,9 +41,6 @@ const Collections = () => {
       )
       .filter(collection => 
         collectionType === "all" || collection.type === collectionType
-      )
-      .filter(collection => 
-        collectionVisibility === "all" || collection.visibility === collectionVisibility
       );
   };
   
@@ -62,12 +57,20 @@ const Collections = () => {
     setActiveTab(value);
     // Réinitialiser les filtres lors du changement d'onglet
     setCollectionType("all");
-    setCollectionVisibility("all");
   };
 
   return (
     <Background>
-      <MobileHeader title="Collections" />
+      <MobileHeader title="Collections">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="ml-auto text-primary"
+          onClick={() => setCreateDialogOpen(true)}
+        >
+          <PlusCircle className="h-5 w-5" />
+        </Button>
+      </MobileHeader>
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
           <div className="mt-4 relative">
@@ -95,19 +98,14 @@ const Collections = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <div className="mt-4 space-y-4">
+              <div className="mt-4">
                 <CollectionTypeSelector
                   selectedType={collectionType}
                   onSelectType={setCollectionType}
                 />
-                
-                <CollectionVisibilitySelector
-                  selectedVisibility={collectionVisibility}
-                  onSelectVisibility={setCollectionVisibility}
-                />
               </div>
               
-              <ScrollArea className="h-[calc(100vh-260px)] mt-4">
+              <ScrollArea className="h-[calc(100vh-220px)] mt-4">
                 <TabsContent value="personal" className="mt-2">
                   <CollectionGrid
                     collections={filteredPersonalCollections}
@@ -138,17 +136,6 @@ const Collections = () => {
             </Tabs>
           </div>
         </header>
-      </div>
-      
-      {/* Bouton de création de collection */}
-      <div className="fixed bottom-24 right-6 z-10">
-        <Button 
-          size="lg" 
-          className="rounded-full w-14 h-14 shadow-lg"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          <PlusIcon size={24} />
-        </Button>
       </div>
       
       {/* Dialog de création de collection */}
