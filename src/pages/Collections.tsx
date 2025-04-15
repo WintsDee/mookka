@@ -6,7 +6,6 @@ import { MobileHeader } from "@/components/mobile-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CollectionGrid } from "@/components/collections/collection-grid";
 import { CollectionTypeSelector } from "@/components/collections/collection-type-selector";
-import { CollectionVisibilitySelector } from "@/components/collections/collection-visibility-selector";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { useCollections } from "@/hooks/use-collections";
 import { CollectionType, CollectionVisibility } from "@/types/collection";
@@ -19,7 +18,6 @@ const Collections = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"personal" | "followed" | "community">("personal");
   const [collectionType, setCollectionType] = useState<CollectionType | "all">("all");
-  const [collectionVisibility, setCollectionVisibility] = useState<CollectionVisibility | "all">("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
   const {
@@ -33,7 +31,7 @@ const Collections = () => {
     isCreatingCollection
   } = useCollections();
   
-  // Filtrer les collections en fonction des critères
+  // Filter collections based on criteria
   const filterCollections = (collections) => {
     return collections
       .filter(collection => 
@@ -43,9 +41,6 @@ const Collections = () => {
       )
       .filter(collection => 
         collectionType === "all" || collection.type === collectionType
-      )
-      .filter(collection => 
-        collectionVisibility === "all" || collection.visibility === collectionVisibility
       );
   };
   
@@ -60,9 +55,8 @@ const Collections = () => {
   
   const handleTabChange = (value) => {
     setActiveTab(value);
-    // Réinitialiser les filtres lors du changement d'onglet
+    // Reset filters when tab changes
     setCollectionType("all");
-    setCollectionVisibility("all");
   };
 
   return (
@@ -95,15 +89,10 @@ const Collections = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <div className="mt-4 space-y-4">
+              <div className="mt-4">
                 <CollectionTypeSelector
                   selectedType={collectionType}
                   onSelectType={setCollectionType}
-                />
-                
-                <CollectionVisibilitySelector
-                  selectedVisibility={collectionVisibility}
-                  onSelectVisibility={setCollectionVisibility}
                 />
               </div>
               
@@ -140,7 +129,7 @@ const Collections = () => {
         </header>
       </div>
       
-      {/* Bouton de création de collection */}
+      {/* Create collection button */}
       <div className="fixed bottom-24 right-6 z-10">
         <Button 
           size="lg" 
@@ -151,7 +140,7 @@ const Collections = () => {
         </Button>
       </div>
       
-      {/* Dialog de création de collection */}
+      {/* Create collection dialog */}
       <CreateCollectionDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}

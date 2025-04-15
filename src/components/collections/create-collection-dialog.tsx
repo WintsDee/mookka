@@ -57,7 +57,7 @@ export function CreateCollectionDialog({
         onOpenChange(newOpen);
       }}
     >
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto top-auto transform-none">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Créer une collection</DialogTitle>
@@ -85,7 +85,7 @@ export function CreateCollectionDialog({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Une brève description de votre collection..."
-                rows={3}
+                rows={2}
               />
             </div>
             
@@ -127,7 +127,7 @@ export function CreateCollectionDialog({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="private" id="visibility-private" />
                   <Label htmlFor="visibility-private" className="flex items-center gap-2 cursor-pointer">
-                    <Lock size={16} /> Privée (visible uniquement par vous)
+                    <Lock size={16} /> Privée (uniquement par vous)
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -139,14 +139,14 @@ export function CreateCollectionDialog({
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="collaborative" id="visibility-collaborative" />
                   <Label htmlFor="visibility-collaborative" className="flex items-center gap-2 cursor-pointer">
-                    <Users size={16} /> Collaborative (modifiable par vous et vos collaborateurs)
+                    <Users size={16} /> Collaborative
                   </Label>
                 </div>
               </RadioGroup>
             </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>

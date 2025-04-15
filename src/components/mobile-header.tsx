@@ -6,16 +6,20 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { currentUser } from "@/data/mockData";
 
-const MobileHeader = ({ title }: { title?: string }) => {
+interface MobileHeaderProps {
+  title?: string;
+}
+
+const MobileHeader = ({ title }: MobileHeaderProps) => {
   const location = useLocation();
   const isProfileActive = location.pathname === "/profil";
   const isNotificationsActive = location.pathname === "/notifications";
   
-  // Avatar aléatoire pour les visiteurs (non connectés)
+  // Random avatar for visitors
   const [randomAvatar, setRandomAvatar] = useState("");
   
   useEffect(() => {
-    // Liste d'avatars aléatoires
+    // List of random avatars
     const avatarOptions = [
       "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=150&h=150&auto=format",
       "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=150&h=150&auto=format",
@@ -23,7 +27,7 @@ const MobileHeader = ({ title }: { title?: string }) => {
       "https://images.unsplash.com/photo-1485833077593-4278bba3f11f?w=150&h=150&auto=format"
     ];
     
-    // Sélection aléatoire d'un avatar
+    // Random avatar selection
     const randomIndex = Math.floor(Math.random() * avatarOptions.length);
     setRandomAvatar(avatarOptions[randomIndex]);
   }, []);
