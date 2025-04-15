@@ -19,8 +19,8 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
 
   return (
-    <div className="relative h-44 w-full">
-      {/* Back button - repositioned to be above the thumbnail */}
+    <div className="relative h-52 w-full pt-8"> {/* Increased height and added top padding */}
+      {/* Back button - positioned in the top left, not on the thumbnail */}
       <Button 
         variant="ghost" 
         size="icon" 
@@ -64,9 +64,9 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <img 
           src={formattedMedia.coverImage} 
           alt={formattedMedia.title} 
-          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
+          className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4" /* Added top margin */
         />
-        <div className="flex-1 ml-4">
+        <div className="flex-1 ml-4 mt-2"> {/* Added top margin */}
           <div className="flex items-center gap-2">
             <h1 className={cn("text-2xl font-bold text-white drop-shadow-md", enhanceTextVisibility('strong'))}>
               {formattedMedia.title}

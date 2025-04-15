@@ -89,8 +89,7 @@ const MediaDetail = () => {
 
   return (
     <Background>
-      <MobileHeader />
-      <div className="relative flex flex-col h-screen">
+      <div className="relative flex flex-col h-screen pt-safe"> {/* Added pt-safe for safe area */}
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 
