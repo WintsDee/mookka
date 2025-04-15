@@ -53,18 +53,23 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     let badgeColor = "";
     let statusText = "";
     
+    // Harmoniser les status labels et couleurs avec l'onglet progression
     switch (status) {
       case "to-watch":
+      case "to-read":
+      case "to-play":
         badgeColor = "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
-        statusText = "À découvrir";
+        statusText = type === "book" ? "À lire" : type === "game" ? "À jouer" : "À voir";
         break;
       case "watching":
-        badgeColor = "bg-blue-500/20 text-blue-300 border-blue-500/30";
-        statusText = "En cours";
+      case "reading":
+      case "playing":
+        badgeColor = "bg-purple-500/20 text-purple-300 border-purple-500/30";
+        statusText = type === "book" ? "En cours" : type === "game" ? "En cours" : "En cours";
         break;
       case "completed":
         badgeColor = "bg-green-500/20 text-green-300 border-green-500/30";
-        statusText = "Terminé";
+        statusText = type === "film" ? "Vu" : type === "book" ? "Terminé" : type === "game" ? "Terminé" : "Terminé";
         break;
     }
     
