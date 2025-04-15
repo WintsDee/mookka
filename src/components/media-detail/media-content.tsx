@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
 import { RatingTab } from "@/components/media-detail/tabs/rating-tab";
-import { NewsTab } from "@/components/media-detail/tabs/news-tab";
+import { ProgressionTab } from "@/components/media-detail/tabs/progression-tab";
 import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch-tab";
 import { MediaType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,10 +46,10 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           {isMobile ? "Voir/Acheter" : "Où voir/acheter"}
         </TabsTrigger>
         <TabsTrigger 
-          value="news" 
+          value="progression" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
         >
-          Actualités
+          Progression
         </TabsTrigger>
       </TabsList>
       
@@ -80,8 +80,12 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
             />
           </TabsContent>
           
-          <TabsContent value="news" className="mt-0 mb-0">
-            <NewsTab type={type} />
+          <TabsContent value="progression" className="mt-0 mb-0">
+            <ProgressionTab 
+              mediaId={id} 
+              mediaType={type} 
+              mediaDetails={additionalInfo}
+            />
           </TabsContent>
         </div>
       </ScrollArea>
