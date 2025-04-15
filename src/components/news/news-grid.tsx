@@ -3,10 +3,11 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Calendar, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { NewsItem } from "@/services/news-service";
+import { cn } from "@/lib/utils";
 
 interface NewsGridProps {
   items: NewsItem[];
@@ -59,7 +60,7 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
       </Button>
       
       <ScrollArea className="h-[calc(100vh-230px)]">
-        <div className="space-y-4 px-1 pb-20">
+        <div className="space-y-5 px-2 pb-20">
           {items.map((item) => (
             <NewsCard 
               key={item.id} 
@@ -126,43 +127,72 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     }
   };
 
+  const getBorderGlow = (category: string) => {
+    switch(category) {
+      case 'film': return 'shadow-blue-500/20';
+      case 'serie': return 'shadow-purple-500/20';
+      case 'book': return 'shadow-emerald-500/20';
+      case 'game': return 'shadow-amber-500/20';
+      default: return 'shadow-slate-500/20';
+    }
+  };
+
   return (
     <Card 
-      className="overflow-hidden bg-secondary/40 border-border/50 transition-transform hover:scale-[1.01] active:scale-[0.99]"
+      className={cn(
+        "overflow-hidden bg-card/50 backdrop-blur-sm border-border/30",
+        "transition-all duration-300 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]",
+        getBorderGlow(item.category)
+      )}
       onClick={onSelect}
     >
-      <div className="relative h-44">
+      <div className="relative h-48 sm:h-52">
         <img 
           src={getImageUrl()}
           alt={title}
           className="w-full h-full object-cover"
           onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/10" />
         
-        <div className="absolute bottom-0 left-0 p-4">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className={`text-xs text-white px-2 py-0.5 rounded-full ${getCategoryColor(item.category)}`}>
-              {item.category === 'film' ? 'Film' : 
-               item.category === 'serie' ? 'Série' : 
-               item.category === 'book' ? 'Livre' : 
-               item.category === 'game' ? 'Jeu' : 'Actu'}
-            </span>
-            <span className="text-xs text-white/80">
-              {item.source} • {formatDistanceToNow(new Date(item.date), { 
-                addSuffix: true,
-                locale: fr
-              })}
+        <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-medium text-white px-2 py-0.5 rounded-full ${getCategoryColor(item.category)}`}>
+                {item.category === 'film' ? 'Film' : 
+                 item.category === 'serie' ? 'Série' : 
+                 item.category === 'book' ? 'Livre' : 
+                 item.category === 'game' ? 'Jeu' : 'Actu'}
+              </span>
+              <span className="flex items-center gap-1 text-xs text-white/80">
+                <Calendar className="h-3 w-3" />
+                {formatDistanceToNow(new Date(item.date), { 
+                  addSuffix: true,
+                  locale: fr
+                })}
+              </span>
+            </div>
+            <span className="text-xs text-white/90 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm">
+              {item.source}
             </span>
           </div>
           
-          <h3 className="text-white font-bold text-lg line-clamp-2">{title}</h3>
+          <h3 className="text-white font-bold text-lg leading-tight drop-shadow-md">{title}</h3>
+          
+          {item.description && (
+            <p className="text-white/80 text-sm line-clamp-2 leading-snug drop-shadow-sm">
+              {decodeHtmlEntities(item.description)}
+            </p>
+          )}
+          
           <Button 
             variant="secondary" 
             size="sm" 
-            className="text-white/90 mt-1.5 bg-white/20 hover:bg-white/30"
+            className="mt-1.5 w-fit bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white/90 border border-white/10"
           >
-            Lire l'article
+            <span className="flex items-center gap-1">
+              Lire l'article <ExternalLink className="h-3 w-3" />
+            </span>
           </Button>
         </div>
       </div>

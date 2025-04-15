@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Loader2, ExternalLink, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fetchNews } from "@/services/news-service";
+import { enhanceTextVisibility, floatingElement } from "@/lib/utils";
 
 interface NewsTabProps {
   type: MediaType;
@@ -105,10 +106,10 @@ export function NewsTab({ type, title }: NewsTabProps) {
       </h2>
       <div className="space-y-4">
         {news.map((item) => (
-          <Card key={item.id} className="overflow-hidden">
+          <Card key={item.id} className="overflow-hidden border-border/30 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
             <div className="flex flex-col md:flex-row">
               {item.image && (
-                <div className="w-full md:w-1/4 h-48 md:h-auto">
+                <div className="w-full md:w-1/4 h-52 md:h-auto relative">
                   <img 
                     src={item.image} 
                     alt={item.title} 
@@ -117,29 +118,31 @@ export function NewsTab({ type, title }: NewsTabProps) {
                       (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}
                   />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent md:hidden" />
                 </div>
               )}
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col relative">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start gap-2">
-                    <CardTitle className="text-lg">{item.title}</CardTitle>
-                    <Badge variant="secondary" className="shrink-0">
+                    <CardTitle className="text-xl font-bold leading-tight">{item.title}</CardTitle>
+                    <Badge variant="secondary" className="shrink-0 bg-black/30 backdrop-blur-sm border-white/20 text-white/90">
                       {item.source}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2 flex-1">
                   {item.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-3">
+                    <p className="text-sm text-foreground/90 line-clamp-3 leading-relaxed">
                       {item.description}
                     </p>
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-between items-center pt-0">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs flex items-center gap-1 text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
                     {formatDate(item.date)}
                   </span>
-                  <Button size="sm" variant="outline" asChild>
+                  <Button size="sm" variant="outline" asChild className="bg-primary/10 backdrop-blur-sm border-primary/30 hover:bg-primary/20">
                     <a href={item.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
                       Lire <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
