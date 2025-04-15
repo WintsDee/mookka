@@ -43,9 +43,6 @@ const Bibliotheque = () => {
         <header className="px-6 mb-6">
           <div className="flex justify-between items-center">
             <PageTitle title="Ma Bibliothèque" />
-            <Button variant="outline" size="icon">
-              <FilterIcon className="h-4 w-4" />
-            </Button>
           </div>
           
           <div className="mt-4 relative">
@@ -57,6 +54,10 @@ const Bibliotheque = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+            
+            <Button variant="outline" size="icon" className="absolute right-0 top-0">
+              <FilterIcon className="h-4 w-4" />
+            </Button>
           </div>
           
           <div className="mt-4">

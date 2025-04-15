@@ -55,13 +55,15 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       <header className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-lg font-medium truncate">{title}</h2>
+        <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        
+        <div className="mx-2 overflow-hidden flex-1">
+          <h2 className="text-md font-medium whitespace-nowrap overflow-hidden text-ellipsis">{title}</h2>
         </div>
-        <div className="flex items-center gap-3">
+        
+        <div className="flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <Type className="h-4 w-4 text-muted-foreground" />
             <Switch 
