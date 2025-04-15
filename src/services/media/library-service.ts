@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType } from "@/types";
+import { Media, MediaType, MediaStatus } from "@/types";
 import { formatLibraryMedia } from './formatters';
 
 /**
@@ -237,7 +237,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
 /**
  * Mettre à jour le statut d'un média dans la bibliothèque
  */
-export async function updateMediaStatus(mediaId: string, status: 'to-watch' | 'watching' | 'completed'): Promise<void> {
+export async function updateMediaStatus(mediaId: string, status: MediaStatus): Promise<void> {
   try {
     const { data: user } = await supabase.auth.getUser();
     

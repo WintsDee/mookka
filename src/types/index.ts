@@ -1,6 +1,11 @@
 
 export type MediaType = 'film' | 'serie' | 'book' | 'game';
 
+export type MediaStatus = 
+  | 'to-watch' | 'watching' | 'completed'  // Common/legacy statuses
+  | 'to-read' | 'reading'                  // Book statuses
+  | 'to-play' | 'playing';                 // Game statuses
+
 export interface Media {
   id: string;
   title: string;
@@ -8,7 +13,7 @@ export interface Media {
   coverImage: string;
   year?: number;
   rating?: number;
-  status?: 'to-watch' | 'watching' | 'completed';
+  status?: MediaStatus;
   genres?: string[];
   description?: string;
   duration?: string; // Pour films et séries
