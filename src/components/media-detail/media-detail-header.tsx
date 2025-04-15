@@ -20,11 +20,12 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
 
   return (
     <div className="relative h-44 w-full">
+      {/* Back button - repositioned to be above the thumbnail */}
       <Button 
         variant="ghost" 
         size="icon" 
         className={cn(
-          "absolute top-6 left-4 z-10 p-2",
+          "absolute top-2 left-4 z-20 p-2",
           floatingElement('button', 'high')
         )}
         onClick={() => navigate(-1)}
@@ -33,7 +34,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       </Button>
       
       {/* Rating Display in Top Right */}
-      <div className="absolute top-6 right-4 z-10 flex gap-2">
+      <div className="absolute top-2 right-4 z-20 flex gap-2">
         {formattedMedia.rating && (
           <MediaRatingBadge 
             rating={formattedMedia.rating} 
@@ -56,7 +57,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           alt={formattedMedia.title} 
           className="w-full h-full object-cover"
         />
-        <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/70")} />
+        <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/75")} />
       </div>
       
       <div className="absolute bottom-0 left-0 p-6 w-full flex items-end">

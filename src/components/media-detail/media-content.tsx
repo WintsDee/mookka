@@ -26,7 +26,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       onValueChange={setActiveTab}
       className="w-full h-full flex flex-col overflow-hidden"
     >
-      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0">
+      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
         <TabsTrigger 
           value="overview" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
@@ -53,8 +53,8 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
         </TabsTrigger>
       </TabsList>
       
-      <ScrollArea className="flex-1 overflow-auto pb-20">
-        <div className="px-4 py-4 pb-24">
+      <ScrollArea className="flex-1 overflow-auto">
+        <div className="px-4 py-4 pb-28">
           <TabsContent value="overview" className="mt-0 mb-0">
             <OverviewTab 
               description={formattedMedia.description?.replace(/<br>/g, '\n')} 
