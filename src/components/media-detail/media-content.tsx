@@ -23,7 +23,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
     <Tabs 
       value={activeTab}
       onValueChange={setActiveTab}
-      className="w-full h-full flex flex-col overflow-hidden"
+      className="w-full h-full flex flex-col overflow-hidden pt-0"
     >
       <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border rounded-none p-0">
         <TabsTrigger 

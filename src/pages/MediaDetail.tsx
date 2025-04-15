@@ -12,8 +12,8 @@ import { AddToCollectionDialog } from "@/components/collections/add-to-collectio
 import { useCollections } from "@/hooks/use-collections";
 import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
-import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 import { MediaContent } from "@/components/media-detail/media-content";
+import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -94,7 +94,8 @@ const MediaDetail = () => {
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 
-          type={type as MediaType} 
+          type={type as MediaType}
+          onAddToCollection={() => setAddToCollectionOpen(true)}
         />
         
         <div className="flex-1 overflow-hidden">
