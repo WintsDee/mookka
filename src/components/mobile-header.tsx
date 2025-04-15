@@ -34,7 +34,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   }, []);
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50 border-b border-border/10">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16">
       {title && <h1 className="text-lg font-semibold">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0">
@@ -51,11 +51,11 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
         {children}
         <Link to="/notifications" className={cn(
           "relative",
-          isNotificationsActive ? "text-[#33C3F0]" : "text-muted-foreground"
+          isNotificationsActive ? "text-primary" : "text-muted-foreground"
         )}>
           <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
           {/* Notification indicator */}
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#33C3F0]"></span>
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
         </Link>
         
         <Link
@@ -63,7 +63,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
           className={cn(
             "flex items-center justify-center",
             isProfileActive 
-              ? "text-[#33C3F0]" 
+              ? "text-primary" 
               : "text-muted-foreground hover:text-foreground"
           )}
         >

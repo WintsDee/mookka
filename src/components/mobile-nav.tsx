@@ -2,51 +2,39 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  BookOpen, 
-  MessageCircle, 
+  Library, 
   Search, 
-  Globe,
-  BookmarkIcon,
+  Users, 
+  Newspaper,
+  Bookmark,
 } from 'lucide-react';
-import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/bibliotheque', icon: BookOpen, label: 'Bibliothèque' },
-    { path: '/collections', icon: BookmarkIcon, label: 'Collections' },
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
+    { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
-    { path: '/social', icon: MessageCircle, label: 'Social' },
-    { path: '/actualites', icon: Globe, label: 'Actualités' },
+    { path: '/social', icon: Users, label: 'Social' },
+    { path: '/actualites', icon: Newspaper, label: 'Actualités' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#1A1F2C] border-t border-border/30 pb-safe z-50">
-      <div className="grid grid-cols-5 gap-1 py-3">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link 
-              key={item.path} 
-              to={item.path} 
-              className="flex flex-col items-center justify-center py-1.5"
-            >
-              <div className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-full mb-1",
-                isActive ? "text-[#33C3F0]" : "text-neutral-400",
-              )}>
-                <item.icon size={22} strokeWidth={1.8} />
-              </div>
-              <span className={cn(
-                "text-xs font-medium",
-                isActive ? "text-[#33C3F0]" : "text-neutral-400"
-              )}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t pb-safe">
+      <div className="grid grid-cols-5 gap-2 py-2">
+        {navItems.map((item) => (
+          <Link 
+            key={item.path} 
+            to={item.path} 
+            className={`flex flex-col items-center justify-center ${
+              location.pathname === item.path ? 'text-primary' : 'text-muted-foreground'
+            }`}
+          >
+            <item.icon size={20} />
+            <span className="text-xs mt-1">{item.label}</span>
+          </Link>
+        ))}
       </div>
     </nav>
   );
