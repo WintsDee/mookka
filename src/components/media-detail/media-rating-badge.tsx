@@ -6,15 +6,26 @@ interface MediaRatingBadgeProps {
   rating: number;
   label?: string;
   size?: "small" | "medium" | "large";
+  maxRating?: number;
 }
 
-export function MediaRatingBadge({ rating, label, size = "medium" }: MediaRatingBadgeProps) {
-  // Format rating to one decimal place if needed
-  const formattedRating = typeof rating === 'number' 
-    ? (rating % 1 === 0 ? rating.toString() : rating.toFixed(1))
+export function MediaRatingBadge({ 
+  rating, 
+  label, 
+  size = "medium", 
+  maxRating = 10
+}: MediaRatingBadgeProps) {
+  // Normalize rating to scale of 10 if necessary
+  const normalizedRating = maxRating !== 10 
+    ? (rating / maxRating) * 10
     : rating;
+  
+  // Format normalized rating to one decimal place (or as integer if it's a whole number)
+  const formattedRating = normalizedRating % 1 === 0 
+    ? normalizedRating.toString() 
+    : normalizedRating.toFixed(1);
     
-  // Generate color based on rating
+  // Generate color based on normalized rating
   const getColorClass = (rating: number) => {
     if (rating < 5) return "bg-destructive text-white";
     if (rating < 7) return "bg-amber-500 text-white";
@@ -38,7 +49,7 @@ export function MediaRatingBadge({ rating, label, size = "medium" }: MediaRating
       <div 
         className={cn(
           "flex items-center justify-center rounded-md font-bold shadow-md",
-          getColorClass(Number(rating)),
+          getColorClass(Number(normalizedRating)),
           sizeClasses[size]
         )}
       >

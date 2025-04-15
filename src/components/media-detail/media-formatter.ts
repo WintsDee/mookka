@@ -11,7 +11,7 @@ export function formatMediaDetails(media: any, type: MediaType): any {
         title: media.title,
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.release_date ? media.release_date.substring(0, 4) : null,
-        rating: media.vote_average || null,
+        rating: normalizeRating(media.vote_average, 10),
         genres: media.genres?.map((g: any) => g.name) || [],
         description: media.overview,
         duration: media.runtime ? `${media.runtime} min` : null,
@@ -25,7 +25,7 @@ export function formatMediaDetails(media: any, type: MediaType): any {
         title: media.name,
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.first_air_date ? media.first_air_date.substring(0, 4) : null,
-        rating: media.vote_average || null,
+        rating: normalizeRating(media.vote_average, 10),
         genres: media.genres?.map((g: any) => g.name) || [],
         description: media.overview,
         duration: media.number_of_seasons ? `${media.number_of_seasons} saison${media.number_of_seasons > 1 ? 's' : ''}` : null,
@@ -41,6 +41,7 @@ export function formatMediaDetails(media: any, type: MediaType): any {
         genres: media.volumeInfo?.categories || [],
         description: media.volumeInfo?.description,
         author: media.volumeInfo?.authors?.join(', '),
+        rating: normalizeRating(media.volumeInfo?.averageRating, 5), // Google Books uses rating out of 5
         type: 'book'
       };
       break;
@@ -50,7 +51,7 @@ export function formatMediaDetails(media: any, type: MediaType): any {
         title: media.name,
         coverImage: media.background_image || '/placeholder.svg',
         year: media.released ? media.released.substring(0, 4) : null,
-        rating: media.rating || null,
+        rating: normalizeRating(media.rating, 5), // RAWG uses rating out of 5
         genres: media.genres?.map((g: any) => g.name) || [],
         description: media.description_raw,
         publisher: media.publishers?.length > 0 ? media.publishers[0].name : null,
@@ -61,6 +62,21 @@ export function formatMediaDetails(media: any, type: MediaType): any {
   }
   
   return formattedMedia;
+}
+
+// Helper function to normalize ratings to a 10-point scale
+function normalizeRating(rating: number | undefined, sourceScale: number): number | null {
+  if (rating === undefined || rating === null) {
+    return null;
+  }
+  
+  // Convert the rating to the 10-point scale if it's not already
+  if (sourceScale !== 10) {
+    return parseFloat(((rating / sourceScale) * 10).toFixed(1));
+  }
+  
+  // Already on 10-point scale, just ensure one decimal place
+  return parseFloat(rating.toFixed(1));
 }
 
 export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: MediaType): any {
@@ -107,6 +123,10 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
       info.maturityRating = media.volumeInfo?.maturityRating;
       info.publishDate = media.volumeInfo?.publishedDate;
       info.awards = media.awards || [];
+      // Add normalized metacritic score if available
+      info.metacritic = media.volumeInfo?.averageRating 
+        ? normalizeRating(media.volumeInfo.averageRating, 5) 
+        : undefined;
       break;
       
     case 'game':
@@ -114,7 +134,7 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
       info.publisher = formattedMedia.publisher;
       info.platform = formattedMedia.platform;
       info.esrbRating = media.esrb_rating?.name;
-      info.metacritic = media.metacritic;
+      info.metacritic = media.metacritic ? normalizeRating(media.metacritic, 100) : undefined; // Metacritic uses 100-point scale
       info.genres = media.genres?.map((g: any) => g.name).join(', ');
       info.releaseDate = media.released;
       info.website = media.website;
