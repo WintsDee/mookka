@@ -12,6 +12,7 @@ import { CollectionDetailActions } from "@/components/collections/collection-det
 import { CollectionMediaGrid } from "@/components/collections/collection-media-grid";
 import { CollectionLoading } from "@/components/collections/collection-loading";
 import { CollectionType, CollectionVisibility, CollectionItem } from "@/types/collection";
+import { Media } from "@/types";
 
 const CollectionDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,9 +22,9 @@ const CollectionDetail = () => {
   const queryClient = useQueryClient();
   const [isFollowing, setIsFollowing] = useState(false);
   
-  // Récupérer les détails de la collection
+  // Retrieve collection details
   const {
-    data,
+    data: collection,
     isLoading,
     error
   } = useQuery({
@@ -32,7 +33,7 @@ const CollectionDetail = () => {
     enabled: !!id
   });
   
-  // Mutation pour suivre une collection
+  // Mutation to follow a collection
   const followMutation = useMutation({
     mutationFn: (collectionId: string) => followCollection(collectionId),
     onSuccess: () => {
@@ -53,7 +54,7 @@ const CollectionDetail = () => {
     }
   });
   
-  // Mutation pour ne plus suivre une collection
+  // Mutation to unfollow a collection
   const unfollowMutation = useMutation({
     mutationFn: (collectionId: string) => unfollowCollection(collectionId),
     onSuccess: () => {
@@ -74,7 +75,7 @@ const CollectionDetail = () => {
     }
   });
   
-  // Gérer le clic sur le bouton de suivi
+  // Handle follow button click
   const handleToggleFollow = () => {
     if (!id) return;
     
@@ -85,7 +86,7 @@ const CollectionDetail = () => {
     }
   };
   
-  // Gérer le clic sur le bouton de retour
+  // Handle back button click
   const handleGoBack = () => {
     // Check if there's state from react-router indicating where we came from
     if (location.state?.from) {
@@ -106,7 +107,7 @@ const CollectionDetail = () => {
     );
   }
   
-  if (error || !data) {
+  if (error || !collection) {
     return (
       <Background>
         <MobileHeader />
@@ -116,16 +117,15 @@ const CollectionDetail = () => {
     );
   }
   
-  const { collection, items } = data;
-  
-  // Convert items to match CollectionItem type
-  const typedItems: CollectionItem[] = items.map(item => ({
-    ...item,
-    media: {
-      ...item.media,
-      status: item.media.status as "to-watch" | "watching" | "completed"
-    }
-  }));
+  // Convert media items to CollectionItem type as expected by CollectionMediaGrid
+  const collectionItems: CollectionItem[] = collection.items?.map((item: Media, index: number) => ({
+    id: `${collection.id}-${item.id}`,
+    collectionId: collection.id,
+    mediaId: item.id,
+    position: index,
+    addedAt: new Date().toISOString(),
+    media: item
+  })) || [];
 
   return (
     <Background>
@@ -147,7 +147,7 @@ const CollectionDetail = () => {
         />
         
         <CollectionMediaGrid 
-          items={typedItems}
+          items={collectionItems}
           collectionType={collection.type as CollectionType}
           fromPath={location.pathname}
         />

@@ -15,7 +15,7 @@ export interface CollectionData {
   profile?: {
     username?: string;
     avatar_url?: string;
-  };
+  } | null;
 }
 
 export interface CollectionItemData {

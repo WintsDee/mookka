@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Collection } from "@/types/collection";
 import { Media, MediaType } from "@/types";
-import { mapCollectionFromDB } from "../../components/collections/collection-types";
+import { mapCollectionFromDB, CollectionData } from "../../components/collections/collection-types";
 
 export async function getCollectionById(id: string): Promise<Collection | null> {
   try {
@@ -71,8 +71,11 @@ export async function getCollectionById(id: string): Promise<Collection | null> 
       platform: item.media.platform
     }));
 
+    // Cast to CollectionData to ensure type safety
+    const collectionData = collection as unknown as CollectionData;
+    
     // Use the mapCollectionFromDB utility to convert the DB format to our app format
-    const mappedCollection = mapCollectionFromDB(collection);
+    const mappedCollection = mapCollectionFromDB(collectionData);
     
     // Add the media items to the collection
     return {
