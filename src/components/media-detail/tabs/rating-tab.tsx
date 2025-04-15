@@ -74,11 +74,11 @@ export function RatingTab({ mediaId, mediaType, initialRating = 0 }: RatingTabPr
   if (!isAuthenticated) {
     return (
       <div>
-        <h2 className="text-lg font-medium mb-4">Noter ce média</h2>
+        <h2 className="text-lg font-medium mb-4">Critiquer ce média</h2>
         <Card className="bg-secondary/40 border-border">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Vous devez être connecté pour noter ce média
+              Vous devez être connecté pour critiquer ce média
             </p>
             <Button variant="default" size="sm">
               Se connecter
@@ -91,7 +91,7 @@ export function RatingTab({ mediaId, mediaType, initialRating = 0 }: RatingTabPr
 
   return (
     <div>
-      <h2 className="text-lg font-medium mb-4">Noter ce média</h2>
+      <h2 className="text-lg font-medium mb-4">Critiquer ce média</h2>
       <MediaRating 
         mediaId={mediaId} 
         mediaType={mediaType}

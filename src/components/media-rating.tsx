@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, Loader2 } from "lucide-react";
+import { Star, Loader2, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
@@ -101,61 +101,68 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
         throw new Error("Utilisateur non connecté");
       }
       
-      // Vérifier si le média existe déjà dans la bibliothèque de l'utilisateur
-      const { data: existingMedia } = await supabase
-        .from('user_media')
-        .select('id')
-        .eq('media_id', mediaId)
-        .eq('user_id', user.user.id)
-        .maybeSingle();
-      
-      if (existingMedia) {
-        // Mettre à jour la note existante
-        const { error } = await supabase
+      // Auto-save feature - handle immediate saving without submit
+      const handleAutoSave = async () => {
+        // Vérifier si le média existe déjà dans la bibliothèque de l'utilisateur
+        const { data: existingMedia } = await supabase
           .from('user_media')
-          .update({
-            user_rating: values.rating,
-            notes: values.review,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingMedia.id);
-          
-        if (error) throw error;
-      } else {
-        // Créer une nouvelle entrée
-        const { error } = await supabase
-          .from('user_media')
-          .insert({
-            user_id: user.user.id,
-            media_id: mediaId,
-            user_rating: values.rating,
-            notes: values.review,
-            status: 'rated'
-          });
-          
-        if (error) throw error;
-      }
+          .select('id')
+          .eq('media_id', mediaId)
+          .eq('user_id', user.user.id)
+          .maybeSingle();
+        
+        if (existingMedia) {
+          // Mettre à jour la note existante
+          const { error } = await supabase
+            .from('user_media')
+            .update({
+              user_rating: values.rating,
+              notes: values.review,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingMedia.id);
+            
+          if (error) throw error;
+        } else {
+          // Créer une nouvelle entrée
+          const { error } = await supabase
+            .from('user_media')
+            .insert({
+              user_id: user.user.id,
+              media_id: mediaId,
+              user_rating: values.rating,
+              notes: values.review,
+              status: 'rated'
+            });
+            
+          if (error) throw error;
+        }
+        
+        setUserRating(values.rating);
+      };
       
-      setUserRating(values.rating);
+      await handleAutoSave();
       
       toast({
-        title: "Note enregistrée",
-        description: `Vous avez noté ce ${
-          mediaType === 'film' ? 'film' : 
-          mediaType === 'serie' ? 'série' : 
-          mediaType === 'book' ? 'livre' : 'jeu'
-        } ${values.rating}/10`,
+        title: "Critique enregistrée",
+        description: `Votre critique a été enregistrée`,
       });
     } catch (error: any) {
       console.error("Erreur lors de l'enregistrement de la note:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer votre note",
+        description: "Impossible d'enregistrer votre critique",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Fonction pour sauvegarder automatiquement lorsque le rating change
+  const handleRatingChange = async (newRating: number) => {
+    form.setValue("rating", newRating);
+    await form.handleSubmit(onSubmit)();
   };
 
   if (isLoading) {
@@ -172,7 +179,7 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
         <Card className="bg-secondary/40 border-border">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-muted-foreground mb-2">
-              Vous devez être connecté pour noter ce média
+              Vous devez être connecté pour critiquer ce média
             </p>
             <Button variant="default" size="sm">
               Se connecter
@@ -207,6 +214,7 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
                           step={1}
                           onValueChange={(vals) => {
                             field.onChange(vals[0]);
+                            handleRatingChange(vals[0]);
                           }}
                           className="py-4"
                         />
@@ -225,12 +233,23 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
                   name="review"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm">Avis (optionnel)</FormLabel>
+                      <FormLabel className="flex items-center gap-1 text-sm">
+                        <MessageCircle className="h-4 w-4" /> 
+                        Critique
+                      </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Partagez votre avis sur ce média..."
-                          className="resize-none bg-background/60"
+                          placeholder="Partagez votre critique de ce média..."
+                          className="resize-none bg-background/60 min-h-32"
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            // Attendre un peu avant d'enregistrer pour éviter trop de requêtes
+                            const debounceTimer = setTimeout(() => {
+                              form.handleSubmit(onSubmit)();
+                            }, 500);
+                            return () => clearTimeout(debounceTimer);
+                          }}
                         />
                       </FormControl>
                     </FormItem>
@@ -248,7 +267,7 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
                       Enregistrement...
                     </>
                   ) : (
-                    "Enregistrer ma note"
+                    "Enregistrer ma critique"
                   )}
                 </Button>
               </form>

@@ -130,10 +130,7 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
         [mediaId]: newProgressionData
       });
       
-      toast({
-        title: "Progression mise à jour",
-        description: "Votre progression a été enregistrée",
-      });
+      // Toast de confirmation supprimé
     } catch (error) {
       console.error("Erreur:", error);
       toast({
