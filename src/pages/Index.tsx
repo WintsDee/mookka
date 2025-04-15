@@ -27,24 +27,27 @@ const Index = () => {
             className="w-32 h-32 mb-6 animate-scale-in"
           />
           
-          <h1 className="text-4xl font-bold mb-6 flex items-center justify-center">
+          <h1 className="text-4xl font-bold mb-2 flex items-center justify-center">
             <span className="text-blue-500">Mookka</span>
           </h1>
           
-          <p className="text-lg mb-8 text-white">
-            Gérez vos films, séries, livres et jeux vidéo en un seul endroit. 
-            Suivez votre progression, notez vos favoris et découvrez les 
-            recommandations de vos amis.
+          <p className="text-lg mb-4 text-white font-medium">
+            Votre bibliothèque numérique
           </p>
           
-          <div className="space-y-4 w-full">
-            <Link to="/bibliotheque">
+          <p className="text-md mb-8 text-white/90 px-4">
+            Suivez vos films, séries, livres et jeux. Découvrez, notez et partagez 
+            vos médias préférés avec votre communauté.
+          </p>
+          
+          <div className="space-y-4 w-full flex flex-col sm:flex-row sm:space-y-0 sm:space-x-4 justify-center">
+            <Link to="/bibliotheque" className="w-full sm:w-auto">
               <Button size="lg" className="w-full">
                 Commencer maintenant
               </Button>
             </Link>
             
-            <Link to="/connexion">
+            <Link to="/connexion" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full">
                 Se connecter
               </Button>
