@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 
@@ -165,7 +164,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         rating: formattedMedia.rating,
         genres: formattedMedia.genres,
         description: formattedMedia.description,
-        status: 'in-library',
+        status: 'to-watch' as const,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
@@ -199,7 +198,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       rating: formattedMedia.rating,
       genres: formattedMedia.genres,
       description: formattedMedia.description,
-      status: userMedia.status,
+      status: userMedia.status as 'to-watch' | 'watching' | 'completed',
       duration: formattedMedia.duration,
       director: formattedMedia.director,
       author: formattedMedia.author,
@@ -267,7 +266,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
       userRating: item.user_rating,
       genres: item.media.genres,
       description: item.media.description,
-      status: item.status,
+      status: (item.status || 'to-watch') as 'to-watch' | 'watching' | 'completed',
       addedAt: item.added_at,
       notes: item.notes,
       duration: item.media.duration,
@@ -283,7 +282,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
 }
 
 // Mettre à jour le statut d'un média dans la bibliothèque
-export async function updateMediaStatus(mediaId: string, status: string): Promise<void> {
+export async function updateMediaStatus(mediaId: string, status: 'to-watch' | 'watching' | 'completed'): Promise<void> {
   try {
     const { data: user } = await supabase.auth.getUser();
     

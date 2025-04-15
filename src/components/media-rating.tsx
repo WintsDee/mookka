@@ -52,7 +52,6 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
           return;
         }
         
-        // Utiliser user_media au lieu de media_ratings
         const { data, error } = await supabase
           .from('user_media')
           .select('user_rating, notes')
