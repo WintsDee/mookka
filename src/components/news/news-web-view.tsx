@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useLocalStorage } from "@/hooks/use-local-storage";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NewsWebViewProps {
   url: string;
@@ -31,22 +32,47 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   const fetchTextContent = async (articleUrl: string) => {
     setLoading(true);
     try {
-      // Utiliser la fonction edge pour extraire le contenu
-      // Notez que cela n'est pas implémenté côté serveur dans cet exemple
-      // Pour une implémentation réelle, il faudrait créer cette fonction edge
-      setArticleContent(`<div class="article-content">
-        <h1>${title}</h1>
-        <div class="article-text">
-          <p>Cet article est affiché en mode texte pour améliorer les performances. Le contenu est extrait de l'article original.</p>
-          <p>Pour une expérience complète, désactivez le mode texte seulement.</p>
-        </div>
-      </div>`);
+      // Appel à la fonction Edge pour extraire le contenu
+      const { data, error } = await supabase.functions.invoke('fetch-news/extract-content', {
+        body: { url: articleUrl }
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Si on a du contenu, on l'affiche
+      if (data && data.content) {
+        // Organiser le contenu avec du HTML basique
+        setArticleContent(`
+          <div class="article-content">
+            <h1 class="text-xl font-bold mb-4">${title}</h1>
+            <div class="article-text space-y-4">
+              ${data.content.map((paragraph: string) => `<p>${paragraph}</p>`).join('')}
+            </div>
+          </div>
+        `);
+      } else {
+        // Contenu par défaut si l'extraction échoue
+        setArticleContent(`
+          <div class="article-content">
+            <h1 class="text-xl font-bold mb-4">${title}</h1>
+            <div class="article-text space-y-4">
+              <p>Le contenu de cet article n'a pas pu être extrait automatiquement.</p>
+              <p>Essayez de consulter l'article original en désactivant le mode texte seulement.</p>
+            </div>
+          </div>
+        `);
+      }
     } catch (error) {
       console.error("Erreur lors de l'extraction du contenu:", error);
-      setArticleContent(`<div class="error-message">
-        <h2>Impossible d'extraire le contenu</h2>
-        <p>Veuillez essayer de visualiser l'article complet en désactivant le mode texte.</p>
-      </div>`);
+      // Message d'erreur en cas d'échec
+      setArticleContent(`
+        <div class="error-message">
+          <h2 class="text-xl font-bold text-red-500 mb-4">Impossible d'extraire le contenu</h2>
+          <p>Veuillez essayer de visualiser l'article complet en désactivant le mode texte.</p>
+        </div>
+      `);
     } finally {
       setLoading(false);
     }
@@ -88,7 +114,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
         
         {textOnly ? (
           <div 
-            className="w-full h-full overflow-auto p-4 md:p-8 md:max-w-3xl md:mx-auto article-content"
+            className="w-full h-full overflow-auto p-4 md:p-8 md:max-w-3xl md:mx-auto prose dark:prose-invert prose-headings:mb-2 prose-p:my-2"
             dangerouslySetInnerHTML={{ __html: articleContent }}
           />
         ) : (

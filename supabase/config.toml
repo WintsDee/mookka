@@ -1,19 +1,8 @@
 
-project_id = "your-project-id"
-
-[api]
-enabled = false
-port = 54321
-schemas = ["public", "storage"]
-
-[db]
-port = 54322
-
-[realtime]
-enabled = false
-
-[storage]
-enabled = false
+project_id = "fake-project-id"
 
 [functions.fetch-news]
+verify_jwt = false
+
+[functions."fetch-news/extract-content"]
 verify_jwt = false
