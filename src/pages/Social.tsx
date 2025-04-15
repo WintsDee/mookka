@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -9,7 +8,7 @@ import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { MobileHeader } from "@/components/mobile-header";
-import { Media } from "@/types";
+import { Media, MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -27,9 +26,16 @@ interface Activity {
   media: {
     id: string;
     title: string;
-    type: string;
+    type: MediaType;
   };
   timestamp: string;
+}
+
+// Basic profile interface to handle user data
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
 }
 
 const Social = () => {
@@ -73,7 +79,7 @@ const Social = () => {
           mediaMap[item.id] = {
             id: item.id,
             title: item.title,
-            type: item.type,
+            type: item.type as MediaType,
             coverImage: item.cover_image,
             year: item.year,
             rating: item.rating,
@@ -85,30 +91,27 @@ const Social = () => {
 
         // Get user profiles
         const userIds = [...new Set(userMedia.map(item => item.user_id))];
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, avatar_url')
-          .in('id', userIds);
-
-        if (profilesError) throw profilesError;
-
-        // Create a map of profiles by ID
-        const profilesMap: Record<string, any> = {};
-        profiles?.forEach(profile => {
-          profilesMap[profile.id] = {
-            id: profile.id,
-            name: profile.full_name || 'Utilisateur',
-            avatar: profile.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + profile.id
+        
+        // Create default profiles as fallback
+        const defaultProfiles: Record<string, UserProfile> = {};
+        userIds.forEach(id => {
+          defaultProfiles[id] = {
+            id,
+            full_name: 'Utilisateur',
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`
           };
         });
-
+        
+        // Create a map of profiles by ID using the default profiles
+        const profilesMap: Record<string, any> = { ...defaultProfiles };
+        
         // Create activities from the data
         const activitiesData = userMedia.map(item => {
           const mediaItem = mediaMap[item.media_id];
           const profileItem = profilesMap[item.user_id] || {
             id: item.user_id,
             name: 'Utilisateur',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + item.user_id
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`
           };
 
           let action = 'a ajouté';
@@ -125,12 +128,16 @@ const Social = () => {
 
           return {
             id: item.id,
-            user: profileItem,
+            user: {
+              id: profileItem.id,
+              name: profileItem.name || profileItem.full_name || 'Utilisateur',
+              avatar: profileItem.avatar || profileItem.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileItem.id}`
+            },
             action,
             media: {
               id: item.media_id,
               title: mediaItem?.title || 'Titre inconnu',
-              type: mediaItem?.type || 'film'
+              type: mediaItem?.type as MediaType || 'film' as MediaType
             },
             timestamp: item.added_at
           };
