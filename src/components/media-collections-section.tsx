@@ -17,20 +17,27 @@ interface MediaCollectionsSectionProps {
 export function MediaCollectionsSection({ mediaId }: MediaCollectionsSectionProps) {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isAddingToCollection, setIsAddingToCollection] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
     const fetchCollections = async () => {
-      if (!mediaId) return;
+      if (!mediaId) {
+        setLoading(false);
+        return;
+      }
       
       setLoading(true);
+      setError(null);
+      
       try {
         const data = await getCollectionsForMedia(mediaId);
         setCollections(data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des collections:", error);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des collections:", err);
+        setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
       } finally {
         setLoading(false);
       }
@@ -40,6 +47,15 @@ export function MediaCollectionsSection({ mediaId }: MediaCollectionsSectionProp
   }, [mediaId]);
   
   const handleAddToCollection = async (collectionId: string) => {
+    if (!mediaId || !collectionId) {
+      toast({
+        title: "Erreur",
+        description: "Données manquantes pour ajouter à la collection",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsAddingToCollection(true);
     try {
       await addMediaToCollection(collectionId, mediaId);
@@ -64,6 +80,23 @@ export function MediaCollectionsSection({ mediaId }: MediaCollectionsSectionProp
       setIsAddingToCollection(false);
     }
   };
+
+  if (error) {
+    return (
+      <div className="bg-muted/40 rounded-md p-4 text-center">
+        <p className="text-sm text-destructive">
+          Une erreur est survenue lors du chargement des collections.
+        </p>
+        <Button 
+          variant="link" 
+          className="mt-1 h-auto p-0"
+          onClick={() => window.location.reload()}
+        >
+          Réessayer
+        </Button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -11,17 +11,20 @@ import {
 } from '@/services/collection-service';
 import { Collection, CollectionType, CollectionVisibility } from '@/types/collection';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useProfile } from '@/hooks/use-profile';
 
 export function useCollections() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useProfile();
 
   const { 
     data: myCollections = [], 
     isLoading: loadingMyCollections 
   } = useQuery({
     queryKey: ['collections', 'my'],
-    queryFn: getMyCollections
+    queryFn: getMyCollections,
+    enabled: isAuthenticated // N'exécute pas la requête si l'utilisateur n'est pas authentifié
   });
 
   const { 
@@ -37,7 +40,8 @@ export function useCollections() {
     isLoading: loadingFollowedCollections 
   } = useQuery({
     queryKey: ['collections', 'followed'],
-    queryFn: getFollowedCollections
+    queryFn: getFollowedCollections,
+    enabled: isAuthenticated // N'exécute pas la requête si l'utilisateur n'est pas authentifié
   });
 
   const createCollectionMutation = useMutation({
@@ -83,6 +87,7 @@ export function useCollections() {
   });
   
   const getCollectionsContainingMedia = async (mediaId: string) => {
+    if (!mediaId) return [];
     return await getCollectionsForMedia(mediaId);
   };
 

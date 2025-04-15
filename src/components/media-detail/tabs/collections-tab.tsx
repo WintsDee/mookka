@@ -13,6 +13,16 @@ interface CollectionsTabProps {
 export function CollectionsTab({ mediaId }: CollectionsTabProps) {
   const { isAuthenticated } = useProfile();
 
+  if (!mediaId) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">
+          Impossible de gérer les collections pour ce média.
+        </p>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="text-center py-8">
