@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
@@ -13,6 +12,8 @@ import { MobileHeader } from "@/components/mobile-header";
 import { MediaCollectionsSection } from "@/components/media-collections-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { useCollections } from "@/hooks/use-collections";
+import { MediaRating } from "@/components/media-rating";
+import { MediaAdditionalInfo } from "@/components/media-additional-info";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -69,7 +70,7 @@ const MediaDetail = () => {
       setIsAddingToLibrary(false);
     }
   };
-  
+
   const handleAddToCollection = (collectionId: string) => {
     if (!id) return;
     
@@ -101,7 +102,6 @@ const MediaDetail = () => {
     );
   }
 
-  // Formater les données selon le type de média
   let formattedMedia: any = {};
   
   switch (type) {
@@ -160,7 +160,6 @@ const MediaDetail = () => {
       break;
   }
 
-  // Fonction pour afficher les informations spécifiques selon le type de média
   const renderTypeSpecificInfo = () => {
     switch (type) {
       case "film":
@@ -194,11 +193,43 @@ const MediaDetail = () => {
     }
   };
 
+  const getAdditionalInfo = () => {
+    const info: any = {
+      mediaType: type,
+      releaseDate: formattedMedia.year ? `${formattedMedia.year}` : undefined,
+      duration: formattedMedia.duration
+    };
+    
+    switch(type) {
+      case 'film':
+        info.director = formattedMedia.director;
+        info.studio = media.production_companies?.[0]?.name;
+        info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
+        break;
+      case 'serie':
+        info.seasons = media.number_of_seasons;
+        info.episodes = media.number_of_episodes;
+        info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
+        break;
+      case 'book':
+        info.author = formattedMedia.author;
+        info.publisher = media.volumeInfo?.publisher;
+        info.pages = media.volumeInfo?.pageCount;
+        break;
+      case 'game':
+        info.developer = media.developers?.[0]?.name;
+        info.publisher = formattedMedia.publisher;
+        info.platform = formattedMedia.platform;
+        break;
+    }
+    
+    return info;
+  };
+
   return (
     <Background>
       <MobileHeader />
       <div className="relative pb-24">
-        {/* Header avec image de couverture */}
         <div className="relative h-72 w-full">
           <Button 
             variant="ghost" 
@@ -256,7 +287,6 @@ const MediaDetail = () => {
           </div>
         </div>
         
-        {/* Actions */}
         <div className="flex justify-around py-4 px-2 bg-secondary/40 backdrop-blur-sm border-y border-border">
           <Button variant="ghost" size="sm" className="flex flex-col items-center" onClick={() => setIsLiked(!isLiked)}>
             <Heart className={`h-5 w-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
@@ -291,14 +321,19 @@ const MediaDetail = () => {
           </Button>
         </div>
         
-        {/* Contenu principal */}
         <div className="p-6 space-y-6">
-          {/* Collections */}
+          {id && type && (
+            <MediaRating 
+              mediaId={id} 
+              mediaType={type}
+              initialRating={0}
+            />
+          )}
+          
           {id && (
             <MediaCollectionsSection mediaId={id} />
           )}
           
-          {/* Description */}
           {formattedMedia.description && (
             <div>
               <h2 className="text-lg font-medium mb-2">Synopsis</h2>
@@ -306,20 +341,13 @@ const MediaDetail = () => {
             </div>
           )}
           
-          {/* Informations spécifiques selon le type */}
           <div>
             <h2 className="text-lg font-medium mb-2">Informations</h2>
-            <Card className="bg-secondary/40 border-border">
-              <CardContent className="p-4">
-                {renderTypeSpecificInfo()}
-                {formattedMedia.year && <p className="text-sm text-muted-foreground mt-1">Année: <span className="text-foreground">{formattedMedia.year}</span></p>}
-              </CardContent>
-            </Card>
+            <MediaAdditionalInfo {...getAdditionalInfo()} />
           </div>
         </div>
       </div>
       
-      {/* Dialog pour ajouter à une collection */}
       <AddToCollectionDialog
         open={addToCollectionOpen}
         onOpenChange={setAddToCollectionOpen}
