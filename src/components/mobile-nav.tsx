@@ -8,7 +8,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 
-// Custom Book Icon Component with a more stylized design
+// Custom Book Icon Component matching the provided style
 const BookIcon = ({ size = 22, className = '' }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -17,14 +17,14 @@ const BookIcon = ({ size = 22, className = '' }) => (
     viewBox="0 0 24 24" 
     fill="none" 
     stroke="currentColor" 
-    strokeWidth="1.5" 
+    strokeWidth="2" 
     strokeLinecap="round" 
     strokeLinejoin="round" 
     className={className}
   >
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H22" />
-    <path d="M6.5 2H22v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-    <path d="M12 10h4" strokeWidth="1.2" />
+    <path d="M4 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8" />
+    <path d="M12 6V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4" />
+    <path d="M12 6h8v6" strokeWidth="2" />
   </svg>
 );
 
