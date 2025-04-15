@@ -1,13 +1,10 @@
-
 /**
  * Filter out adult content from media results
  */
 export function filterAdultContent(mediaList: any[]): any[] {
+  // Keep only the most explicit keywords to avoid over-filtering
   const adultContentKeywords = [
-    'xxx', 'erotic', 'érotique', 'adult', 'adulte', 'sex', 'sexe', 'sexy', 'porn', 'porno',
-    'pornographique', 'nude', 'nu', 'nue', 'naked', 'mature', 'kinky', 'fetish', 'fétiche',
-    'bdsm', 'kamasutra', 'nudité', 'explicit', 'explicite', 'hot', 'sensual', 'sensuel',
-    'seduction', 'séduction'
+    'xxx', 'porn', 'porno', 'pornographique', 'bdsm', 'kamasutra', 'explicit'
   ];
   
   return mediaList.filter(media => {
@@ -19,7 +16,7 @@ export function filterAdultContent(mediaList: any[]): any[] {
     
     const contentText = `${title} ${description} ${genres}`;
     
-    // Vérifier si le contenu contient des mots-clés inappropriés
+    // Only filter out explicit adult content
     return !adultContentKeywords.some(keyword => contentText.includes(keyword));
   });
 }

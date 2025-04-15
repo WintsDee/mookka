@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 
 const corsHeaders = {
@@ -44,18 +43,16 @@ Deno.serve(async (req) => {
       case 'book':
         apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
         
-        // Pour les livres, améliorer la requête pour favoriser les romans, mangas, etc.
+        // Simplified query for books to ensure we get enough results
         let bookQuery = query
         if (!id) {
-          // Ajouter des paramètres pour améliorer la qualité des résultats
-          // Utiliser des opérateurs de recherche avancée
-          const genreFilter = 'subject:fiction OR subject:roman OR subject:manga OR subject:bande-dessinee OR subject:comics'
-          bookQuery = `${query} ${genreFilter}`
+          // Less restrictive filter to ensure we get more results
+          bookQuery = `${query} subject:fiction OR intitle:${query}`
         }
         
         apiUrl = id 
           ? `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
-          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(bookQuery)}&key=${apiKey}&langRestrict=fr&orderBy=relevance&maxResults=40`
+          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(bookQuery)}&key=${apiKey}&maxResults=40`
         break
       case 'game':
         apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
@@ -71,57 +68,26 @@ Deno.serve(async (req) => {
     const response = await fetch(apiUrl)
     const data = await response.json()
 
-    // Filtrage des contenus inappropriés et académiques pour Google Books
+    // Less restrictive filtering for books
     if (type === 'book' && !id && data.items) {
-      // Mots-clés pour le contenu adulte
+      // Mots-clés pour le contenu adulte (keep only the most explicit ones)
       const adultContentKeywords = [
-        'xxx', 'erotic', 'érotique', 'adult', 'adulte', 'sex', 'sexe', 'sexy', 'porn', 'porno',
-        'pornographique', 'nude', 'nu', 'nue', 'naked', 'mature', 'kinky', 'fetish', 'fétiche',
-        'bdsm', 'kamasutra', 'nudité', 'explicit', 'explicite', 'hot', 'sensual', 'sensuel',
-        'seduction', 'séduction'
-      ]
-      
-      // Mots-clés pour les contenus académiques et essais à éviter
-      const academicKeywords = [
-        'academic', 'textbook', 'manuel', 'thesis', 'thèse', 'dissertation', 'essay', 
-        'essai', 'biography', 'biographie', 'self-help', 'développement personnel',
-        'business', 'management', 'education', 'reference', 'mathematics',
-        'mathématiques', 'philosophy', 'philosophie', 'religion', 'political', 'politique',
-        'economics', 'économie', 'medical', 'médical', 'law', 'droit', 'computer science',
-        'étude', 'studies', 'research', 'recherche', 'scientific', 'scientifique',
-        'proceedings', 'conference', 'journal', 'revue', 'encyclopedia', 'encyclopédie'
+        'xxx', 'erotic', 'érotique', 'porn', 'porno',
+        'pornographique', 'bdsm', 'kamasutra', 'explicit', 'explicite'
       ]
       
       data.items = data.items.filter((item: any) => {
         const title = (item.volumeInfo?.title || '').toLowerCase()
         const description = (item.volumeInfo?.description || '').toLowerCase()
-        const categories = Array.isArray(item.volumeInfo?.categories) 
-          ? item.volumeInfo.categories.join(' ').toLowerCase() 
-          : ''
         
-        const contentText = `${title} ${description} ${categories}`
+        const contentText = `${title} ${description}`
         
-        // Éliminer les contenus inappropriés
-        const hasAdultContent = adultContentKeywords.some(keyword => contentText.includes(keyword))
-        if (hasAdultContent) return false
-        
-        // Éliminer la plupart des contenus académiques sauf s'ils ont des caractéristiques de fiction
-        const hasAcademicContent = academicKeywords.some(keyword => contentText.includes(keyword))
-        const hasFictionContent = contentText.includes('fiction') || 
-                                 contentText.includes('roman') || 
-                                 contentText.includes('manga') ||
-                                 contentText.includes('bande dessinée') ||
-                                 contentText.includes('comics') ||
-                                 contentText.includes('fantasy') ||
-                                 contentText.includes('aventure') ||
-                                 contentText.includes('fantastique')
-        
-        // Garder les contenus qui ne sont pas académiques ou qui sont clairement de la fiction
-        return !hasAcademicContent || hasFictionContent
+        // Only filter out explicit adult content, be more permissive otherwise
+        return !adultContentKeywords.some(keyword => contentText.includes(keyword))
       })
     }
     
-    // Filtrage supplémentaire pour les jeux vidéo
+    // Filtering for games (keep existing code)
     if (type === 'game' && !id && data.results) {
       // Ordonner les jeux par pertinence
       data.results.sort((a: any, b: any) => {
