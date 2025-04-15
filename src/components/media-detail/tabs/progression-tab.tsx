@@ -36,7 +36,7 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
             .select('*')
             .eq('media_id', mediaId)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
             
           if (error && error.code !== 'PGRST116') {
             console.error("Erreur lors de la récupération de la progression:", error);
