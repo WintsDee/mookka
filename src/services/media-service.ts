@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 
@@ -64,42 +65,157 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
           apiResults = apiData.items?.map((item: any) => {
             const publishedDate = item.volumeInfo?.publishedDate;
             const publishedYear = publishedDate ? parseInt(publishedDate.substring(0, 4)) : null;
+            const categories = item.volumeInfo?.categories || [];
+            const title = item.volumeInfo?.title || 'Sans titre';
+            const description = item.volumeInfo?.description || '';
+            
+            // Calculer un score de pertinence basé sur le contenu
+            let relevanceScore = 0;
+            
+            // Liste des catégories préférées (divertissement)
+            const preferredCategories = [
+              'fiction', 'roman', 'manga', 'bande dessinée', 'bd', 'comics', 'graphic novel',
+              'fantasy', 'sci-fi', 'science fiction', 'thriller', 'mystery', 'policier', 'adventure',
+              'aventure', 'young adult', 'jeunesse', 'fantastique', 'horreur', 'horror'
+            ];
+            
+            // Liste des catégories à éviter (académiques, essais, etc.)
+            const avoidCategories = [
+              'academic', 'textbook', 'manuel', 'thesis', 'thèse', 'dissertation', 'essay', 
+              'essai', 'biography', 'biographie', 'self-help', 'développement personnel',
+              'business', 'management', 'education', 'reference', 'science', 'mathematics',
+              'mathématiques', 'philosophy', 'philosophie', 'religion', 'political', 'politique',
+              'economics', 'économie', 'medical', 'médical', 'law', 'droit', 'computer science'
+            ];
+            
+            // Vérifier les catégories
+            for (const category of categories) {
+              const lowerCategory = category.toLowerCase();
+              
+              // Bonus pour les catégories préférées
+              for (const preferred of preferredCategories) {
+                if (lowerCategory.includes(preferred)) {
+                  relevanceScore += 20;
+                  break;
+                }
+              }
+              
+              // Pénalité pour les catégories à éviter
+              for (const avoid of avoidCategories) {
+                if (lowerCategory.includes(avoid)) {
+                  relevanceScore -= 30;
+                  break;
+                }
+              }
+            }
+            
+            // Vérifier le titre et la description pour les mots-clés pertinents
+            const lowerTitle = title.toLowerCase();
+            const lowerDescription = description.toLowerCase();
+            const contentText = `${lowerTitle} ${lowerDescription}`;
+            
+            for (const preferred of preferredCategories) {
+              if (contentText.includes(preferred)) {
+                relevanceScore += 10;
+              }
+            }
+            
+            for (const avoid of avoidCategories) {
+              if (contentText.includes(avoid)) {
+                relevanceScore -= 15;
+              }
+            }
+            
+            // Bonus pour les livres avec des images de couverture (généralement plus pertinents)
+            if (item.volumeInfo?.imageLinks?.thumbnail) {
+              relevanceScore += 15;
+            }
+            
+            // Bonus pour les livres avec des avis (généralement plus pertinents)
+            if (item.volumeInfo?.averageRating) {
+              relevanceScore += item.volumeInfo.averageRating * 5;
+            }
+            
+            if (item.volumeInfo?.ratingsCount) {
+              relevanceScore += Math.min(item.volumeInfo.ratingsCount / 10, 20);
+            }
+            
+            // Bonus pour les livres récents (mais pas trop non plus pour les classiques)
+            if (publishedYear) {
+              if (publishedYear > 2000) {
+                relevanceScore += Math.min((publishedYear - 2000) / 5, 15);
+              } else if (publishedYear < 1900) {
+                // Bonus pour les classiques
+                relevanceScore += 10;
+              }
+            }
             
             return {
               id: item.id,
-              title: item.volumeInfo?.title || 'Sans titre',
+              title: title,
               type,
               coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
               year: publishedYear,
               author: item.volumeInfo?.authors ? item.volumeInfo.authors[0] : null,
-              // Calculer un score de popularité basé sur les ratings et review counts
-              popularity: (
-                (item.volumeInfo?.averageRating || 0) * 20 + 
-                (item.volumeInfo?.ratingsCount || 0) / 10 +
-                (item.volumeInfo?.pageCount ? Math.min(item.volumeInfo.pageCount / 1000, 10) : 0) +
-                // Favoriser les livres récents
-                (publishedYear && publishedYear > 2000 ? (publishedYear - 2000) / 5 : 0)
-              ),
+              popularity: relevanceScore,
+              categories: categories,
               externalData: item
             };
           }) || [];
           
-          // Tri par popularité pour Google Books
+          // Filtrer les livres avec un score de pertinence trop bas
+          apiResults = apiResults.filter(item => item.popularity > -20);
+          
+          // Tri par score de pertinence pour Google Books
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
         case 'game':
-          apiResults = apiData.results?.map((item: any) => ({
-            id: item.id.toString(),
-            title: item.name,
-            type,
-            coverImage: item.background_image || '/placeholder.svg',
-            year: item.released ? parseInt(item.released.substring(0, 4)) : null,
-            rating: item.rating || null,
-            popularity: item.rating_top || 0,
-            externalData: item
-          })) || [];
+          apiResults = apiData.results?.map((item: any) => {
+            const releaseYear = item.released ? parseInt(item.released.substring(0, 4)) : null;
+            
+            // Calcul d'un score de pertinence amélioré pour les jeux
+            let gameRelevance = 0;
+            
+            // Prioriser les jeux avec des notes élevées
+            if (item.rating) {
+              gameRelevance += item.rating * 10; // 0-50 points basé sur la notation 0-5
+            }
+            
+            // Prioriser les jeux populaires
+            if (item.ratings_count) {
+              gameRelevance += Math.min(item.ratings_count / 100, 40); // Max 40 points
+            }
+            
+            // Bonus pour les jeux récents
+            if (releaseYear) {
+              if (releaseYear >= 2015) {
+                gameRelevance += Math.min((releaseYear - 2015) * 2, 20); // Max 20 points
+              }
+            }
+            
+            // Bonus pour les jeux avec des images
+            if (item.background_image) {
+              gameRelevance += 15;
+            }
+            
+            // Bonus pour les jeux avec beaucoup de plateformes (généralement plus connus)
+            if (item.platforms && Array.isArray(item.platforms)) {
+              gameRelevance += Math.min(item.platforms.length * 2, 20); // Max 20 points
+            }
+            
+            return {
+              id: item.id.toString(),
+              title: item.name,
+              type,
+              coverImage: item.background_image || '/placeholder.svg',
+              year: releaseYear,
+              rating: item.rating || null,
+              popularity: gameRelevance,
+              externalData: item
+            };
+          }) || [];
           
-          // Tri par popularité pour RAWG
+          // Tri par pertinence pour RAWG
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
       }
@@ -144,10 +260,10 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       if (a.fromDatabase && !b.fromDatabase) return -1;
       if (!a.fromDatabase && b.fromDatabase) return 1;
       
-      // Ensuite, trier par popularité ou rating
-      const aRating = a.rating || 0;
-      const bRating = b.rating || 0;
-      return bRating - aRating;
+      // Ensuite, trier par popularité calculée ou rating
+      const aPopularity = a.popularity || a.rating || 0;
+      const bPopularity = b.popularity || b.rating || 0;
+      return bPopularity - aPopularity;
     });
     
     return { results: mergedResults };
