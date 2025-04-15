@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { X, ArrowLeft, Type } from "lucide-react";
+import { X, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -20,19 +19,15 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   
   useEffect(() => {
     if (textOnly) {
-      // Si mode texte seulement, on tente d'extraire le contenu
       fetchTextContent(url);
     } else {
-      // Sinon on réinitialise le contenu extrait
       setArticleContent("");
     }
   }, [url, textOnly]);
   
-  // Fonction pour extraire le contenu textuel d'un article
   const fetchTextContent = async (articleUrl: string) => {
     setLoading(true);
     try {
-      // Appel à la fonction Edge pour extraire le contenu
       const { data, error } = await supabase.functions.invoke('fetch-news/extract-content', {
         body: { url: articleUrl }
       });
@@ -41,9 +36,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
         throw new Error(error.message);
       }
       
-      // Si on a du contenu, on l'affiche
       if (data && data.content) {
-        // Organiser le contenu avec du HTML basique
         setArticleContent(`
           <div class="article-content">
             <h1 class="text-xl font-bold mb-4">${title}</h1>
@@ -53,7 +46,6 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
           </div>
         `);
       } else {
-        // Contenu par défaut si l'extraction échoue
         setArticleContent(`
           <div class="article-content">
             <h1 class="text-xl font-bold mb-4">${title}</h1>
@@ -66,7 +58,6 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       }
     } catch (error) {
       console.error("Erreur lors de l'extraction du contenu:", error);
-      // Message d'erreur en cas d'échec
       setArticleContent(`
         <div class="error-message">
           <h2 class="text-xl font-bold text-red-500 mb-4">Impossible d'extraire le contenu</h2>
@@ -81,10 +72,6 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       <header className="flex items-center justify-between p-4 border-b">
-        <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        
         <div className="mx-2 overflow-hidden flex-1">
           <h2 className="text-md font-medium whitespace-nowrap overflow-hidden text-ellipsis">{title}</h2>
         </div>
