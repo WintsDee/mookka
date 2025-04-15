@@ -45,7 +45,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
-      <div className="grid grid-cols-5 gap-2 py-3 pb-6">
+      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4"> {/* Added px-4 for horizontal padding */}
         {navItems.map((item) => (
           <Link 
             key={item.path} 
