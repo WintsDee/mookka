@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
@@ -12,6 +13,7 @@ import { useCollections } from "@/hooks/use-collections";
 import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
+import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 import { addMediaToLibrary } from "@/services/media-service";
 
 const MediaDetail = () => {
@@ -76,6 +78,12 @@ const MediaDetail = () => {
       });
     } finally {
       setIsAddingToLibrary(false);
+    }
+  };
+
+  const handleAddToCollection = (collectionId: string) => {
+    if (addMediaToCollection && id) {
+      addMediaToCollection({ collectionId, mediaId: id });
     }
   };
 
