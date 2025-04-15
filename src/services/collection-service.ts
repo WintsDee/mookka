@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Collection, 
@@ -5,7 +6,7 @@ import {
   CollectionType, 
   CollectionVisibility 
 } from "@/types/collection";
-import { Media } from "@/types";
+import { Media, MediaType } from "@/types";
 
 export async function getMyCollections() {
   const { data, error } = await supabase
@@ -109,7 +110,8 @@ export async function getFollowedCollections() {
     visibility: follower.collection.visibility as CollectionVisibility,
     createdAt: follower.collection.created_at,
     updatedAt: follower.collection.updated_at,
-    ownerId: follower.collection.owner_id
+    ownerId: follower.collection.owner_id,
+    itemCount: 0
   }));
 }
 
@@ -151,13 +153,13 @@ export async function getCollectionById(id: string) {
     media: {
       id: item.media.id,
       title: item.media.title,
-      type: item.media.type,
+      type: item.media.type as MediaType,
       coverImage: item.media.cover_image,
       year: item.media.year,
       rating: item.media.rating,
       genres: item.media.genres,
       description: item.media.description,
-      status: item.media?.status || 'to-watch',
+      status: 'to-watch', // Default value if not present
       duration: item.media.duration,
       director: item.media.director,
       author: item.media.author,

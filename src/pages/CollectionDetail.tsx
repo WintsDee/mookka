@@ -46,13 +46,7 @@ const CollectionDetail = () => {
   } = useQuery({
     queryKey: ['collection', id],
     queryFn: () => getCollectionById(id!),
-    enabled: !!id,
-    onSuccess: (data) => {
-      // Vérifier si l'utilisateur suit cette collection
-      // This would require checking user state or calling an API
-      // For now, we'll set it to false always
-      setIsFollowing(false);
-    }
+    enabled: !!id
   });
   
   // Mutation pour suivre une collection

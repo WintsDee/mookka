@@ -30,9 +30,9 @@ export function AddToCollectionDialog({
   const { 
     myCollections, 
     loadingMyCollections, 
-    getCollectionsContainingMedia,
     createCollection,
-    isCreatingCollection
+    isCreatingCollection,
+    getCollectionsContainingMedia
   } = useCollections();
 
   // Récupérer les collections qui contiennent déjà ce média

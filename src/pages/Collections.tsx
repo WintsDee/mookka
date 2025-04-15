@@ -50,7 +50,7 @@ const Collections = () => {
   };
   
   const filteredPersonalCollections = filterCollections(myCollections);
-  const filteredFollowedCollections = filterCollections(followedCollections);
+  const filteredFollowedCollections = filterCollections(followedCollections || []);
   const filteredCommunityCollections = filterCollections(publicCollections);
   
   const handleCreateCollection = (data) => {
