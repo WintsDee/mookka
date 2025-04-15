@@ -16,12 +16,12 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
   try {
     let queryParams = '';
     
-    // Ajouter le paramètre de type s'il est défini
+    // Add type parameter if defined
     if (type) {
       queryParams += `?type=${type}`;
     }
     
-    // Ajouter le paramètre de rafraîchissement s'il est activé
+    // Add refresh parameter if enabled
     if (forceRefresh) {
       queryParams += queryParams ? '&refresh=true' : '?refresh=true';
     }
@@ -39,17 +39,26 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
       return [];
     }
 
-    // Vérification que chaque élément contient les propriétés requises
-    const validatedNews = data.news.map((item: any) => ({
-      id: item.id || `item-${Math.random().toString(36).substring(7)}`,
-      title: item.title || "Titre non disponible",
-      link: item.link || "#",
-      source: item.source || "Source inconnue",
-      date: item.date || new Date().toISOString(),
-      image: item.image || "",
-      category: item.category || "general",
-      description: item.description || ""
-    }));
+    // Filter news to only include articles from the last 48 hours
+    const now = new Date();
+    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    
+    // Validate and filter news items
+    const validatedNews = data.news
+      .map((item: any) => ({
+        id: item.id || `item-${Math.random().toString(36).substring(7)}`,
+        title: item.title || "Titre non disponible",
+        link: item.link || "#",
+        source: item.source || "Source inconnue",
+        date: item.date || new Date().toISOString(),
+        image: item.image || "",
+        category: item.category || "general",
+        description: item.description || ""
+      }))
+      .filter((item: NewsItem) => {
+        const itemDate = new Date(item.date);
+        return !isNaN(itemDate.getTime()) && itemDate >= fortyEightHoursAgo;
+      });
 
     return validatedNews;
   } catch (error) {

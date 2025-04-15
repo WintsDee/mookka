@@ -5,8 +5,8 @@ import { toast } from "@/components/ui/sonner";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 
 export const useNews = () => {
-  const [allNews, setAllNews] = useState<NewsItem[]>([]); // Stocke toutes les actualités non filtrées
-  const [news, setNews] = useState<NewsItem[]>([]); // Actualités filtrées pour l'affichage
+  const [allNews, setAllNews] = useState<NewsItem[]>([]); // Stores all unfiltered news
+  const [news, setNews] = useState<NewsItem[]>([]); // Filtered news for display
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -33,7 +33,7 @@ export const useNews = () => {
       const uniqueSources = Array.from(new Set(newsData.map(item => item.source))).sort();
       setSources(uniqueSources);
       
-      // Update displayed news based on current filter
+      // Apply filters to the news data
       applyFilters(newsData, activeSource);
     } catch (error) {
       console.error("Erreur lors du chargement des actualités:", error);

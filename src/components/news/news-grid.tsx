@@ -49,17 +49,20 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
 
   return (
     <div className="relative">
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="absolute top-0 right-2 z-10"
-        onClick={onRefresh}
-        disabled={refreshing}
-      >
-        {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-      </Button>
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={onRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-1"
+        >
+          {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          <span className="hidden sm:inline">Rafraîchir</span>
+        </Button>
+      </div>
       
-      <ScrollArea className="h-[calc(100vh-230px)]">
+      <ScrollArea className="h-[calc(100vh-270px)]">
         <div className="space-y-5 px-2 pb-20">
           {items.map((item) => (
             <NewsCard 
