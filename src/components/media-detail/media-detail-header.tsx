@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Clock, ArrowLeft, Heart, BookmarkPlus, FolderPlus, Share } from "lucide-react";
+import { Star, Clock, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
 import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
@@ -11,19 +11,9 @@ interface MediaDetailHeaderProps {
   media: any;
   formattedMedia: any;
   type: MediaType;
-  onLike: () => void;
-  onAddToLibrary: () => void;
-  onAddToCollection: () => void;
 }
 
-export function MediaDetailHeader({ 
-  media, 
-  formattedMedia, 
-  type, 
-  onLike, 
-  onAddToLibrary, 
-  onAddToCollection 
-}: MediaDetailHeaderProps) {
+export function MediaDetailHeader({ media, formattedMedia, type }: MediaDetailHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -56,7 +46,7 @@ export function MediaDetailHeader({
             alt={formattedMedia.title} 
             className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg"
           />
-          <div className="flex-1">
+          <div>
             <h1 className={cn("text-2xl font-bold", enhanceTextVisibility('strong'))}>{formattedMedia.title}</h1>
             <div className="flex items-center mt-1 text-white/90">
               {formattedMedia.year && <span className="text-sm mr-3">{formattedMedia.year}</span>}
@@ -89,48 +79,6 @@ export function MediaDetailHeader({
                 ))}
               </div>
             )}
-            
-            {/* New section for action buttons */}
-            <div className="flex gap-2 mt-3">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1.5 h-auto py-1 px-2"
-                onClick={onLike}
-              >
-                <Heart className="h-4 w-4" />
-                <span className="text-xs">J'aime</span>
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1.5 h-auto py-1 px-2"
-                onClick={onAddToLibrary}
-              >
-                <BookmarkPlus className="h-4 w-4" />
-                <span className="text-xs">Ajouter</span>
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1.5 h-auto py-1 px-2"
-                onClick={onAddToCollection}
-              >
-                <FolderPlus className="h-4 w-4" />
-                <span className="text-xs">Collection</span>
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1.5 h-auto py-1 px-2"
-              >
-                <Share className="h-4 w-4" />
-                <span className="text-xs">Partager</span>
-              </Button>
-            </div>
           </div>
         </div>
       </div>
