@@ -84,7 +84,7 @@ const MediaDetail = () => {
   return (
     <Background>
       <MobileHeader />
-      <div className="relative pb-24">
+      <div className="relative flex flex-col h-screen">
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 
@@ -97,12 +97,14 @@ const MediaDetail = () => {
           onAddToCollection={() => setAddToCollectionOpen(true)} 
         />
         
-        <MediaContent 
-          id={id!} 
-          type={type as MediaType} 
-          formattedMedia={formattedMedia} 
-          additionalInfo={additionalInfo} 
-        />
+        <div className="flex-1 overflow-hidden">
+          <MediaContent 
+            id={id!} 
+            type={type as MediaType} 
+            formattedMedia={formattedMedia} 
+            additionalInfo={additionalInfo} 
+          />
+        </div>
       </div>
       
       <AddToCollectionDialog
@@ -114,6 +116,6 @@ const MediaDetail = () => {
       />
     </Background>
   );
-};
+}
 
 export default MediaDetail;
