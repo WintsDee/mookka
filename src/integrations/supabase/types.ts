@@ -205,6 +205,66 @@ export type Database = {
         }
         Relationships: []
       }
+      media_suggestions: {
+        Row: {
+          admin_notes: string | null
+          author: string | null
+          cover_url: string | null
+          creator: string | null
+          description: string | null
+          director: string | null
+          id: string
+          platform: string | null
+          processed_at: string | null
+          processed_by: string | null
+          publisher: string | null
+          status: string
+          suggested_at: string | null
+          suggested_by: string | null
+          title: string
+          type: string
+          year: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          author?: string | null
+          cover_url?: string | null
+          creator?: string | null
+          description?: string | null
+          director?: string | null
+          id?: string
+          platform?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          publisher?: string | null
+          status?: string
+          suggested_at?: string | null
+          suggested_by?: string | null
+          title: string
+          type: string
+          year?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          author?: string | null
+          cover_url?: string | null
+          creator?: string | null
+          description?: string | null
+          director?: string | null
+          id?: string
+          platform?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          publisher?: string | null
+          status?: string
+          suggested_at?: string | null
+          suggested_by?: string | null
+          title?: string
+          type?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -34,7 +34,7 @@ interface SuggestMediaDialogProps {
 }
 
 // Base schema for all media types
-const baseSchema = {
+const baseSchema = z.object({
   title: z.string().min(2, { message: "Le titre est requis" }),
   year: z.string().regex(/^\d{4}$/, { message: "L'année doit être au format YYYY" }).optional(),
   description: z.string().optional(),
@@ -42,36 +42,30 @@ const baseSchema = {
   confirmNonExistent: z.boolean().refine(val => val === true, {
     message: "Veuillez confirmer que ce média n'existe pas déjà dans la base de données"
   })
-};
+});
 
 // Media type specific schema extensions
 const getFormSchema = (mediaType: MediaType | "") => {
   switch (mediaType) {
     case "film":
-      return z.object({
-        ...baseSchema,
+      return baseSchema.extend({
         director: z.string().min(2, { message: "Le réalisateur est requis" }),
       });
     case "serie":
-      return z.object({
-        ...baseSchema,
+      return baseSchema.extend({
         creator: z.string().min(2, { message: "Le créateur est requis" }),
       });
     case "book":
-      return z.object({
-        ...baseSchema,
+      return baseSchema.extend({
         author: z.string().min(2, { message: "L'auteur est requis" }),
       });
     case "game":
-      return z.object({
-        ...baseSchema,
+      return baseSchema.extend({
         publisher: z.string().min(2, { message: "L'éditeur est requis" }),
         platform: z.string().min(2, { message: "La plateforme est requise" }),
       });
     default:
-      return z.object({
-        ...baseSchema,
-      });
+      return baseSchema;
   }
 };
 
@@ -87,27 +81,34 @@ export function SuggestMediaDialog({ open, onOpenChange, mediaType }: SuggestMed
       description: "",
       coverUrl: "",
       confirmNonExistent: false,
+      ...(mediaType === "film" ? { director: "" } : {}),
+      ...(mediaType === "serie" ? { creator: "" } : {}),
+      ...(mediaType === "book" ? { author: "" } : {}),
+      ...(mediaType === "game" ? { publisher: "", platform: "" } : {}),
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      // Prepare the suggestion object dynamically based on media type
+      const suggestionData = {
+        title: values.title,
+        type: mediaType,
+        year: values.year ? parseInt(values.year) : null,
+        description: values.description,
+        cover_url: values.coverUrl,
+        ...(mediaType === "film" && "director" in values && { director: (values as any).director }),
+        ...(mediaType === "serie" && "creator" in values && { creator: (values as any).creator }),
+        ...(mediaType === "book" && "author" in values && { author: (values as any).author }),
+        ...(mediaType === "game" && "publisher" in values && { publisher: (values as any).publisher }),
+        ...(mediaType === "game" && "platform" in values && { platform: (values as any).platform }),
+        status: 'pending'
+      };
+
       // Submit the suggestion to Supabase
       const { error } = await supabase
         .from('media_suggestions')
-        .insert({
-          title: values.title,
-          type: mediaType,
-          year: values.year ? parseInt(values.year) : null,
-          description: values.description,
-          cover_url: values.coverUrl,
-          ...("director" in values && { director: values.director }),
-          ...("creator" in values && { creator: values.creator }),
-          ...("author" in values && { author: values.author }),
-          ...("publisher" in values && { publisher: values.publisher }),
-          ...("platform" in values && { platform: values.platform }),
-          status: 'pending'
-        });
+        .insert(suggestionData);
 
       if (error) throw error;
 
@@ -143,6 +144,7 @@ export function SuggestMediaDialog({ open, onOpenChange, mediaType }: SuggestMed
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Base fields */}
             <FormField
               control={form.control}
               name="title"
@@ -171,6 +173,7 @@ export function SuggestMediaDialog({ open, onOpenChange, mediaType }: SuggestMed
               )}
             />
             
+            {/* Media type specific fields */}
             {mediaType === "film" && (
               <FormField
                 control={form.control}
