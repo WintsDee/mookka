@@ -2,7 +2,7 @@
 import React from "react";
 
 interface PageTitleProps {
-  title: string;
+  title?: string;
   children?: React.ReactNode;
 }
 
