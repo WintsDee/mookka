@@ -11,7 +11,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PageTitle } from "@/components/page-title";
 import { MobileHeader } from "@/components/mobile-header";
 
 const Bibliotheque = () => {
@@ -38,13 +37,9 @@ const Bibliotheque = () => {
 
   return (
     <Background>
-      <MobileHeader />
+      <MobileHeader title="Ma Bibliothèque" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
-          <div className="flex justify-between items-center">
-            <PageTitle title="Ma Bibliothèque" />
-          </div>
-          
           <div className="mt-4 relative">
             <Input
               type="text"
