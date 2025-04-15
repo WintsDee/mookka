@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
@@ -12,8 +11,8 @@ import { AddToCollectionDialog } from "@/components/collections/add-to-collectio
 import { useCollections } from "@/hooks/use-collections";
 import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
-import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 import { MediaContent } from "@/components/media-detail/media-content";
+import { addMediaToLibrary } from "@/services/media-service";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -21,6 +20,8 @@ const MediaDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
 
@@ -31,7 +32,6 @@ const MediaDetail = () => {
         try {
           const mediaData = await getMediaById(type as MediaType, id);
           
-          // Convertir les <br> en saut de ligne pour le détail du média
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
           }
@@ -53,11 +53,30 @@ const MediaDetail = () => {
     fetchMediaDetails();
   }, [type, id, toast]);
 
-  const handleAddToCollection = (collectionId: string) => {
-    if (!id) return;
-    
-    addMediaToCollection({ collectionId, mediaId: id });
-    setAddToCollectionOpen(false);
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
+  const handleAddToLibrary = async () => {
+    if (!media) return;
+
+    setIsAddingToLibrary(true);
+    try {
+      await addMediaToLibrary(media, type as MediaType);
+      toast({
+        title: "Succès",
+        description: `${type === 'film' ? 'Le film' : type === 'serie' ? 'La série' : type === 'book' ? 'Le livre' : 'Le jeu'} a été ajouté à votre bibliothèque`,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToLibrary(false);
+    }
   };
 
   if (isLoading) {
@@ -95,6 +114,9 @@ const MediaDetail = () => {
           media={media} 
           formattedMedia={formattedMedia} 
           type={type as MediaType} 
+          onLike={handleLike}
+          onAddToLibrary={handleAddToLibrary}
+          onAddToCollection={() => setAddToCollectionOpen(true)}
         />
         
         <div className="flex-1 overflow-hidden">
