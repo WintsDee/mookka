@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
+import { MobileHeader } from "@/components/mobile-header";
 import { MediaCard } from "@/components/media-card";
 import { MediaRecommendations } from "@/components/media-recommendations";
 import { mockMedia } from "@/data/mockData";
@@ -37,7 +38,8 @@ const Bibliotheque = () => {
 
   return (
     <Background>
-      <div className="pb-24 pt-6">
+      <MobileHeader />
+      <div className="pb-24 pt-20">
         <header className="px-6 mb-6">
           <div className="flex justify-between items-center">
             <PageTitle title="Ma Bibliothèque" />
