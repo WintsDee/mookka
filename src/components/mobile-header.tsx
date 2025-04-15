@@ -1,20 +1,24 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { currentUser } from "@/data/mockData";
+import { useProfile } from "@/hooks/use-profile";
 
 interface MobileHeaderProps {
   title?: string;
   children?: React.ReactNode;
 }
 
+const DEFAULT_AVATAR = "/lovable-uploads/40888565-eee1-470f-8c68-191de21023f8.png";
+
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();
   const isProfileActive = location.pathname === "/profil";
   const isNotificationsActive = location.pathname === "/notifications";
+  
+  const { profile } = useProfile();
   
   return (
     <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16">
@@ -52,8 +56,8 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
         >
           <Avatar className="w-8 h-8">
             <AvatarImage 
-              src={currentUser.avatar || "/lovable-uploads/40888565-eee1-470f-8c68-191de21023f8.png"} 
-              alt={currentUser.name} 
+              src={profile?.avatar_url || DEFAULT_AVATAR} 
+              alt={profile?.username || "Utilisateur"} 
             />
             <AvatarFallback>
               <User size={20} />
