@@ -71,17 +71,24 @@ export async function getCollectionById(id: string): Promise<Collection | null> 
       platform: item.media.platform
     }));
 
-    // Check if profile is a valid object with expected properties
-    const profileData = collection.profile && 
-      typeof collection.profile === 'object' && 
-      !Array.isArray(collection.profile) && 
-      'username' in collection.profile && 
-      'avatar_url' in collection.profile
-        ? { 
-            username: collection.profile.username as string, 
-            avatar_url: collection.profile.avatar_url as string 
-          } 
-        : null;
+    // Extract profile data with proper type checking
+    let profileData = null;
+    
+    // Check if profile is an object and has the expected properties
+    if (collection.profile && 
+        typeof collection.profile === 'object' && 
+        !Array.isArray(collection.profile)) {
+      
+      // Use a type assertion to help TypeScript understand this is a valid profile object
+      const profileObj = collection.profile as any;
+      
+      if ('username' in profileObj && 'avatar_url' in profileObj) {
+        profileData = {
+          username: profileObj.username as string,
+          avatar_url: profileObj.avatar_url as string
+        };
+      }
+    }
 
     // Cast and sanitize the collection data to ensure it matches our expected type
     const collectionData: CollectionData = {
