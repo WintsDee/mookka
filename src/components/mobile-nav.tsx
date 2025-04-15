@@ -7,7 +7,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 
-// Custom Minimalist Book/Library Icon Component
+// Custom Minimalist Book Icon Component
 const BookIcon = ({ size = 22, className = '' }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -21,10 +21,8 @@ const BookIcon = ({ size = 22, className = '' }) => (
     strokeLinejoin="round" 
     className={className}
   >
-    <path d="M4 7h16" />
-    <path d="M4 17h16" />
-    <path d="M10 7v10" />
-    <path d="M14 7v10" />
+    <path d="M4 6h6v12H4z" />
+    <path d="M14 6h6v12h-6z" />
   </svg>
 );
 
