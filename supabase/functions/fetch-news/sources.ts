@@ -4,12 +4,6 @@ import { NewsSource } from './types.ts';
 export const SOURCES: NewsSource[] = [
   // Cinéma et Séries
   {
-    name: 'AlloCiné',
-    url: 'https://www.allocine.fr/',
-    category: 'film',
-    rss: 'https://www.allocine.fr/rss/news.xml'
-  },
-  {
     name: 'CineSeries',
     url: 'https://www.cineserie.com/',
     category: 'serie',

@@ -65,8 +65,8 @@ const MediaDetail = () => {
   };
 
   const handleGoBack = () => {
-    // Navigate back to the previous page but preserve its state
-    navigate(previousPath, { replace: false });
+    // Navigate back to the previous page preserving state
+    navigate(previousPath, { replace: true });
   };
 
   if (isLoading) {

@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Clock } from "lucide-react";
+import { X, Clock } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MediaType } from "@/types";
 import { cn, overlayGradient, enhanceTextVisibility, floatingElement } from "@/lib/utils";
@@ -40,7 +40,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         )}
         onClick={handleGoBack}
       >
-        <ArrowLeft className="text-white w-6 h-6" />
+        <X className="text-white w-6 h-6" />
       </Button>
       
       <div className="absolute top-2 right-4 z-20 flex gap-2">
