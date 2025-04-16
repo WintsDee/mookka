@@ -47,8 +47,9 @@ export class RealtimeSyncService {
     // Set up listeners for all watched tables and events
     ['user_media', 'collections', 'profiles', 'media_progressions'].forEach((table: TableName) => {
       ['INSERT', 'UPDATE', 'DELETE'].forEach((event: DatabaseEvent) => {
+        // Use the channel.on method with the system event type
         mainChannel.on(
-          'postgres_changes',
+          'postgres_changes' as any, // Cast to any to work around type issue
           {
             event: event,
             schema: 'public',
