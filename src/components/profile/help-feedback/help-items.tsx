@@ -1,7 +1,8 @@
 
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";  // Import from lucide-react instead
 
 interface HelpItem {
   title: string;
