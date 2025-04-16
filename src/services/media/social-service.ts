@@ -49,9 +49,9 @@ export const getSocialShareSettings = async (): Promise<SocialShareSettings> => 
     }
     
     const { data, error } = await supabase
-      .from('user_settings')
+      .from('profiles')
       .select('social_share_settings')
-      .eq('user_id', user.user.id)
+      .eq('id', user.user.id)
       .maybeSingle();
     
     if (error) {
@@ -102,41 +102,18 @@ export const updateSocialShareSettings = async (settings: SocialShareSettings): 
       shareLibraryAdditions: settings.shareLibraryAdditions
     };
     
-    const { data, error } = await supabase
-      .from('user_settings')
-      .select('id')
-      .eq('user_id', user.user.id)
-      .maybeSingle();
+    // Mettre à jour directement dans la table profiles
+    const { error } = await supabase
+      .from('profiles')
+      .update({ 
+        social_share_settings: dbSettings as Json,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.user.id);
     
     if (error) {
-      console.error('Erreur lors de la vérification des paramètres existants:', error);
+      console.error('Erreur lors de la mise à jour des paramètres de partage social:', error);
       throw error;
-    }
-    
-    if (data) {
-      // Mettre à jour les paramètres existants
-      const { error: updateError } = await supabase
-        .from('user_settings')
-        .update({ social_share_settings: dbSettings as Json })
-        .eq('id', data.id);
-      
-      if (updateError) {
-        console.error('Erreur lors de la mise à jour des paramètres de partage social:', updateError);
-        throw updateError;
-      }
-    } else {
-      // Créer de nouveaux paramètres
-      const { error: insertError } = await supabase
-        .from('user_settings')
-        .insert({
-          user_id: user.user.id,
-          social_share_settings: dbSettings as Json
-        });
-      
-      if (insertError) {
-        console.error('Erreur lors de la création des paramètres de partage social:', insertError);
-        throw insertError;
-      }
     }
   } catch (error) {
     console.error('Erreur lors de la mise à jour des paramètres de partage social:', error);
