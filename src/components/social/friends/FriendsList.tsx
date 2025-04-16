@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Loader2, UserMinus, User, Search } from "lucide-react";
+import { Loader2, UserMinus, User, Search, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +9,7 @@ import { FriendRequests } from "./FriendRequests";
 import { Link } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import { Card } from "@/components/ui/card";
 
 export function FriendsList() {
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -65,31 +66,33 @@ export function FriendsList() {
   return (
     <div className="space-y-6 my-2">
       {/* Recherche amis */}
-      <div>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Rechercher parmi vos amis..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Rechercher parmi vos amis..."
+          className="pl-9 bg-secondary/20 border-secondary/30 focus-visible:ring-primary/30"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
       {/* Section demandes d'amitié */}
       <FriendRequests onRequestProcessed={handleRefresh} />
       
       {/* Liste des amis */}
-      <div>
+      <Card className="p-4 bg-secondary/10 border-secondary/20">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Vos amis</h3>
+          <div className="flex items-center gap-2">
+            <UsersRound className="h-5 w-5 text-primary/80" />
+            <h3 className="text-lg font-medium">Vos amis</h3>
+          </div>
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleRefresh} 
             disabled={refreshing}
+            className="text-xs hover:bg-secondary/20"
           >
             {refreshing && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
             Actualiser
@@ -113,8 +116,8 @@ export function FriendsList() {
           </div>
         ) : filteredFriends.length === 0 ? (
           <div className="text-center py-8 bg-secondary/20 rounded-lg">
-            <div className="w-12 h-12 bg-secondary/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-6 w-6 text-muted-foreground" />
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="h-8 w-8 text-primary/70" />
             </div>
             {searchQuery ? (
               <p className="text-muted-foreground">
@@ -126,21 +129,24 @@ export function FriendsList() {
                   Vous n'avez pas encore d'amis sur Mookka
                 </p>
                 <Link to="/social?tab=discover">
-                  <Button>Découvrir des utilisateurs</Button>
+                  <Button className="bg-primary/80 hover:bg-primary">Découvrir des utilisateurs</Button>
                 </Link>
               </>
             )}
           </div>
         ) : (
-          <ScrollArea className="h-[calc(100vh-400px)]">
-            <div className="space-y-2">
+          <ScrollArea className="h-[calc(100vh-440px)] md:h-[calc(100vh-400px)]">
+            <div className="grid gap-2 grid-cols-1">
               {filteredFriends.map((friend) => (
-                <div key={friend.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                <div 
+                  key={friend.id} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/40 transition-colors"
+                >
                   <Link to={`/profil/${friend.id}`} className="flex items-center gap-3 flex-1">
-                    <Avatar>
+                    <Avatar className="border-2 border-primary/20">
                       <AvatarImage src={friend.avatarUrl} alt={friend.username} />
-                      <AvatarFallback>
-                        <User className="h-5 w-5" />
+                      <AvatarFallback className="bg-primary/10 text-primary/80">
+                        {friend.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -164,7 +170,7 @@ export function FriendsList() {
             </div>
           </ScrollArea>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

@@ -7,10 +7,12 @@ import { ActivityFeed } from "@/components/social/activity/ActivityFeed";
 import { FriendsList } from "@/components/social/friends/FriendsList";
 import { FriendSearch } from "@/components/social/friends/FriendSearch";
 import { DiscoverProfiles } from "@/components/social/discover/DiscoverProfiles";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function SocialTabs() {
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   // Get active tab from URL parameters
   const getActiveTab = (): string => {
@@ -30,24 +32,38 @@ export function SocialTabs() {
       className="w-full" 
       onValueChange={handleTabChange}
     >
-      <TabsList className="w-full grid grid-cols-3">
-        <TabsTrigger value="activity">Activité</TabsTrigger>
-        <TabsTrigger value="friends">Amis</TabsTrigger>
-        <TabsTrigger value="discover">Découvrir</TabsTrigger>
+      <TabsList className="w-full grid grid-cols-3 bg-secondary/20 p-1">
+        <TabsTrigger 
+          value="activity" 
+          className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+        >
+          Activité
+        </TabsTrigger>
+        <TabsTrigger 
+          value="friends" 
+          className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+        >
+          Amis
+        </TabsTrigger>
+        <TabsTrigger 
+          value="discover" 
+          className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+        >
+          Découvrir
+        </TabsTrigger>
       </TabsList>
       
       <TabsContent value="activity" className="mt-4">
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className={isMobile ? "h-[calc(100vh-220px)]" : "h-[calc(100vh-200px)]"}>
           <ActivityFeed />
         </ScrollArea>
       </TabsContent>
       
       <TabsContent value="friends" className="mt-4">
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className={isMobile ? "h-[calc(100vh-220px)]" : "h-[calc(100vh-200px)]"}>
           <div className="space-y-6">
             <FriendsList />
-            <div className="mt-8 pt-4 border-t border-border/30">
-              <h3 className="text-lg font-medium mb-4">Trouver des amis</h3>
+            <div className="mt-6 pt-2">
               <FriendSearch />
             </div>
           </div>
@@ -55,7 +71,7 @@ export function SocialTabs() {
       </TabsContent>
       
       <TabsContent value="discover" className="mt-4">
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className={isMobile ? "h-[calc(100vh-220px)]" : "h-[calc(100vh-200px)]"}>
           <DiscoverProfiles />
         </ScrollArea>
       </TabsContent>
