@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,7 @@ import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import { AppServicesProvider } from "./contexts/app-services-context";
 import { AppUpdateNotification } from "./components/app-update-notification";
-import { create } from "zustand";
+import { create } from 'zustand';
 import { useEffect } from "react";
 
 // Create a new QueryClient with better caching settings
