@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
@@ -56,7 +55,7 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
         <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
 
         {/* Display subscription platforms first */}
-        {groupedByCategory.subscription && (
+        {groupedByCategory.subscription && groupedByCategory.subscription.length > 0 && (
           <PlatformList 
             key="subscription"
             type="streaming" 
@@ -68,7 +67,7 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
         )}
 
         {/* Then VOD platforms */}
-        {groupedByCategory.vod && (
+        {groupedByCategory.vod && groupedByCategory.vod.length > 0 && (
           <PlatformList 
             key="vod"
             type="purchase" 
@@ -80,7 +79,7 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
         )}
 
         {/* Finally free platforms */}
-        {groupedByCategory.free && (
+        {groupedByCategory.free && groupedByCategory.free.length > 0 && (
           <PlatformList 
             key="free"
             type="streaming" 
@@ -92,7 +91,7 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
         )}
 
         {/* Other platforms if any */}
-        {groupedByCategory.other && (
+        {groupedByCategory.other && groupedByCategory.other.length > 0 && (
           <PlatformList 
             key="other"
             type="other" 
