@@ -22,7 +22,17 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const handleGoBack = () => {
     // Check if there's state from react-router indicating where we came from
     if (location.state?.from) {
-      navigate(location.state.from, { replace: true });
+      const previousPath = location.state.from;
+      const searchParams = location.state.search || "";
+      
+      if (previousPath === "/recherche" && searchParams) {
+        navigate({
+          pathname: previousPath,
+          search: searchParams
+        }, { replace: true });
+      } else {
+        navigate(previousPath, { replace: true });
+      }
     } else {
       // Default fallback
       navigate(-1);

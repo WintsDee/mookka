@@ -25,6 +25,7 @@ export const SearchResults = ({
 }: SearchResultsProps) => {
   const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
   const location = useLocation();
+  const searchParams = location.search;
 
   if (isLoading) {
     return (
@@ -70,7 +71,7 @@ export const SearchResults = ({
               key={media.id} 
               media={media} 
               size="medium" 
-              from={location.pathname}
+              from={location.pathname + searchParams}
             />
           ))}
         </div>
@@ -84,4 +85,4 @@ export const SearchResults = ({
       {searchQuery.length > 2 && renderSuggestButton()}
     </>
   );
-};
+}

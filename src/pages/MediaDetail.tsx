@@ -25,8 +25,9 @@ const MediaDetail = () => {
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
 
-  // Store the previous path to navigate back correctly
+  // Store the previous path and search parameters to navigate back correctly
   const previousPath = location.state?.from || "/recherche";
+  const searchParams = location.state?.search || "";
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
@@ -65,8 +66,15 @@ const MediaDetail = () => {
   };
 
   const handleGoBack = () => {
-    // Navigate back to the previous page preserving state
-    navigate(previousPath, { replace: true });
+    // Navigate back to the previous page preserving state and search params
+    if (previousPath === "/recherche" && searchParams) {
+      navigate({
+        pathname: previousPath,
+        search: searchParams
+      }, { replace: true });
+    } else {
+      navigate(previousPath, { replace: true });
+    }
   };
 
   if (isLoading) {

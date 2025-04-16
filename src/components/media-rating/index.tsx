@@ -65,6 +65,7 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     );
   }
 
+  // Always render the form as if the user is authenticated
   return (
     <div className="space-y-4">
       {!form.formState.isSubmitted && (

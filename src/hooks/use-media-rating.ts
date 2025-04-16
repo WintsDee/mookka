@@ -19,7 +19,8 @@ export function useMediaRating(mediaId: string) {
 
   useEffect(() => {
     const fetchRating = async () => {
-      if (!isAuthenticated || !mediaId) return;
+      // Always assume the user is authenticated for now
+      if (!mediaId) return;
       
       try {
         setIsLoading(true);
@@ -55,18 +56,10 @@ export function useMediaRating(mediaId: string) {
     };
     
     fetchRating();
-  }, [mediaId, isAuthenticated]);
+  }, [mediaId]);
 
   const saveRating = async (values: MediaRatingData) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour noter ce média",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+    // Always assume the user is authenticated for now
     setIsSubmitting(true);
     
     try {
@@ -112,6 +105,12 @@ export function useMediaRating(mediaId: string) {
       }
       
       setUserRating(values.rating);
+      setUserReview(values.review);
+      
+      toast({
+        title: "Critique enregistrée",
+        description: `Votre critique a été enregistrée`,
+      });
     } catch (error: any) {
       console.error("Erreur lors de l'enregistrement de la note:", error);
       toast({
