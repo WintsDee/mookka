@@ -1,12 +1,12 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { RealtimeChannel } from "./types";
+import { RealtimeChannel, SyncStatus } from "./types";
 
 export class ConnectionManager {
   private channels: Record<string, RealtimeChannel> = {};
   private subscribed = false;
-  private _syncStatus: 'synced' | 'local' | 'offline' = 'synced';
+  private _syncStatus: SyncStatus = 'synced';
   
   constructor() {
     this.setupConnectionListeners();
@@ -39,11 +39,10 @@ export class ConnectionManager {
   }
   
   public removeAllChannels(): void {
-    Object.values(this.channels).forEach(channel => {
-      supabase.removeChannel(channel);
+    Object.keys(this.channels).forEach(channelName => {
+      this.removeChannel(channelName);
     });
     
-    this.channels = {};
     this.subscribed = false;
   }
   
@@ -74,12 +73,12 @@ export class ConnectionManager {
   }
   
   // Get current sync status
-  get syncStatus(): 'synced' | 'local' | 'offline' {
+  get syncStatus(): SyncStatus {
     return this._syncStatus;
   }
   
   // Set sync status (useful for testing or manual control)
-  set syncStatus(status: 'synced' | 'local' | 'offline') {
+  set syncStatus(status: SyncStatus) {
     this._syncStatus = status;
   }
   
