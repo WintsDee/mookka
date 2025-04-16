@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/hooks/use-profile";
 import { toast } from "@/components/ui/use-toast";
@@ -29,15 +28,19 @@ export interface SocialActivity {
     avatar: string;
   };
   action: string;
+  actionType: string;
   media: {
     id: string;
     title: string;
     type: string;
+    coverImage?: string;
   };
   timestamp: string;
   likes: number;
   comments: number;
   hasLiked: boolean;
+  note?: string;
+  rating?: number;
 }
 
 export interface ActivityComment {
@@ -49,6 +52,93 @@ export interface ActivityComment {
   };
   content: string;
   timestamp: string;
+}
+
+// Configuration des paramètres de partage social
+export interface SocialShareSettings {
+  shareRatings: boolean;
+  shareReviews: boolean;
+  shareCollections: boolean;
+  shareProgress: boolean;
+  shareLibraryAdditions: boolean;
+}
+
+const DEFAULT_SHARE_SETTINGS: SocialShareSettings = {
+  shareRatings: true,
+  shareReviews: true,
+  shareCollections: true,
+  shareProgress: true,
+  shareLibraryAdditions: true
+};
+
+// Récupérer les paramètres de partage social
+export async function getSocialShareSettings(): Promise<SocialShareSettings> {
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) return DEFAULT_SHARE_SETTINGS;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('social_share_settings')
+      .eq('id', user.user.id)
+      .single();
+
+    if (error || !data || !data.social_share_settings) {
+      return DEFAULT_SHARE_SETTINGS;
+    }
+
+    return {
+      ...DEFAULT_SHARE_SETTINGS,
+      ...data.social_share_settings
+    };
+  } catch (error) {
+    console.error("Erreur lors de la récupération des paramètres de partage:", error);
+    return DEFAULT_SHARE_SETTINGS;
+  }
+}
+
+// Mettre à jour les paramètres de partage social
+export async function updateSocialShareSettings(settings: Partial<SocialShareSettings>) {
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) {
+      throw new Error("Utilisateur non connecté");
+    }
+
+    // Récupérer les paramètres actuels
+    const currentSettings = await getSocialShareSettings();
+    
+    // Fusionner avec les nouveaux paramètres
+    const updatedSettings = {
+      ...currentSettings,
+      ...settings
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        social_share_settings: updatedSettings,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.user.id);
+
+    if (error) throw error;
+
+    toast({
+      title: "Paramètres mis à jour",
+      description: "Vos préférences de partage social ont été mises à jour",
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour des paramètres:", error);
+    toast({
+      title: "Erreur",
+      description: "Impossible de mettre à jour vos préférences de partage",
+      variant: "destructive",
+    });
+    return { success: false, error };
+  }
 }
 
 // Récupérer le flux d'activité des amis
@@ -84,10 +174,13 @@ export async function getFriendsActivity() {
         media_id, 
         status, 
         added_at,
+        updated_at,
+        user_rating,
+        notes,
         media:media_id (id, title, type, cover_image)
       `)
       .in('user_id', friendIds)
-      .order('added_at', { ascending: false })
+      .order('updated_at', { ascending: false })
       .limit(30);
 
     if (activityError) throw activityError;
@@ -99,17 +192,23 @@ export async function getFriendsActivity() {
     // Récupérer les profils des amis pour obtenir leurs noms et avatars
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, avatar_url')
+      .select('id, username, avatar_url, social_share_settings')
       .in('id', friendIds);
 
     if (profilesError) throw profilesError;
 
     // Créer un mapping des profils pour un accès facile
-    const profileMap: Record<string, { username: string, avatar_url: string }> = {};
+    const profileMap: Record<string, { 
+      username: string, 
+      avatar_url: string,
+      social_share_settings?: SocialShareSettings
+    }> = {};
+    
     profiles?.forEach(profile => {
       profileMap[profile.id] = {
         username: profile.username,
-        avatar_url: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`
+        avatar_url: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+        social_share_settings: profile.social_share_settings
       };
     });
 
@@ -148,40 +247,69 @@ export async function getFriendsActivity() {
     });
 
     // Formater les données pour l'affichage
-    const activities: SocialActivity[] = activityData.map(item => {
-      const profile = profileMap[item.user_id];
-      
-      let action = 'a ajouté';
-      switch (item.status) {
-        case 'watching':
-          action = 'a commencé';
-          break;
-        case 'completed':
-          action = 'a terminé';
-          break;
-        default:
-          action = 'a ajouté';
-      }
+    const activities: SocialActivity[] = activityData
+      .filter(item => {
+        // Vérifier les paramètres de partage de l'utilisateur
+        const profile = profileMap[item.user_id];
+        const shareSettings = profile?.social_share_settings || DEFAULT_SHARE_SETTINGS;
+        
+        // Filtrer en fonction des paramètres de partage
+        if (item.status === 'rated' && !shareSettings.shareRatings) return false;
+        if (item.notes && !shareSettings.shareReviews) return false;
+        if (item.status === 'added' && !shareSettings.shareLibraryAdditions) return false;
+        if (['watching', 'reading', 'playing', 'completed'].includes(item.status || '') && !shareSettings.shareProgress) return false;
+        
+        return true;
+      })
+      .map(item => {
+        const profile = profileMap[item.user_id];
+        
+        let action = 'a ajouté';
+        let actionType = 'added';
+        
+        switch (item.status) {
+          case 'watching':
+          case 'reading':
+          case 'playing':
+            action = 'a commencé';
+            actionType = 'watching';
+            break;
+          case 'completed':
+            action = 'a terminé';
+            actionType = 'completed';
+            break;
+          case 'rated':
+            action = 'a noté';
+            actionType = 'rated';
+            break;
+          default:
+            action = 'a ajouté';
+            actionType = 'added';
+        }
 
-      return {
-        id: item.id,
-        user: {
-          id: item.user_id,
-          name: profile?.username || 'Utilisateur',
-          avatar: profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`
-        },
-        action,
-        media: {
-          id: item.media.id,
-          title: item.media.title,
-          type: item.media.type
-        },
-        timestamp: item.added_at,
-        likes: likesCount[item.id] || 0,
-        comments: commentsCount[item.id] || 0,
-        hasLiked: userLikes[item.id] || false
-      };
-    });
+        return {
+          id: item.id,
+          user: {
+            id: item.user_id,
+            name: profile?.username || 'Utilisateur',
+            avatar: profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`
+          },
+          action,
+          actionType,
+          media: {
+            id: item.media.id,
+            title: item.media.title,
+            type: item.media.type,
+            coverImage: item.media.cover_image
+          },
+          timestamp: item.updated_at || item.added_at,
+          likes: likesCount[item.id] || 0,
+          comments: commentsCount[item.id] || 0,
+          hasLiked: userLikes[item.id] || false,
+          note: item.notes || undefined,
+          rating: item.user_rating || undefined
+        };
+      });
 
     return { data: activities, error: null };
   } catch (error) {

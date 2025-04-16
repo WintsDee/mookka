@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Users, User, UserPlus, Sparkles, Loader2 } from "lucide-react";
+import { Users, User, UserPlus, Award, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,7 +70,7 @@ export function DiscoverProfiles() {
       {/* Profils populaires */}
       <section>
         <div className="flex items-center mb-4">
-          <Sparkles className="h-5 w-5 mr-2 text-amber-500" />
+          <Award className="h-5 w-5 mr-2 text-amber-500" />
           <h3 className="text-lg font-medium">Profils populaires</h3>
         </div>
         

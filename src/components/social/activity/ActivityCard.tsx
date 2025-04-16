@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { SocialActivity, likeActivity, getActivityComments } from "@/services/me
 import { ActivityComments } from "./ActivityComments";
 import { useToast } from "@/components/ui/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface ActivityCardProps {
   activity: SocialActivity;
@@ -29,6 +30,13 @@ export function ActivityCard({ activity, onUpdate }: ActivityCardProps) {
     serie: "série",
     book: "livre",
     game: "jeu"
+  };
+
+  const mediaTypeClasses: Record<string, string> = {
+    film: "bg-primary/80",
+    serie: "bg-purple-600/80", 
+    book: "bg-amber-600/80",
+    game: "bg-green-600/80"
   };
 
   const handleLike = async () => {
@@ -65,22 +73,48 @@ export function ActivityCard({ activity, onUpdate }: ActivityCardProps) {
   };
 
   const handleShare = () => {
-    toast({
-      title: "Partage",
-      description: "Fonctionnalité de partage en développement"
+    const url = `${window.location.origin}/media/${activity.media.type}/${activity.media.id}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `${activity.media.title} - Mookka`,
+        text: `Découvrez ${activity.media.title} sur Mookka !`,
+        url
+      }).catch(err => {
+        console.error("Erreur lors du partage:", err);
+        copyToClipboard(url);
+      });
+    } else {
+      copyToClipboard(url);
+    }
+  };
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Lien copié",
+        description: "Le lien a été copié dans le presse-papier"
+      });
+    }).catch(err => {
+      console.error("Erreur lors de la copie:", err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de copier le lien",
+        variant: "destructive"
+      });
     });
   };
 
   return (
-    <Card className="bg-secondary/30 border-border/50 overflow-hidden">
+    <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-border/50 bg-gradient-to-b from-secondary/20 to-background/60">
       <CardContent className="p-4">
         {/* En-tête de l'activité */}
         <div className="flex items-center gap-3">
-          <Link to={`/profil/${activity.user.id}`}>
+          <Link to={`/profil/${activity.user.id}`} className="shrink-0">
             <img 
               src={activity.user.avatar} 
               alt={activity.user.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover border-2 border-background shadow-sm"
             />
           </Link>
           <div>
@@ -88,7 +122,7 @@ export function ActivityCard({ activity, onUpdate }: ActivityCardProps) {
               <Link to={`/profil/${activity.user.id}`} className="font-medium hover:underline">
                 {activity.user.name}
               </Link>{" "}
-              {activity.action}{" "}
+              <span className="text-muted-foreground">{activity.action}</span>{" "}
               <span className="font-medium">
                 {activity.media.title}
               </span>
@@ -108,34 +142,42 @@ export function ActivityCard({ activity, onUpdate }: ActivityCardProps) {
         {/* Contenu du média */}
         <div className="mt-3 flex items-start gap-3">
           <Link to={`/media/${activity.media.type}/${activity.media.id}`} className="shrink-0">
-            <div className="relative overflow-hidden rounded-md w-16 h-24 bg-muted">
-              {activity.media.type === 'film' && (
-                <div className="absolute top-0 right-0 bg-primary/80 text-xs text-white px-1 py-0.5 rounded-bl">
-                  Film
-                </div>
-              )}
-              {activity.media.type === 'serie' && (
-                <div className="absolute top-0 right-0 bg-purple-600/80 text-xs text-white px-1 py-0.5 rounded-bl">
-                  Série
-                </div>
-              )}
-              {activity.media.type === 'book' && (
-                <div className="absolute top-0 right-0 bg-amber-600/80 text-xs text-white px-1 py-0.5 rounded-bl">
-                  Livre
-                </div>
-              )}
-              {activity.media.type === 'game' && (
-                <div className="absolute top-0 right-0 bg-green-600/80 text-xs text-white px-1 py-0.5 rounded-bl">
-                  Jeu
-                </div>
-              )}
+            <div className="relative overflow-hidden rounded-md w-16 h-24 bg-muted shadow-sm">
+              <img
+                src={activity.media.coverImage || "/placeholder.svg"}
+                alt={activity.media.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
+              />
+              <div className={cn("absolute top-0 right-0 text-xs text-white px-1 py-0.5 rounded-bl", mediaTypeClasses[activity.media.type])}>
+                {mediaTypeMap[activity.media.type]}
+              </div>
             </div>
           </Link>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <Link to={`/media/${activity.media.type}/${activity.media.id}`} className="hover:underline">
-              <h3 className="font-medium text-sm">{activity.media.title}</h3>
+              <h3 className="font-medium text-sm line-clamp-1">{activity.media.title}</h3>
             </Link>
-            {/* Possibilité d'ajouter plus de détails sur le média ici */}
+            
+            {activity.note && (
+              <div className="mt-1 text-xs line-clamp-2 italic text-muted-foreground bg-secondary/20 p-2 rounded-sm">
+                "{activity.note}"
+              </div>
+            )}
+            
+            {activity.rating && (
+              <div className="mt-1 flex items-center">
+                <div className={cn("text-xs font-medium px-1.5 py-0.5 rounded", 
+                  activity.rating >= 7 ? "bg-green-500/20 text-green-500" : 
+                  activity.rating >= 5 ? "bg-amber-500/20 text-amber-500" : 
+                  "bg-red-500/20 text-red-500"
+                )}>
+                  {activity.rating}/10
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -153,7 +195,7 @@ export function ActivityCard({ activity, onUpdate }: ActivityCardProps) {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-1 text-xs text-muted-foreground"
+            className={`flex items-center gap-1 text-xs ${showComments ? 'text-primary' : 'text-muted-foreground'}`}
             onClick={handleCommentsClick}
           >
             <MessageCircle size={16} />

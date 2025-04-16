@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv, StickyNote } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 
@@ -13,9 +13,10 @@ interface MediaCardProps {
   size?: "small" | "medium" | "large";
   showDetails?: boolean;
   from?: string;
+  userNote?: string;
 }
 
-const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
+const MediaCard = ({ media, size = "medium", showDetails = true, from, userNote }: MediaCardProps) => {
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
     ? media.rating > 5 
@@ -89,11 +90,13 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     return type as "film" | "serie" | "book" | "game";
   };
 
+  const hasUserNote = userNote && userNote.trim().length > 0;
+
   return (
     <Link 
       to={`/media/${type}/${id}`} 
       state={from ? { from } : undefined}
-      className="block animate-fade-in"
+      className="block animate-fade-in relative"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
@@ -127,6 +130,13 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
                type === "serie" ? "Série" : 
                type === "book" ? "Livre" : "Jeu"}
             </Badge>
+          )}
+          
+          {/* Personal Note Indicator */}
+          {hasUserNote && (
+            <div className="absolute bottom-24 right-0 bg-primary/80 p-1 rounded-l-md shadow-sm" title="Note personnelle">
+              <StickyNote className="h-3 w-3 text-white" />
+            </div>
           )}
           
           {/* Information - Always visible */}
