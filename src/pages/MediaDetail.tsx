@@ -41,6 +41,13 @@ const MediaDetail = () => {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
           }
           
+          // Vérifier si la description est en anglais et tenter de trouver une version française
+          if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
+            mediaData.locale_descriptions = {
+              'fr': mediaData.description_raw // Utiliser la description brute comme fallback
+            };
+          }
+          
           setMedia(mediaData);
         } catch (error) {
           console.error("Erreur lors de la récupération du média:", error);
@@ -103,6 +110,10 @@ const MediaDetail = () => {
 
   const formattedMedia = formatMediaDetails(media, type as MediaType);
   const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
+
+  console.log("Media: ", media);
+  console.log("Formatted Media: ", formattedMedia);
+  console.log("Additional Info: ", additionalInfo);
 
   return (
     <Background>
