@@ -11,6 +11,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { helpSections } from "./data/help-section-data";
+import { HelpCard } from "@/components/ui/help-card";
 
 export function HelpSection() {
   const navigate = useNavigate();
@@ -31,10 +32,11 @@ export function HelpSection() {
             <AccordionContent>
               <div className="space-y-4 py-2">
                 {section.items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="rounded-lg border p-3">
-                    <h3 className="font-medium">{item.question}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{item.answer}</p>
-                  </div>
+                  <HelpCard 
+                    key={itemIndex} 
+                    question={item.question} 
+                    answer={item.answer} 
+                  />
                 ))}
               </div>
             </AccordionContent>

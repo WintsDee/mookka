@@ -1,5 +1,6 @@
 
 import React from "react";
+import { HelpCard } from "@/components/ui/help-card";
 
 interface HelpItemProps {
   title: string;
@@ -7,10 +8,5 @@ interface HelpItemProps {
 }
 
 export function HelpItem({ title, content }: HelpItemProps) {
-  return (
-    <div className="rounded-lg border p-3">
-      <h3 className="font-medium">{title}</h3>
-      <p className="text-sm text-muted-foreground mt-1">{content}</p>
-    </div>
-  );
+  return <HelpCard question={title} answer={content} />;
 }
