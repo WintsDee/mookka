@@ -4,12 +4,11 @@ import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaTypeSelector } from "@/components/media-type-selector";
 import { MediaType } from "@/types";
-import { searchMedia } from "@/services/media"; // Updated import path
+import { searchMedia } from "@/services/media";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLocation } from "react-router-dom";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchResults } from "@/components/search/search-results";
 import { 
@@ -81,7 +80,8 @@ const Recherche = () => {
         </header>
         
         <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full px-6">
+          {/* Remplacer par un div simple avec des propriétés CSS pour un scroll fluide */}
+          <div className="h-full px-6 overflow-y-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch">
             <SearchResults 
               results={searchResults}
               isLoading={isLoading}
@@ -89,7 +89,7 @@ const Recherche = () => {
               selectedType={selectedType}
               from={location.pathname}
             />
-          </ScrollArea>
+          </div>
         </div>
       </div>
       

@@ -90,6 +90,15 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Optimisation du scroll pour mobile */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+
+  .-webkit-overflow-scrolling-touch {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Styles pour le fond avec motif subtil */
