@@ -1,78 +1,149 @@
 
 import React from "react";
-import { ChevronLeft, BookmarkPlus, Share } from "lucide-react";
+import { ChevronLeft, Star, Calendar, Clock, StickyNote } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { MediaType } from "@/types";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { MediaRatingBadge } from "./media-rating-badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UserNoteBadge } from "./user-note-badge";
 
-export interface MediaDetailHeaderProps {
-  media: any;
-  formattedMedia: any;
-  type: MediaType;
-  onAddToCollection: () => void;
+interface MediaDetailHeaderProps {
+  title: string;
+  year: number;
+  type: string;
+  rating?: number;
+  coverImage?: string;
+  genres?: string[];
+  duration?: string;
+  userNote?: string;
+  backTo?: string;
+  backLabel?: string;
 }
 
-export function MediaDetailHeader({ 
-  media, 
-  formattedMedia, 
+export function MediaDetailHeader({
+  title,
+  year,
   type,
-  onAddToCollection 
+  rating,
+  coverImage,
+  genres,
+  duration,
+  userNote,
+  backTo = "/recherche",
+  backLabel = "Retour",
 }: MediaDetailHeaderProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const isMobile = useIsMobile();
-  
-  const goBack = () => {
-    navigate(-1);
-  };
-  
-  const handleShare = () => {
-    // Check if native share is available
-    if (navigator.share) {
-      navigator.share({
-        title: formattedMedia.title,
-        text: `Découvre ${formattedMedia.title} sur Mookka !`,
-        url: window.location.href,
-      }).catch(error => {
-        console.error("Erreur lors du partage:", error);
-      });
-    } else {
-      // Fallback - copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Lien copié",
-        description: "Le lien a été copié dans le presse-papier.",
-      });
-    }
+
+  const handleBack = () => {
+    navigate(backTo);
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md pt-safe">
-      <div className="flex items-center justify-between p-4">
-        <Button variant="ghost" size="icon" onClick={goBack} className="hover:bg-background/60">
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
+    <div className="relative">
+      {/* Cover Image */}
+      <div className="relative">
+        <AspectRatio ratio={16 / 9}>
+          <div className="w-full h-full bg-secondary/50">
+            {coverImage && (
+              <div 
+                className="w-full h-full bg-cover bg-center" 
+                style={{ backgroundImage: `url(${coverImage})` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-background/20"></div>
+              </div>
+            )}
+          </div>
+        </AspectRatio>
         
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onAddToCollection}
-            className="hover:bg-background/60"
-          >
-            <BookmarkPlus className="h-5 w-5" />
-          </Button>
+        {/* Back Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="absolute top-4 left-4 bg-background/50 backdrop-blur-sm h-8"
+          onClick={handleBack}
+        >
+          <ChevronLeft className="mr-1 h-4 w-4" />
+          {backLabel}
+        </Button>
+      </div>
+
+      {/* Media Info */}
+      <div className="px-4 -mt-16 sm:-mt-20 md:-mt-24 flex">
+        {/* Cover Thumbnail */}
+        <div className={cn(
+          "relative rounded-lg overflow-hidden shadow-lg border-4 border-background",
+          isMobile ? "w-24 h-36" : "w-32 h-48",
+        )}>
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-secondary flex items-center justify-center">
+              <span className="text-muted-foreground">No Image</span>
+            </div>
+          )}
+          <div className="absolute top-0 right-0">
+            <div className={cn(
+              "text-xs text-white font-medium px-1 py-0.5",
+              type === "film" ? "bg-primary" :
+              type === "serie" ? "bg-purple-600" :
+              type === "book" ? "bg-amber-600" :
+              "bg-green-600"
+            )}>
+              {type === "film" ? "Film" :
+               type === "serie" ? "Série" :
+               type === "book" ? "Livre" : "Jeu"}
+            </div>
+          </div>
+        </div>
+
+        {/* Title & Info */}
+        <div className="flex-1 ml-4">
+          <h1 className={cn(
+            "font-bold text-foreground",
+            isMobile ? "text-xl" : "text-2xl md:text-3xl",
+          )}>
+            {title}
+          </h1>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleShare}
-            className="hover:bg-background/60"
-          >
-            <Share className="h-5 w-5" />
-          </Button>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            {year && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{year}</span>
+              </Badge>
+            )}
+            
+            {duration && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{duration}</span>
+              </Badge>
+            )}
+            
+            {rating && (
+              <MediaRatingBadge rating={rating} />
+            )}
+            
+            {userNote && <UserNoteBadge note={userNote} />}
+          </div>
+          
+          {genres && genres.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-3">
+              {genres.map(genre => (
+                <Badge key={genre} variant="secondary" className="bg-secondary/40">
+                  {genre}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

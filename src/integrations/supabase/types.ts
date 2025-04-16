@@ -393,7 +393,6 @@ export type Database = {
           following_count: number | null
           full_name: string | null
           id: string
-          social_share_settings: Json | null
           updated_at: string | null
           username: string
         }
@@ -406,7 +405,6 @@ export type Database = {
           following_count?: number | null
           full_name?: string | null
           id: string
-          social_share_settings?: Json | null
           updated_at?: string | null
           username: string
         }
@@ -419,7 +417,6 @@ export type Database = {
           following_count?: number | null
           full_name?: string | null
           id?: string
-          social_share_settings?: Json | null
           updated_at?: string | null
           username?: string
         }
