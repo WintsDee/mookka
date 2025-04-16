@@ -5,16 +5,74 @@ import { filterAdultContent } from './filters';
 import { formatBookSearchResult, formatFilmSearchResult, formatGameSearchResult, formatSerieSearchResult } from './formatters';
 
 /**
+ * Recherche fuzzy qui détecte les termes similaires et les fautes de frappe
+ */
+function isSimilarText(text: string, query: string, threshold: number = 0.7): boolean {
+  if (!text || !query) return false;
+  
+  // Convertir en minuscules pour la comparaison
+  const textLower = text.toLowerCase();
+  const queryLower = query.toLowerCase();
+  
+  // Si le texte contient la requête, c'est un match direct
+  if (textLower.includes(queryLower)) return true;
+  
+  // Diviser la requête en mots et vérifier si l'un d'eux est présent
+  const queryWords = queryLower.split(/\s+/).filter(word => word.length > 2);
+  
+  // Si l'un des mots de la requête est dans le texte, c'est un match
+  if (queryWords.some(word => textLower.includes(word))) return true;
+  
+  // Algorithme simple de distance d'édition (Levenshtein simplifié)
+  // Pour détecter les fautes de frappe légères
+  const distanceMax = Math.floor(queryLower.length * (1 - threshold));
+  
+  // Pour chaque mot dans le texte, vérifier s'il est suffisamment proche d'un mot de la requête
+  const textWords = textLower.split(/\s+/).filter(word => word.length > 2);
+  
+  for (const textWord of textWords) {
+    for (const queryWord of queryWords) {
+      // Si les longueurs sont trop différentes, ce n'est probablement pas similaire
+      if (Math.abs(textWord.length - queryWord.length) > distanceMax) continue;
+      
+      // Compter les caractères communs dans l'ordre
+      let matches = 0;
+      let i = 0, j = 0;
+      
+      while (i < textWord.length && j < queryWord.length) {
+        if (textWord[i] === queryWord[j]) {
+          matches++;
+          i++;
+          j++;
+        } else {
+          // Si pas de correspondance, avancer dans le mot le plus long
+          if (textWord.length > queryWord.length) i++;
+          else j++;
+        }
+      }
+      
+      // Calculer la similarité en fonction des correspondances
+      const similarity = matches / Math.max(textWord.length, queryWord.length);
+      
+      if (similarity >= threshold) return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Search for media in external APIs and local database
  */
 export async function searchMedia(type: MediaType, query: string): Promise<any> {
   try {
     // 1. D'abord, rechercher dans la base de données Mookka
+    // Utilisez .or pour chercher dans titre ET dans l'auteur/réalisateur
     const { data: localMedia, error: localError } = await supabase
       .from('media')
       .select('*')
       .eq('type', type)
-      .ilike('title', `%${query}%`)
+      .or(`title.ilike.%${query}%, author.ilike.%${query}%, director.ilike.%${query}%`)
       .order('rating', { ascending: false })
       .limit(20);
     
@@ -64,7 +122,22 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     // 4. Filtrer plus strictement les contenus inappropriés
     apiResults = filterAdultContent(apiResults);
     
-    // 5. Fusionner les résultats (base de données + API) en évitant les doublons
+    // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
+    apiResults = apiResults.filter(item => {
+      // Vérifier la pertinence sur le titre
+      const titleMatch = isSimilarText(item.title, query);
+      
+      // Vérifier aussi la pertinence sur les champs auteur/réalisateur
+      const creatorMatch = (
+        isSimilarText(item.author, query) || 
+        isSimilarText(item.director, query)
+      );
+      
+      // Accepter si l'un des deux correspond
+      return titleMatch || creatorMatch;
+    });
+    
+    // 6. Fusionner les résultats (base de données + API) en évitant les doublons
     let mergedResults: any[] = [];
     
     // D'abord, ajouter les résultats locaux (Mookka)
@@ -94,16 +167,38 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       }
     }
     
-    // 6. Trier les résultats finaux par pertinence
+    // 7. Trier les résultats finaux par pertinence
     mergedResults.sort((a, b) => {
       // Donner priorité aux médias de la base de données
       if (a.fromDatabase && !b.fromDatabase) return -1;
       if (!a.fromDatabase && b.fromDatabase) return 1;
       
-      // Ensuite, trier par popularité calculée ou rating
-      const aPopularity = a.popularity || a.rating || 0;
-      const bPopularity = b.popularity || b.rating || 0;
-      return bPopularity - aPopularity;
+      // Pour les médias de l'API, calculer un score de pertinence
+      // basé sur la correspondance du titre/auteur avec la requête
+      const queryLower = query.toLowerCase();
+      
+      // Calculer le score de pertinence du titre
+      const titleScoreA = a.title && a.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      const titleScoreB = b.title && b.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      
+      // Calculer le score de pertinence de l'auteur/réalisateur
+      const authorScoreA = 
+        (a.author && a.author.toLowerCase().includes(queryLower)) || 
+        (a.director && a.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      const authorScoreB = 
+        (b.author && b.author.toLowerCase().includes(queryLower)) || 
+        (b.director && b.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      // Ajouter le score de popularité
+      const popularityScoreA = (a.popularity || a.rating || 0) / 2;
+      const popularityScoreB = (b.popularity || b.rating || 0) / 2;
+      
+      // Score total
+      const totalScoreA = titleScoreA + authorScoreA + popularityScoreA;
+      const totalScoreB = titleScoreB + authorScoreB + popularityScoreB;
+      
+      return totalScoreB - totalScoreA;
     });
     
     return { results: mergedResults };

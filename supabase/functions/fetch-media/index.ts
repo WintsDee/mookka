@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 
 const corsHeaders = {
@@ -37,17 +38,18 @@ Deno.serve(async (req) => {
         if (id) {
           apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false`
         } else {
-          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false`
+          // Utiliser une requête plus complète pour inclure les personnes (réalisateurs, acteurs)
+          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false&append_to_response=credits`
         }
         break
       case 'book':
         apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
         
-        // Simplified query for books to ensure we get enough results
+        // Requête améliorée pour livres qui considère le titre et l'auteur
         let bookQuery = query
         if (!id) {
-          // Less restrictive filter to ensure we get more results
-          bookQuery = `${query} subject:fiction OR intitle:${query}`
+          // Inclure une recherche par auteur
+          bookQuery = `${query} OR inauthor:${query}`
         }
         
         apiUrl = id 
@@ -58,7 +60,7 @@ Deno.serve(async (req) => {
         apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
         apiUrl = id
           ? `https://api.rawg.io/api/games/${id}?key=${apiKey}`
-          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page=1&page_size=40&exclude_additions=true&exclude_parents=false&ordering=-rating`
+          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&search_precise=true&page=1&page_size=40&exclude_additions=true&exclude_parents=false&ordering=-rating`
         break
       default:
         throw new Error('Type de média non pris en charge')
@@ -68,7 +70,7 @@ Deno.serve(async (req) => {
     const response = await fetch(apiUrl)
     const data = await response.json()
 
-    // Less restrictive filtering for books
+    // Filtrage plus flexible pour les livres
     if (type === 'book' && !id && data.items) {
       // Mots-clés pour le contenu adulte (keep only the most explicit ones)
       const adultContentKeywords = [
@@ -85,27 +87,67 @@ Deno.serve(async (req) => {
         // Only filter out explicit adult content, be more permissive otherwise
         return !adultContentKeywords.some(keyword => contentText.includes(keyword))
       })
+      
+      // Améliorer le classement des résultats en fonction de la pertinence
+      const queryLower = query.toLowerCase()
+      
+      data.items.sort((a: any, b: any) => {
+        const titleA = (a.volumeInfo?.title || '').toLowerCase()
+        const titleB = (b.volumeInfo?.title || '').toLowerCase()
+        
+        const authorA = (a.volumeInfo?.authors || []).join(' ').toLowerCase()
+        const authorB = (b.volumeInfo?.authors || []).join(' ').toLowerCase()
+        
+        // Score pour titre exact, titre contient, auteur exact, auteur contient
+        const scoreA = 
+          (titleA === queryLower ? 10 : 0) + 
+          (titleA.includes(queryLower) ? 5 : 0) + 
+          (authorA === queryLower ? 8 : 0) + 
+          (authorA.includes(queryLower) ? 4 : 0)
+          
+        const scoreB = 
+          (titleB === queryLower ? 10 : 0) + 
+          (titleB.includes(queryLower) ? 5 : 0) + 
+          (authorB === queryLower ? 8 : 0) + 
+          (authorB.includes(queryLower) ? 4 : 0)
+          
+        return scoreB - scoreA
+      })
     }
     
-    // Filtering for games (keep existing code)
+    // Filtering for games - amélioration pour les jeux
     if (type === 'game' && !id && data.results) {
       // Ordonner les jeux par pertinence
+      const queryLower = query.toLowerCase()
+      
       data.results.sort((a: any, b: any) => {
-        // Facteur 1: Note moyenne
+        // Facteur 1: Correspondance avec le terme recherché
+        const titleA = (a.name || '').toLowerCase()
+        const titleB = (b.name || '').toLowerCase()
+        
+        const titleMatchScoreA = 
+          (titleA === queryLower ? 20 : 0) + 
+          (titleA.includes(queryLower) ? 10 : 0)
+          
+        const titleMatchScoreB = 
+          (titleB === queryLower ? 20 : 0) + 
+          (titleB.includes(queryLower) ? 10 : 0)
+        
+        // Facteur 2: Note moyenne
         const ratingA = a.rating || 0
         const ratingB = b.rating || 0
         
-        // Facteur 2: Nombre de notes (popularité)
+        // Facteur 3: Nombre de notes (popularité)
         const ratingsCountA = a.ratings_count || 0
         const ratingsCountB = b.ratings_count || 0
         
-        // Facteur 3: Année de sortie (favoriser les jeux récents mais pas trop)
+        // Facteur 4: Année de sortie (favoriser les jeux récents mais pas trop)
         const yearA = a.released ? parseInt(a.released.substring(0, 4)) : 0
         const yearB = b.released ? parseInt(b.released.substring(0, 4)) : 0
         
-        // Calcul du score total (favorise la qualité et la popularité)
-        const scoreA = (ratingA * 10) + Math.min(ratingsCountA / 100, 40) + (yearA >= 2015 ? 10 : 0)
-        const scoreB = (ratingB * 10) + Math.min(ratingsCountB / 100, 40) + (yearB >= 2015 ? 10 : 0)
+        // Calcul du score total (favorise d'abord la correspondance puis la qualité et la popularité)
+        const scoreA = titleMatchScoreA + (ratingA * 5) + Math.min(ratingsCountA / 200, 20) + (yearA >= 2015 ? 5 : 0)
+        const scoreB = titleMatchScoreB + (ratingB * 5) + Math.min(ratingsCountB / 200, 20) + (yearB >= 2015 ? 5 : 0)
         
         return scoreB - scoreA
       })
