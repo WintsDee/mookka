@@ -19,9 +19,12 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return DEFAULT_SHARE_SETTINGS;
     }
 
+    // Ensure data.social_share_settings is an object before spreading
+    const settings = data.social_share_settings || {};
+    
     return {
       ...DEFAULT_SHARE_SETTINGS,
-      ...(data.social_share_settings || {})
+      ...settings
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);
