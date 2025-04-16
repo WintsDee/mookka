@@ -1,14 +1,8 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, ShoppingCart, Tv, Film, Store, Video, Link } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
 import { MediaType } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Avatar } from "@/components/ui/avatar";
 
-interface Platform {
+export interface Platform {
   id: string;
   name: string;
   url: string;
@@ -16,13 +10,7 @@ interface Platform {
   logo?: string;
 }
 
-interface WhereToWatchTabProps {
-  mediaId: string;
-  mediaType: MediaType;
-  title: string;
-}
-
-export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabProps) {
+export function usePlatforms(mediaId: string, mediaType: MediaType, title: string) {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -222,131 +210,5 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
     fetchPlatforms();
   }, [mediaId, mediaType, title]);
 
-  const getIconByType = (type: MediaType, platformType: string) => {
-    if (platformType === "streaming") {
-      return <Tv className="h-5 w-5" />;
-    } else if (platformType === "rent") {
-      return <Video className="h-5 w-5" />;
-    } else {
-      if (type === "film" || type === "serie") {
-        return <Film className="h-5 w-5" />;
-      } else if (type === "book") {
-        return <ShoppingCart className="h-5 w-5" />;
-      } else {
-        return <Store className="h-5 w-5" />;
-      }
-    }
-  };
-
-  const groupedPlatforms = platforms.reduce((acc, platform) => {
-    const type = platform.type;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(platform);
-    return acc;
-  }, {} as Record<string, Platform[]>);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-md" />
-                    <Skeleton className="h-4 w-[150px]" />
-                  </div>
-                  <Skeleton className="h-9 w-[80px]" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (platforms.length === 0) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
-        <Card className="bg-secondary/40 border-border">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Nous n'avons pas encore d'informations sur les plateformes de visionnage ou d'achat pour ce média.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
-
-      {Object.entries(groupedPlatforms).map(([type, typePlatforms]) => (
-        <div key={type} className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground capitalize">
-            {type === "streaming" 
-              ? "Plateformes de streaming" 
-              : type === "purchase" 
-                ? "Acheter"
-                : "Louer"}
-          </h3>
-          <Card className="bg-secondary/40 border-border">
-            <CardContent className="p-4">
-              <div className="space-y-3">
-                {typePlatforms.map((platform) => (
-                  <div key={platform.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {platform.logo ? (
-                        <Avatar className="h-8 w-8 rounded-md">
-                          <img 
-                            src={platform.logo} 
-                            alt={platform.name}
-                            className="object-contain"
-                          />
-                        </Avatar>
-                      ) : (
-                        getIconByType(mediaType, type)
-                      )}
-                      <span>{platform.name}</span>
-                    </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="outline" asChild>
-                            <a 
-                              href={platform.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1"
-                            >
-                              Voir <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Rechercher "{title}" sur {platform.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ))}
-
-      <div className="text-xs text-muted-foreground mt-4 text-center">
-        Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
-      </div>
-    </div>
-  );
+  return { platforms, isLoading };
 }
