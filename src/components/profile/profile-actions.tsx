@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfileActionsProps {
   isAuthenticated: boolean;
@@ -11,24 +12,30 @@ interface ProfileActionsProps {
 }
 
 export function ProfileActions({ isAuthenticated, onLogout }: ProfileActionsProps) {
+  const isMobile = useIsMobile();
+
   if (!isAuthenticated) return null;
   
   return (
-    <div className="mt-8">
+    <div className="mt-8 space-y-4">
       <Link to="/soutenir">
         <Button 
           variant="outline" 
-          className="w-full flex items-center justify-center gap-2 mb-4"
+          className={`w-full flex items-center justify-center gap-2 ${
+            isMobile ? 'text-sm py-2 px-3' : 'mb-4'
+          }`}
         >
           Soutenir le projet
         </Button>
       </Link>
       
-      <Separator className="my-6" />
+      <Separator className="my-4" />
       
       <Button 
         variant="outline" 
-        className="w-full flex items-center justify-center gap-2 text-destructive border-destructive/30"
+        className={`w-full flex items-center justify-center gap-2 text-destructive border-destructive/30 ${
+          isMobile ? 'text-sm py-2 px-3' : ''
+        }`}
         onClick={onLogout}
       >
         <LogOut size={16} />
