@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -71,7 +72,7 @@ const Soutenir = () => {
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">→</span>
-                    <span>Pour garder l'app 100% indépendante (sans investisseurs chelous).</span>
+                    <span>Pour garder Mookka libre, fluide et beau.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">→</span>
@@ -98,7 +99,8 @@ const Soutenir = () => {
                   <Rocket size={22} className="text-primary shrink-0" />
                   <h3 className="text-xl font-semibold">Ce qu'on fait avec ton soutien</h3>
                 </div>
-                <p className="text-muted-foreground">Chaque euro est une brique de plus pour :</p>
+                <p className="text-muted-foreground">Tu veux aider ?
+                Tu peux nous offrir un petit café, un gros cookie ou même une pizza 🍕</p>
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
@@ -111,6 +113,12 @@ const Soutenir = () => {
                       <Rocket size={14} />
                     </span>
                     <span>Payer les serveurs, la base de données et maintenir l'infrastructure</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
+                      <Heart size={14} />
+                    </span>
+                    <span>Garder Mookka libre, fluide et beau</span>
                   </li>
                 </ul>
               </div>
