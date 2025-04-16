@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { FeedbackModule } from "@/components/help/feedback-module";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useProfile } from "@/hooks/use-profile";
 
 interface ProfileActionsProps {
   isAuthenticated: boolean;
@@ -11,14 +11,11 @@ interface ProfileActionsProps {
 }
 
 export function ProfileActions({ isAuthenticated, onLogout }: ProfileActionsProps) {
-  const isMobile = useIsMobile();
+  const { profile } = useProfile();
   
   return (
     <div className="mt-8 space-y-3">
-      {/* Afficher uniquement sur les appareils de bureau, car on l'a déjà dans le header mobile */}
-      <div className="hidden md:flex justify-center">
-        <FeedbackModule />
-      </div>
+      <FeedbackModule />
       
       {isAuthenticated && (
         <Button 

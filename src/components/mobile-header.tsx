@@ -1,18 +1,16 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Bell, HelpCircle } from "lucide-react";
+import { User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/hooks/use-profile";
-import { FeedbackModule } from "@/components/help/feedback-module";
 
 interface MobileHeaderProps {
   title?: string;
   children?: React.ReactNode;
 }
 
-// Updated to an abstract image in purple tones that better matches the app's visual theme
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
@@ -39,16 +37,11 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       <div className="flex items-center gap-4">
         {children}
         
-        <div className="md:hidden">
-          <FeedbackModule />
-        </div>
-        
         <Link to="/notifications" className={cn(
           "relative",
           isNotificationsActive ? "text-primary" : "text-muted-foreground"
         )}>
           <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
-          {/* Notification indicator */}
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
         </Link>
         
