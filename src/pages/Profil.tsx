@@ -28,22 +28,22 @@ const Profil = () => {
         return { films: 0, series: 0, books: 0, games: 0, total: 0 };
       }
       
-      // Get counts from user library
-      const { data: libraryData, error: libraryError } = await supabase
-        .from('user_library')
-        .select('type')
+      // Get counts from user media
+      const { data: mediaData, error: mediaError } = await supabase
+        .from('user_media')
+        .select('media(type)')
         .eq('user_id', profile.id);
         
-      if (libraryError) {
-        console.error('Error fetching library stats:', libraryError);
+      if (mediaError) {
+        console.error('Error fetching library stats:', mediaError);
         return { films: 0, series: 0, books: 0, games: 0, total: 0 };
       }
       
-      const films = libraryData.filter(item => item.type === 'film').length;
-      const series = libraryData.filter(item => item.type === 'serie').length;
-      const books = libraryData.filter(item => item.type === 'book').length;
-      const games = libraryData.filter(item => item.type === 'game').length;
-      const total = libraryData.length;
+      const films = mediaData.filter(item => item.media?.type === 'film').length;
+      const series = mediaData.filter(item => item.media?.type === 'serie').length;
+      const books = mediaData.filter(item => item.media?.type === 'book').length;
+      const games = mediaData.filter(item => item.media?.type === 'game').length;
+      const total = mediaData.length;
       
       return { films, series, books, games, total };
     },
@@ -57,10 +57,9 @@ const Profil = () => {
       if (!profile?.id) return [];
       
       const { data, error } = await supabase
-        .from('user_library')
+        .from('user_media')
         .select('*, media(*)')
         .eq('user_id', profile.id)
-        .eq('is_favorite', true)
         .order('updated_at', { ascending: false })
         .limit(6);
         
@@ -73,12 +72,12 @@ const Profil = () => {
         id: item.media?.id || item.media_id,
         externalId: item.media?.external_id,
         title: item.media?.title || 'Média inconnu',
-        type: item.media?.type || item.type,
+        type: item.media?.type,
         coverImage: item.media?.cover_image || '',
         year: item.media?.year,
         rating: item.media?.rating,
         // Add additional fields as needed
-      }));
+      })).filter(item => item.title && item.coverImage);
     },
     enabled: !!profile?.id && isAuthenticated
   });
