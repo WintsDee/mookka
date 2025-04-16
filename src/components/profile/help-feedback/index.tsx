@@ -41,6 +41,7 @@ export function HelpFeedback({
           } ${
             isMobile ? 'text-xs py-1 px-2 h-auto' : ''
           }`}
+          data-help-feedback-trigger
         >
           {buttonIcon && <HelpCircle size={isMobile ? 14 : 16} />}
           <span>{buttonText}</span>

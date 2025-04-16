@@ -55,7 +55,19 @@ export function HelpSection() {
         </Alert>
         
         <div className="mt-4 flex flex-col gap-2">
-          <HelpFeedback initialTab="feedback" buttonVariant="outline" buttonText="Signaler un problème" />
+          <Button
+            onClick={() => {
+              const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+              if (helpFeedback) {
+                helpFeedback.click();
+              }
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Signaler un problème
+          </Button>
         </div>
       </div>
     </div>
