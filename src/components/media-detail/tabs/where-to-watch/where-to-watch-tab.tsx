@@ -16,17 +16,20 @@ interface WhereToWatchTabProps {
 
 export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabProps) {
   const { platforms, isLoading } = usePlatforms(mediaId, mediaType, title);
+  
+  // Filtrer uniquement les plateformes disponibles
+  const availablePlatforms = platforms.filter(platform => platform.isAvailable === true);
 
   if (isLoading) {
     return <WhereToWatchLoading />;
   }
 
-  if (platforms.length === 0) {
+  if (availablePlatforms.length === 0) {
     return <WhereToWatchEmpty />;
   }
 
   // Group platforms by type
-  const groupedPlatforms = platforms.reduce((acc, platform) => {
+  const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
     const type = platform.type;
     if (!acc[type]) {
       acc[type] = [];

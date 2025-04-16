@@ -7,9 +7,6 @@ import { FilmProgression } from "@/components/media-detail/progression/film-prog
 import { SerieProgression } from "@/components/media-detail/progression/serie-progression";
 import { BookProgression } from "@/components/media-detail/progression/book-progression";
 import { GameProgression } from "@/components/media-detail/progression/game-progression";
-import { useProfile } from "@/hooks/use-profile";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 interface ProgressionTabProps {
   mediaId: string;
@@ -20,7 +17,6 @@ interface ProgressionTabProps {
 export function ProgressionTab({ mediaId, mediaType, mediaDetails }: ProgressionTabProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [progression, setProgression] = useState<any>(null);
-  const { isAuthenticated } = useProfile();
 
   // Utiliser cette fonction pour créer une progression par défaut selon le type de média
   const createDefaultProgression = (type: MediaType) => {
@@ -55,16 +51,14 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
   };
   
   const fetchProgression = async () => {
-    if (!isAuthenticated) {
-      setIsLoading(false);
-      return;
-    }
-    
     try {
       setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
       
       if (!user.user) {
+        // Si l'utilisateur n'est pas connecté, créer une progression par défaut
+        const defaultProgression = createDefaultProgression(mediaType);
+        setProgression(defaultProgression);
         setIsLoading(false);
         return;
       }
@@ -99,11 +93,9 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
   
   useEffect(() => {
     fetchProgression();
-  }, [mediaId, isAuthenticated, mediaType]);
+  }, [mediaId, mediaType]);
 
   const handleProgressionUpdate = async (progressionData: any) => {
-    if (!isAuthenticated) return;
-    
     try {
       const { data: user } = await supabase.auth.getUser();
       
@@ -145,19 +137,6 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
       <div className="flex justify-center items-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
-    );
-  }
-
-  // Afficher un message si l'utilisateur n'est pas authentifié
-  if (!isAuthenticated) {
-    return (
-      <Card className="mt-4">
-        <CardContent className="p-6 text-center">
-          <h3 className="text-lg font-medium mb-2">Vous devez être connecté pour suivre votre progression</h3>
-          <p className="text-muted-foreground mb-4">Connectez-vous pour enregistrer votre progression sur ce média.</p>
-          <Button>Se connecter</Button>
-        </CardContent>
-      </Card>
     );
   }
 
