@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ConnectionManager } from "./connection-manager";
-import { TableName, DatabaseEvent, EventCallbacks } from "./types";
+import { TableName, DatabaseEvent, EventCallbacks, RealtimePostgresChangesPayload } from "./types";
 
 export class RealtimeSyncService {
   private connectionManager: ConnectionManager;
@@ -47,13 +47,12 @@ export class RealtimeSyncService {
     // Set up listeners for all watched tables and events
     ['user_media', 'collections', 'profiles', 'media_progressions'].forEach((table: TableName) => {
       ['INSERT', 'UPDATE', 'DELETE'].forEach((event: DatabaseEvent) => {
-        // Use the channel.on method with the correct signature for Postgres changes
         mainChannel.on(
-          'postgres_changes', 
-          { 
-            event: event, 
-            schema: 'public', 
-            table: table 
+          'postgres_changes',
+          {
+            event: event,
+            schema: 'public',
+            table: table
           },
           (payload) => this.handleDatabaseChange(table, event as DatabaseEvent, payload)
         );
@@ -71,7 +70,11 @@ export class RealtimeSyncService {
   }
   
   // Handle database change events
-  private handleDatabaseChange(table: TableName, event: DatabaseEvent, payload: any): void {
+  private handleDatabaseChange(
+    table: TableName, 
+    event: DatabaseEvent, 
+    payload: RealtimePostgresChangesPayload<any>
+  ): void {
     console.log(`Change detected in ${table}:`, event, payload);
     
     // Call registered callbacks
@@ -85,7 +88,7 @@ export class RealtimeSyncService {
   public subscribe(
     table: TableName, 
     event: DatabaseEvent, 
-    callback: (payload: any) => void
+    callback: (payload: RealtimePostgresChangesPayload<any>) => void
   ): () => void {
     const key = `${table}:${event}` as const;
     
