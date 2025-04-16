@@ -6,7 +6,7 @@ import {
   MessagesSquare, 
   Globe,
   Bookmark,
-  BookStack
+  Library  // Replace BookStack with Library
 } from 'lucide-react';
 
 export function MobileNav() {
@@ -18,7 +18,7 @@ export function MobileNav() {
   }
 
   const navItems = [
-    { path: '/bibliotheque', icon: BookStack, label: 'Bibliothèque' },
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' }, // Updated icon
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
