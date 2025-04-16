@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { MessageCircle, EyeOff, PenSquare, Check } from "lucide-react";
@@ -9,6 +9,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+
+// Add the CSS class for spoilers directly to the global styles
+// This will be automatically added to the document head
+const spoilerStyles = `
+  .spoiler-text {
+    background-color: #1f1f1f;
+    color: transparent;
+    border-radius: 2px;
+    padding: 0 2px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+  .spoiler-text:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(31, 31, 31, 0.8);
+  }
+`;
 
 interface ReviewTextareaProps {
   form: UseFormReturn<MediaRatingData>;
@@ -20,6 +38,18 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
   const [spoilerActive, setSpoilerActive] = useState(false);
   
   const review = form.watch("review") || "";
+  
+  // Add the styles to the document head when the component mounts
+  useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = spoilerStyles;
+    document.head.appendChild(styleEl);
+    
+    // Clean up the style element when the component unmounts
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
   
   const handleSpoilerToggle = () => {
     setSpoilerActive(!spoilerActive);
@@ -125,22 +155,6 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
           </CardContent>
         </Card>
       )}
-      
-      <style jsx global>{`
-        .spoiler-text {
-          background-color: #1f1f1f;
-          color: transparent;
-          border-radius: 2px;
-          padding: 0 2px;
-          cursor: pointer;
-          user-select: none;
-          transition: all 0.2s ease;
-        }
-        .spoiler-text:hover {
-          color: rgba(255, 255, 255, 0.9);
-          background-color: rgba(31, 31, 31, 0.8);
-        }
-      `}</style>
     </FormItem>
   );
 }
