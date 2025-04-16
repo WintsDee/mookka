@@ -22,9 +22,13 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
     // Ensure data.social_share_settings is an object before spreading
     const settings = data.social_share_settings || {};
     
+    // Fix: Cast the settings to SocialShareSettings type and merge with defaults
     return {
-      ...DEFAULT_SHARE_SETTINGS,
-      ...settings
+      shareRatings: settings.shareRatings !== undefined ? settings.shareRatings : DEFAULT_SHARE_SETTINGS.shareRatings,
+      shareReviews: settings.shareReviews !== undefined ? settings.shareReviews : DEFAULT_SHARE_SETTINGS.shareReviews,
+      shareCollections: settings.shareCollections !== undefined ? settings.shareCollections : DEFAULT_SHARE_SETTINGS.shareCollections,
+      shareProgress: settings.shareProgress !== undefined ? settings.shareProgress : DEFAULT_SHARE_SETTINGS.shareProgress,
+      shareLibraryAdditions: settings.shareLibraryAdditions !== undefined ? settings.shareLibraryAdditions : DEFAULT_SHARE_SETTINGS.shareLibraryAdditions
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);
