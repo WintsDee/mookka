@@ -31,12 +31,47 @@ export function HelpFeedback({
     setSubmitted(false);
   }
   
-  // Effect to set the correct tab when the dialog is opened
+  // Reset the active tab when dialog is opened
   useEffect(() => {
     if (open) {
       setActiveTab(initialTab);
+      // Reset the submitted state when dialog is opened
+      setSubmitted(false);
     }
   }, [open, initialTab]);
+
+  // Function to handle programmatic tab change via data attributes
+  const handleExternalTabChange = (tabName: 'help' | 'feedback') => {
+    setActiveTab(tabName);
+    // If the dialog is not open, open it
+    if (!open) {
+      setOpen(true);
+    }
+  };
+  
+  // Use ref to access DOM element for external control
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  
+  // Register global handler to detect data attribute clicks
+  useEffect(() => {
+    // Function to handle clicks on elements with data-help-feedback-tab attribute
+    const handleTabTrigger = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const tabButton = target.closest('[data-help-feedback-tab]');
+      
+      if (tabButton) {
+        const tabName = tabButton.getAttribute('data-help-feedback-tab') as 'help' | 'feedback';
+        if (tabName) {
+          handleExternalTabChange(tabName);
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleTabTrigger);
+    return () => {
+      document.removeEventListener('click', handleTabTrigger);
+    };
+  }, []);
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -50,6 +85,7 @@ export function HelpFeedback({
             isMobile ? 'text-xs py-1 px-2 h-auto' : ''
           }`}
           data-help-feedback-trigger
+          ref={triggerRef}
         >
           {buttonIcon && <HelpCircle size={isMobile ? 14 : 16} />}
           <span>{buttonText}</span>

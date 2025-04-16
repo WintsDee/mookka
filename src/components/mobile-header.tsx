@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Bell, HelpCircle } from "lucide-react";
+import { User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,10 +36,11 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       
       <div className="flex items-center gap-4">
         {children}
+        {/* Garder le composant HelpFeedback mais le rendre caché pour le déclenchement programmatique */}
         <div className="hidden">
-          {/* Hidden HelpFeedback component for programmatic triggering */}
           <HelpFeedback data-help-feedback-trigger />
         </div>
+        
         <Link to="/notifications" className={cn(
           "relative",
           isNotificationsActive ? "text-primary" : "text-muted-foreground"
@@ -63,7 +64,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
               <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile?.username || "Utilisateur"}
-                className="object-cover"
+                className="object-cover w-full h-full"
               />
               <AvatarFallback>
                 <User size={20} />
@@ -78,21 +79,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
           )}
         </Link>
         
-        {/* Help button added to the header */}
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            // Find and click the hidden trigger button
-            const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-            if (helpFeedback) {
-              helpFeedback.click();
-            }
-          }}
-        >
-          <HelpCircle size={20} />
-        </Button>
+        {/* Suppression du bouton d'aide (icône ?) */}
       </div>
     </div>
   );

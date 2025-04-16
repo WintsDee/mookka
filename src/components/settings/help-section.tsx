@@ -12,24 +12,34 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { helpSections } from "./data/help-section-data";
 import { HelpCard } from "@/components/ui/help-card";
+import { HelpFeedback } from "@/components/profile/help-feedback";
 
 export function HelpSection() {
   const navigate = useNavigate();
   
   const openFeedbackForm = () => {
-    // Find the hidden trigger button in the DOM and click it
-    const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-    if (helpFeedback) {
-      // Click the button to open the dialog
-      helpFeedback.click();
+    // Trouve le déclencheur caché dans le DOM
+    const helpFeedbackTrigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+    if (helpFeedbackTrigger) {
+      // Clique sur le bouton pour ouvrir la boîte de dialogue
+      helpFeedbackTrigger.click();
       
-      // After a small delay, switch to the feedback tab
+      // Après un court délai, passe à l'onglet feedback
       setTimeout(() => {
         const feedbackTab = document.querySelector('[data-tab="feedback"]') as HTMLButtonElement;
         if (feedbackTab) {
           feedbackTab.click();
         }
       }, 100);
+    }
+  };
+  
+  const openHelpDialog = () => {
+    // Trouve le déclencheur caché dans le DOM
+    const helpFeedbackTrigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+    if (helpFeedbackTrigger) {
+      // Clique sur le bouton pour ouvrir la boîte de dialogue
+      helpFeedbackTrigger.click();
     }
   };
   
@@ -80,15 +90,8 @@ export function HelpSection() {
             Signaler un problème
           </Button>
           
-          {/* Added new button for general feedback */}
           <Button
-            onClick={() => {
-              // Find and click the feedback trigger button
-              const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-              if (helpFeedback) {
-                helpFeedback.click();
-              }
-            }}
+            onClick={openHelpDialog}
             variant="default"
             className="w-full"
           >
@@ -96,6 +99,11 @@ export function HelpSection() {
             Envoyer un feedback
           </Button>
         </div>
+      </div>
+      
+      {/* Composant HelpFeedback placé ici pour le contexte de la page */}
+      <div className="hidden">
+        <HelpFeedback />
       </div>
     </div>
   );
