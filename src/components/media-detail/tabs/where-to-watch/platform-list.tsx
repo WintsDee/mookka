@@ -7,18 +7,38 @@ import { PlatformItem } from "./platform-item";
 
 interface PlatformListProps {
   type: string;
+  category?: string;
   platforms: Platform[];
   mediaType: MediaType;
   title: string;
 }
 
-export function PlatformList({ type, platforms, mediaType, title }: PlatformListProps) {
-  const typeLabel = 
-    type === "streaming" 
-      ? "Plateformes de streaming" 
-      : type === "purchase" 
-        ? "Acheter"
-        : "Louer";
+export function PlatformList({ type, category, platforms, mediaType, title }: PlatformListProps) {
+  let typeLabel = "";
+  
+  if (mediaType === "film" || mediaType === "serie") {
+    if (category === "subscription") {
+      typeLabel = "Par abonnement";
+    } else if (category === "vod") {
+      typeLabel = "Location et achat (VOD)";
+    } else if (category === "free") {
+      typeLabel = "Gratuit avec publicité";
+    } else {
+      typeLabel = 
+        type === "streaming" 
+          ? "Plateformes de streaming" 
+          : type === "purchase" 
+            ? "Acheter"
+            : "Louer";
+    }
+  } else {
+    typeLabel = 
+      type === "streaming" 
+        ? "Plateformes de streaming" 
+        : type === "purchase" 
+          ? "Acheter"
+          : "Louer";
+  }
 
   return (
     <div className="space-y-2">

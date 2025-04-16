@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
@@ -28,33 +27,104 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
     return <WhereToWatchEmpty />;
   }
 
-  // Group platforms by type
-  const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
-    const type = platform.type;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(platform);
-    return acc;
-  }, {} as Record<string, Platform[]>);
+  // For films and series, group by category (subscription, vod, free)
+  if (mediaType === "film" || mediaType === "serie") {
+    // Group platforms by category
+    const groupedByCategory = availablePlatforms.reduce((acc, platform) => {
+      const category = platform.category || "other";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(platform);
+      return acc;
+    }, {} as Record<string, Platform[]>);
 
-  return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
 
-      {Object.entries(groupedPlatforms).map(([type, typePlatforms]) => (
-        <PlatformList 
-          key={type}
-          type={type} 
-          platforms={typePlatforms} 
-          mediaType={mediaType}
-          title={title}
-        />
-      ))}
+        {/* Display subscription platforms first */}
+        {groupedByCategory.subscription && (
+          <PlatformList 
+            key="subscription"
+            type="streaming" 
+            category="subscription"
+            platforms={groupedByCategory.subscription} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
 
-      <div className="text-xs text-muted-foreground mt-4 text-center">
-        Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
+        {/* Then VOD platforms */}
+        {groupedByCategory.vod && (
+          <PlatformList 
+            key="vod"
+            type="purchase" 
+            category="vod"
+            platforms={groupedByCategory.vod} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        {/* Finally free platforms */}
+        {groupedByCategory.free && (
+          <PlatformList 
+            key="free"
+            type="streaming" 
+            category="free"
+            platforms={groupedByCategory.free} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        {/* Other platforms if any */}
+        {groupedByCategory.other && (
+          <PlatformList 
+            key="other"
+            type="other" 
+            platforms={groupedByCategory.other} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        <div className="text-xs text-muted-foreground mt-4 text-center">
+          Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
+        </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    // For books and games, keep the original grouping by type
+    // Group platforms by type
+    const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
+      const type = platform.type;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(platform);
+      return acc;
+    }, {} as Record<string, Platform[]>);
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
+
+        {Object.entries(groupedPlatforms).map(([type, typePlatforms]) => (
+          <PlatformList 
+            key={type}
+            type={type} 
+            platforms={typePlatforms} 
+            mediaType={mediaType}
+            title={title}
+          />
+        ))}
+
+        <div className="text-xs text-muted-foreground mt-4 text-center">
+          Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
+        </div>
+      </div>
+    );
+  }
 }

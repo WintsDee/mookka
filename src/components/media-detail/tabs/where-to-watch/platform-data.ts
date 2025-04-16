@@ -13,6 +13,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Netflix", 
         url: `https://www.netflix.com/search?q=${encodedTitle}`, 
         type: "streaming", 
+        category: "subscription",
         logo: "/platforms/netflix.png",
         isAvailable: mediaId === "1" || mediaId === "2" // Exemple basé sur l'ID du média
       },
@@ -21,6 +22,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Amazon Prime Video", 
         url: `https://www.primevideo.com/search/ref=atv_sr_sug_4?phrase=${encodedTitle}`, 
         type: "streaming", 
+        category: "subscription",
         logo: "/platforms/prime.png",
         isAvailable: mediaId === "2" || mediaId === "3"
       },
@@ -29,6 +31,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Disney+", 
         url: `https://www.disneyplus.com/fr-fr/search?q=${encodedTitle}`, 
         type: "streaming", 
+        category: "subscription",
         logo: "/platforms/disney.png",
         isAvailable: mediaId === "1"
       },
@@ -37,6 +40,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Canal+", 
         url: `https://www.canalplus.com/recherche?q=${encodedTitle}`, 
         type: "streaming", 
+        category: "subscription",
         logo: "/platforms/canal.png",
         isAvailable: false
       },
@@ -45,6 +49,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Google Play Films", 
         url: `https://play.google.com/store/search?q=${encodedTitle}&c=movies`, 
         type: "purchase", 
+        category: "vod",
         logo: "/platforms/google-play.png",
         isAvailable: true
       },
@@ -53,6 +58,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Apple TV", 
         url: `https://tv.apple.com/fr/search?term=${encodedTitle}`, 
         type: "streaming", 
+        category: "subscription",
         logo: "/platforms/apple-tv.png",
         isAvailable: mediaId === "3"
       },
@@ -61,16 +67,36 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         name: "Molotov TV",
         url: `https://www.molotov.tv/search?search=${encodedTitle}`,
         type: "streaming",
+        category: "free",
         logo: "/platforms/molotov.png",
-        isAvailable: false
+        isAvailable: mediaId === "2"
       },
       {
         id: "8",
         name: "OCS",
         url: `https://www.ocs.fr/recherche?q=${encodedTitle}`,
         type: "streaming",
+        category: "subscription",
         logo: "/platforms/ocs.png",
         isAvailable: mediaId === "2"
+      },
+      {
+        id: "9",
+        name: "YouTube",
+        url: `https://www.youtube.com/results?search_query=${encodedTitle}+film+complet`,
+        type: "purchase",
+        category: "vod",
+        logo: "/platforms/youtube.png",
+        isAvailable: true
+      },
+      {
+        id: "10",
+        name: "Rakuten TV",
+        url: `https://www.rakuten.tv/fr/search?q=${encodedTitle}`,
+        type: "purchase",
+        category: "vod",
+        logo: "/platforms/rakuten.png",
+        isAvailable: mediaId === "1"
       }
     ];
   } else if (mediaType === "book") {

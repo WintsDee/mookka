@@ -5,7 +5,8 @@ export interface Platform {
   id: string;
   name: string;
   url: string;
-  type: "streaming" | "purchase" | "rent";
+  type: "streaming" | "purchase" | "rent" | "free";
+  category?: "subscription" | "vod" | "free";
   logo?: string;
   isAvailable?: boolean;
 }

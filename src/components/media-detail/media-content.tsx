@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
 import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
-import { ProgressionTab } from "@/components/media-detail/tabs/progression-tab";
+import { ProgressionTab } from "@/components/media-detail/tabs/progression";
 import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch";
 import { MediaType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
