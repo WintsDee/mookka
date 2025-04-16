@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 export function useSerieProgression(mediaDetails: any, initialProgression: any) {
@@ -46,7 +47,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any) 
   }, [initialProgression]);
 
   const toggleEpisode = (seasonNumber: number, episodeNumber: number) => {
-    const newWatchedEpisodes = { ...progression.watched_episodes } || {};
+    const newWatchedEpisodes = { ...(progression.watched_episodes || {}) };
     
     if (!newWatchedEpisodes[seasonNumber]) {
       newWatchedEpisodes[seasonNumber] = [];
@@ -90,7 +91,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any) 
   };
 
   const toggleSeason = (seasonNumber: number, episodeCount: number) => {
-    const newWatchedEpisodes = { ...progression.watched_episodes } || {};
+    const newWatchedEpisodes = { ...(progression.watched_episodes || {}) };
     
     // Check if all episodes in the season are already watched
     const seasonEpisodes = newWatchedEpisodes[seasonNumber] || [];
