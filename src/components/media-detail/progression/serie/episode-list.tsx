@@ -58,7 +58,10 @@ export function EpisodeList({
             <Checkbox 
               id={`s${seasonNumber}e${episodeNumber}`}
               checked={isWatched}
-              onCheckedChange={() => onToggleEpisode(seasonNumber, episodeNumber)}
+              onCheckedChange={() => {
+                console.log(`Checkbox toggled for S${seasonNumber}E${episodeNumber}`);
+                onToggleEpisode(seasonNumber, episodeNumber);
+              }}
               className="mr-3 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
             />
             <div className="flex-1">
