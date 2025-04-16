@@ -1,250 +1,283 @@
 
 import React, { useState } from "react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertCircle, HelpCircle, MessageSquare, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { HelpCircle, BookOpen, Settings, Bug, Lightbulb, MessageSquare } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const feedbackSchema = z.object({
-  type: z.enum(["bug", "idea", "suggestion"]),
-  message: z.string().min(10, "Votre message doit contenir au moins 10 caractères"),
+  type: z.string({ required_error: "Veuillez sélectionner un type de retour" }),
+  message: z.string().min(10, { message: "Votre message doit contenir au moins 10 caractères" }),
   contact: z.string().optional(),
-  title: z.string().optional(),
+  title: z.string().optional()
 });
 
 type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 
+const helpItems = [
+  {
+    title: "Comment ajouter un média ?",
+    content: "Utilisez la recherche pour trouver un média, puis cliquez sur l'icône + pour l'ajouter à votre bibliothèque."
+  },
+  {
+    title: "Créer une collection",
+    content: "Allez dans l'onglet Collections et cliquez sur 'Nouvelle collection' pour créer une liste personnalisée."
+  },
+  {
+    title: "Suivre des amis",
+    content: "Recherchez des utilisateurs dans l'onglet Social et cliquez sur 'Suivre' pour voir leur activité."
+  },
+  {
+    title: "Problème technique ?",
+    content: "Utilisez le formulaire de feedback pour nous signaler tout problème rencontré."
+  }
+];
+
 export function HelpFeedback() {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<'help' | 'feedback'>('help');
+  const [submitted, setSubmitted] = useState(false);
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
-      type: "suggestion",
+      type: "",
       message: "",
       contact: "",
-      title: "",
-    },
+      title: ""
+    }
   });
-
-  const onSubmit = async (values: FeedbackFormValues) => {
+  
+  async function onSubmit(values: FeedbackFormValues) {
     setIsSubmitting(true);
     
     try {
+      // Appel de la fonction Supabase Edge pour créer l'issue GitHub
       const { data, error } = await supabase.functions.invoke('github-issue', {
-        body: values,
+        body: values
       });
       
       if (error) {
         throw new Error(error.message);
       }
       
-      setSubmitSuccess(true);
+      console.log('Feedback envoyé avec succès:', data);
+      
+      toast({
+        title: "Feedback envoyé",
+        description: "Merci pour votre retour ! Nous l'examinerons rapidement.",
+      });
+      
+      setSubmitted(true);
       form.reset();
       
-      toast({
-        title: "Merci pour votre retour !",
-        description: "Votre message a bien été envoyé à l'équipe.",
-      });
     } catch (error) {
-      console.error("Erreur lors de l'envoi du feedback:", error);
-      
+      console.error('Erreur lors de l\'envoi du feedback:', error);
       toast({
-        title: "Une erreur est survenue",
-        description: "Impossible d'envoyer votre message. Veuillez réessayer plus tard.",
         variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du feedback. Veuillez réessayer.",
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
-
+  }
+  
+  function resetForm() {
+    setSubmitted(false);
+    form.reset();
+  }
+  
   return (
-    <div className="mt-8 space-y-6">
-      <h2 className="text-xl font-bold">Aide & Feedback</h2>
-      
-      <div className="space-y-6">
-        <section>
-          <h3 className="text-lg font-medium flex items-center gap-2 mb-3">
-            <HelpCircle size={18} className="text-primary" />
-            Besoin d'aide ?
-          </h3>
-          
-          <Accordion type="single" collapsible className="bg-card rounded-lg border">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <BookOpen size={16} className="text-primary" />
-                  <span>Comment ajouter un média à ma bibliothèque ?</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                Recherchez un média depuis la page "Recherche", puis cliquez sur la fiche du média. 
-                Sur la page de détail, utilisez le bouton "Ajouter à ma bibliothèque".
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="item-2">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <Settings size={16} className="text-primary" />
-                  <span>Comment gérer ma progression ?</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                Dans la page de détail d'un média, allez dans l'onglet "Progression". 
-                Vous pourrez y suivre votre avancement pour les films, séries, livres et jeux.
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="item-3">
-              <AccordionTrigger className="px-4">
-                <div className="flex items-center gap-2">
-                  <MessageSquare size={16} className="text-primary" />
-                  <span>Comment créer une collection ?</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                Depuis votre profil ou la page "Collections", cliquez sur "Créer une collection".
-                Donnez un nom, choisissez un type et une visibilité, puis ajoutez-y des médias.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </section>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={`flex items-center gap-1.5 text-muted-foreground hover:text-foreground ${
+            isMobile ? 'text-xs py-1 px-2 h-auto' : ''
+          }`}
+        >
+          <HelpCircle size={isMobile ? 14 : 16} />
+          <span>Aide et Feedback</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {activeTab === 'help' ? (
+              <>
+                <HelpCircle size={18} />
+                Besoin d'aide ?
+              </>
+            ) : (
+              <>
+                <MessageSquare size={18} />
+                Envoyez-nous votre feedback
+              </>
+            )}
+          </DialogTitle>
+        </DialogHeader>
         
-        <section>
-          <h3 className="text-lg font-medium flex items-center gap-2 mb-3">
-            <MessageSquare size={18} className="text-primary" />
-            Envoyez-nous votre feedback
-          </h3>
-          
-          {submitSuccess ? (
-            <Alert className="bg-green-50 border-green-200 text-green-800">
-              <AlertTitle>Merci pour votre retour !</AlertTitle>
-              <AlertDescription>
-                Votre message a bien été envoyé à l'équipe de développement. 
-                Nous vous remercions de nous aider à améliorer Mookka !
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type de retour</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionnez un type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="bug" className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <Bug size={16} className="text-red-500" />
-                              <span>Bug / Problème</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="idea">
-                            <div className="flex items-center gap-2">
-                              <Lightbulb size={16} className="text-amber-500" />
-                              <span>Idée</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="suggestion">
-                            <div className="flex items-center gap-2">
-                              <MessageSquare size={16} className="text-blue-500" />
-                              <span>Suggestion</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Titre (optionnel)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Un titre pour votre retour" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Votre message</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Décrivez votre retour, bug ou idée..." 
-                          rows={4} 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="contact"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Comment vous contacter ? (optionnel)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Email ou pseudo" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Envoi en cours..." : "Envoyer"}
+        <div className="flex space-x-2 mb-4">
+          <Button 
+            variant={activeTab === 'help' ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveTab('help')}
+            className="flex-1"
+          >
+            <HelpCircle size={16} className="mr-1" />
+            Aide
+          </Button>
+          <Button 
+            variant={activeTab === 'feedback' ? "default" : "outline"} 
+            size="sm"
+            onClick={() => setActiveTab('feedback')}
+            className="flex-1"
+          >
+            <MessageSquare size={16} className="mr-1" />
+            Feedback
+          </Button>
+        </div>
+        
+        {activeTab === 'help' ? (
+          <ScrollArea className="max-h-[400px] pr-4">
+            <div className="space-y-4">
+              {helpItems.map((item, index) => (
+                <div key={index} className="rounded-lg border p-3">
+                  <h3 className="font-medium">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{item.content}</p>
+                </div>
+              ))}
+              
+              <div className="pt-2 pb-4">
+                <Alert variant="default" className="bg-muted/50">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Besoin de plus d'aide ?</AlertTitle>
+                  <AlertDescription>
+                    Si vous ne trouvez pas la réponse à votre question, n'hésitez pas à nous envoyer un message via l'onglet Feedback.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </div>
+          </ScrollArea>
+        ) : (
+          <>
+            {submitted ? (
+              <div className="py-8 text-center space-y-4">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <Send className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-medium">Merci pour votre feedback !</h3>
+                <p className="text-sm text-muted-foreground">
+                  Votre message a bien été envoyé. Nous l'examinerons rapidement.
+                </p>
+                <Button onClick={resetForm} className="mt-4">
+                  Envoyer un autre feedback
                 </Button>
-              </form>
-            </Form>
-          )}
-        </section>
-      </div>
-    </div>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type de retour</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionnez un type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="bug">Bug / Problème</SelectItem>
+                            <SelectItem value="feature">Idée / Suggestion</SelectItem>
+                            <SelectItem value="feedback">Retour général</SelectItem>
+                            <SelectItem value="question">Question</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Titre (optionnel)</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Résumé court de votre feedback" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Message</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            {...field} 
+                            placeholder="Décrivez votre feedback en détail..." 
+                            rows={5}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="contact"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Comment vous contacter (optionnel)</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Email ou pseudo" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Envoi en cours...' : 'Envoyer le feedback'}
+                  </Button>
+                </form>
+              </Form>
+            )}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

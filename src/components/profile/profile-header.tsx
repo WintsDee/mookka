@@ -3,10 +3,11 @@ import React from "react";
 import { Profile } from "@/hooks/use-profile";
 import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
 import { Separator } from "@/components/ui/separator";
-import { Users, Heart } from "lucide-react";
+import { Users, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HelpFeedback } from "./help-feedback";
 
 // Updated to abstract images that match the app's style with colors more aligned with the app's theme
 const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
@@ -32,6 +33,22 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        
+        {/* Boutons d'action en haut à droite */}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          <HelpFeedback />
+          
+          <Link to="/settings">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="bg-background/20 hover:bg-background/30 backdrop-blur-sm text-white"
+            >
+              <Settings size={isMobile ? 16 : 18} />
+            </Button>
+          </Link>
+        </div>
+        
         <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
           <div className="w-20 h-20 rounded-full bg-background p-1 shadow-md">
             <img 

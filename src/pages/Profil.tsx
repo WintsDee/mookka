@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -14,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { MediaType } from "@/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Profil = () => {
   const { profile, loading, isAuthenticated, updateProfile } = useProfile();
@@ -101,24 +103,24 @@ const Profil = () => {
               onUpdateProfile={updateProfile} 
             />
             
-            <div className="px-6">
-              <UserStats stats={stats} />
-              
-              <div className="mt-6">
-                <ProfileTabs 
-                  collections={myCollections} 
-                  loadingCollections={loadingMyCollections}
-                  favoriteMedia={favoriteMedia}
+            <ScrollArea className="h-[calc(100vh-350px)]">
+              <div className="px-6 pb-6">
+                <UserStats stats={stats} />
+                
+                <div className="mt-6">
+                  <ProfileTabs 
+                    collections={myCollections} 
+                    loadingCollections={loadingMyCollections}
+                    favoriteMedia={favoriteMedia}
+                  />
+                </div>
+                
+                <ProfileActions 
+                  isAuthenticated={isAuthenticated} 
+                  onLogout={handleLogout} 
                 />
               </div>
-              
-              <ProfileActions 
-                isAuthenticated={isAuthenticated} 
-                onLogout={handleLogout} 
-              />
-              
-              <HelpFeedback />
-            </div>
+            </ScrollArea>
           </>
         )}
       </div>
