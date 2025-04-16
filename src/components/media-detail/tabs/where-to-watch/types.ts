@@ -14,4 +14,7 @@ export interface Platform {
 export interface PlatformHookResult {
   platforms: Platform[];
   isLoading: boolean;
+  error: string | null;
+  availablePlatforms: Platform[];
+  hasAvailablePlatforms: boolean;
 }
