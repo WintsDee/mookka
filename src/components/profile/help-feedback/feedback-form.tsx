@@ -1,16 +1,13 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TypeField, TitleField, MessageField, ContactField } from "./form-fields";
 
 const feedbackSchema = z.object({
   type: z.string({ required_error: "Veuillez sélectionner un type de retour" }),
@@ -19,7 +16,7 @@ const feedbackSchema = z.object({
   title: z.string().optional()
 });
 
-type FeedbackFormValues = z.infer<typeof feedbackSchema>;
+export type FeedbackFormValues = z.infer<typeof feedbackSchema>;
 
 interface FeedbackFormProps {
   onSubmitSuccess: () => void;
@@ -77,78 +74,10 @@ export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Type de retour</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez un type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="bug">Bug / Problème</SelectItem>
-                  <SelectItem value="feature">Idée / Suggestion</SelectItem>
-                  <SelectItem value="feedback">Retour général</SelectItem>
-                  <SelectItem value="question">Question</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Titre (optionnel)</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Résumé court de votre feedback" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Message</FormLabel>
-              <FormControl>
-                <Textarea 
-                  {...field} 
-                  placeholder="Décrivez votre feedback en détail..." 
-                  rows={5}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="contact"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Comment vous contacter (optionnel)</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Email ou pseudo" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <TypeField control={form.control} />
+        <TitleField control={form.control} />
+        <MessageField control={form.control} />
+        <ContactField control={form.control} />
         
         <Button 
           type="submit" 
