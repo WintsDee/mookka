@@ -73,7 +73,7 @@ export function SocialTabs() {
                   <Settings className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right">
+              <SheetContent>
                 <SheetHeader>
                   <SheetTitle>Paramètres sociaux</SheetTitle>
                 </SheetHeader>
