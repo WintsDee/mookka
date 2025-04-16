@@ -19,21 +19,14 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return DEFAULT_SHARE_SETTINGS;
     }
 
-    // Ensure data.social_share_settings is an object and cast it properly
-    const settingsData = data.social_share_settings;
+    // Ensure data.social_share_settings is an object before spreading
+    const settings = typeof data.social_share_settings === 'object' && data.social_share_settings !== null 
+      ? data.social_share_settings 
+      : {};
     
-    // Check if it's actually an object with our expected structure
-    if (!settingsData || typeof settingsData !== 'object' || Array.isArray(settingsData)) {
-      return DEFAULT_SHARE_SETTINGS;
-    }
-    
-    // Safely access properties with proper type checking
     return {
-      shareRatings: typeof settingsData.shareRatings === 'boolean' ? settingsData.shareRatings : DEFAULT_SHARE_SETTINGS.shareRatings,
-      shareReviews: typeof settingsData.shareReviews === 'boolean' ? settingsData.shareReviews : DEFAULT_SHARE_SETTINGS.shareReviews,
-      shareCollections: typeof settingsData.shareCollections === 'boolean' ? settingsData.shareCollections : DEFAULT_SHARE_SETTINGS.shareCollections,
-      shareProgress: typeof settingsData.shareProgress === 'boolean' ? settingsData.shareProgress : DEFAULT_SHARE_SETTINGS.shareProgress,
-      shareLibraryAdditions: typeof settingsData.shareLibraryAdditions === 'boolean' ? settingsData.shareLibraryAdditions : DEFAULT_SHARE_SETTINGS.shareLibraryAdditions
+      ...DEFAULT_SHARE_SETTINGS,
+      ...settings
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);

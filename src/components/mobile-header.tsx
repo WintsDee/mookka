@@ -11,6 +11,7 @@ interface MobileHeaderProps {
   children?: React.ReactNode;
 }
 
+// Updated to an abstract image in purple tones that better matches the app's visual theme
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
@@ -36,12 +37,12 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       
       <div className="flex items-center gap-4">
         {children}
-        
         <Link to="/notifications" className={cn(
           "relative",
           isNotificationsActive ? "text-primary" : "text-muted-foreground"
         )}>
           <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
+          {/* Notification indicator */}
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
         </Link>
         
