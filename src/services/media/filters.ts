@@ -7,7 +7,9 @@ export function filterAdultContent(mediaList: any[]): any[] {
   const adultContentKeywords = [
     'xxx', 'porn', 'porno', 'pornographique', 'bdsm', 'kamasutra', 'explicit',
     'sexe', 'érotique', 'adult', 'adulte', 'nympho', 'nymphomane', 'nude', 'nu',
-    'sensual', 'sensuel', 'mature', 'x-rated', 'classé x', 'uncensored', 'non censuré'
+    'sensual', 'sensuel', 'mature', 'x-rated', 'classé x', 'uncensored', 'non censuré',
+    'journal d\'une nymphomane', 'journal d une nymphomane', 'journal nymphomane',
+    'emmanuelle', 'playboy', 'sexy', 'sex', 'érotisme', 'erotisme', 'lingerie'
   ];
   
   return mediaList.filter(media => {
@@ -20,6 +22,6 @@ export function filterAdultContent(mediaList: any[]): any[] {
     const contentText = `${title} ${description} ${genres}`;
     
     // Filter out explicit adult content
-    return !adultContentKeywords.some(keyword => contentText.includes(keyword));
+    return !adultContentKeywords.some(keyword => contentText.includes(keyword.toLowerCase()));
   });
 }

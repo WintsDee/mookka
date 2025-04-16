@@ -25,6 +25,9 @@ const MediaDetail = () => {
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
 
+  // Store the previous path to navigate back correctly
+  const previousPath = location.state?.from || "/recherche";
+
   useEffect(() => {
     const fetchMediaDetails = async () => {
       if (type && id) {
@@ -61,6 +64,11 @@ const MediaDetail = () => {
     setAddToCollectionOpen(false);
   };
 
+  const handleGoBack = () => {
+    // Navigate back to the previous page but preserve its state
+    navigate(previousPath, { replace: false });
+  };
+
   if (isLoading) {
     return (
       <Background>
@@ -79,7 +87,7 @@ const MediaDetail = () => {
         <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
-          <Button onClick={() => navigate(-1)}>Retour</Button>
+          <Button onClick={handleGoBack}>Retour</Button>
         </div>
       </Background>
     );

@@ -44,10 +44,11 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
 
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 border-t border-border shadow-md",
-      "bg-background/80 backdrop-blur-md",
+      "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 mb-3 mx-3 rounded-xl",
+      "bg-background/60 backdrop-blur-md",
       "pb-safe-area", // Ajout de padding au bas de l'écran
-      "py-4" // Augmentation du padding vertical
+      "py-4", // Augmentation du padding vertical
+      "border border-border/40 shadow-lg" // Ajout d'une bordure subtile
     )}>
       <Button 
         variant="ghost" 

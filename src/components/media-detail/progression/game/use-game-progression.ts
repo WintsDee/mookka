@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface GameProgressionData {
   completion_percentage: number;
@@ -16,6 +16,9 @@ export function useGameProgression(
   );
   const [playtime, setPlaytime] = useState(initialProgression?.playtime || 0);
   const [status, setStatus] = useState(initialProgression?.status || 'to-play');
+  
+  // Use a debounce timer to avoid excessive updates
+  const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Update when external progression changes
@@ -40,7 +43,16 @@ export function useGameProgression(
     }
     
     setStatus(newStatus);
-    updateProgression(newPercentage, playtime, newStatus);
+    
+    // Clear any existing timer
+    if (updateTimerRef.current) {
+      clearTimeout(updateTimerRef.current);
+    }
+    
+    // Set a new timer to update after 500ms of inactivity
+    updateTimerRef.current = setTimeout(() => {
+      updateProgression(newPercentage, playtime, newStatus);
+    }, 500);
   };
 
   const updatePlaytime = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +69,16 @@ export function useGameProgression(
     }
     
     setStatus(newStatus);
-    updateProgression(completionPercentage, newPlaytime, newStatus);
+    
+    // Clear any existing timer
+    if (updateTimerRef.current) {
+      clearTimeout(updateTimerRef.current);
+    }
+    
+    // Set a new timer to update after 500ms of inactivity
+    updateTimerRef.current = setTimeout(() => {
+      updateProgression(completionPercentage, newPlaytime, newStatus);
+    }, 500);
   };
 
   const updateStatus = (newStatus: 'to-play' | 'playing' | 'completed') => {
@@ -89,6 +110,15 @@ export function useGameProgression(
       status
     });
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimerRef.current) {
+        clearTimeout(updateTimerRef.current);
+      }
+    };
+  }, []);
 
   return {
     completionPercentage,
