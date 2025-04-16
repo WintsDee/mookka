@@ -49,13 +49,14 @@ export class RealtimeSyncService {
       ['INSERT', 'UPDATE', 'DELETE'].forEach((event: DatabaseEvent) => {
         // Use the channel.on method with the postgres_changes event
         mainChannel.on(
-          'postgres_changes',
+          'postgres_changes', // This is a literal string that Supabase recognizes
           {
             event: event,
             schema: 'public',
             table: table
           },
-          (payload) => this.handleDatabaseChange(table, event as DatabaseEvent, payload)
+          (payload: RealtimePostgresChangesPayload<any>) => 
+            this.handleDatabaseChange(table, event as DatabaseEvent, payload)
         );
       });
     });
