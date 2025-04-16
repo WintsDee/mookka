@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
-import { MobileHeaderWithSync } from "@/components/mobile-header-with-sync";
+import { MobileHeader } from "@/components/mobile-header";
 import { UserStats } from "@/components/profile/user-stats";
 import { useCollections } from "@/hooks/use-collections";
 import { useProfile } from "@/hooks/use-profile";
@@ -12,7 +12,7 @@ import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ProfileActions } from "@/components/profile/profile-actions";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useCachedQuery } from "@/hooks/use-cached-query";
+import { useQuery } from "@tanstack/react-query";
 import { MediaType } from "@/types";
 
 const Profil = () => {
@@ -21,14 +21,10 @@ const Profil = () => {
   
   const { myCollections, loadingMyCollections } = useCollections();
   
-  // Fetch user library statistics from Supabase with cache
-  const { 
-    data: stats = { films: 0, series: 0, books: 0, games: 0, total: 0 }, 
-    isLoading: loadingStats,
-    syncStatus
-  } = useCachedQuery(
-    ['library-stats', profile?.id],
-    async () => {
+  // Fetch user library statistics from Supabase
+  const { data: stats = { films: 0, series: 0, books: 0, games: 0, total: 0 }, isLoading: loadingStats } = useQuery({
+    queryKey: ['library-stats', profile?.id],
+    queryFn: async () => {
       if (!profile?.id) {
         return { films: 0, series: 0, books: 0, games: 0, total: 0 };
       }
@@ -52,24 +48,13 @@ const Profil = () => {
       
       return { films, series, books, games, total };
     },
-    {
-      enabled: !!profile?.id && isAuthenticated,
-      cacheKey: `library-stats-${profile?.id}`,
-      cacheTtl: 30 * 60 * 1000, // 30 minutes
-      watchTables: [
-        { table: 'user_media', event: 'INSERT' },
-        { table: 'user_media', event: 'DELETE' },
-      ]
-    }
-  );
+    enabled: !!profile?.id && isAuthenticated
+  });
 
-  // Fetch user favorite media with cache
-  const { 
-    data: favoriteMedia = [], 
-    isLoading: loadingFavorites 
-  } = useCachedQuery(
-    ['favorite-media', profile?.id],
-    async () => {
+  // Fetch user favorite media
+  const { data: favoriteMedia = [], isLoading: loadingFavorites } = useQuery({
+    queryKey: ['favorite-media', profile?.id],
+    queryFn: async () => {
       if (!profile?.id) return [];
       
       const { data, error } = await supabase
@@ -94,17 +79,8 @@ const Profil = () => {
         rating: item.media?.rating,
       })).filter(item => item.title && item.coverImage);
     },
-    {
-      enabled: !!profile?.id && isAuthenticated,
-      cacheKey: `favorite-media-${profile?.id}`,
-      cacheTtl: 30 * 60 * 1000, // 30 minutes
-      watchTables: [
-        { table: 'user_media', event: 'INSERT' },
-        { table: 'user_media', event: 'UPDATE' },
-        { table: 'user_media', event: 'DELETE' },
-      ]
-    }
-  );
+    enabled: !!profile?.id && isAuthenticated
+  });
   
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -113,7 +89,7 @@ const Profil = () => {
 
   return (
     <Background>
-      <MobileHeaderWithSync title="Profil" />
+      <MobileHeader title="Profil" />
       <div className="pt-safe pb-24 mt-16">
         {loading ? (
           <ProfileSkeleton />

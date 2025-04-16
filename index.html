@@ -10,43 +10,20 @@
     <title>Mookka</title>
     <meta name="description" content="Votre bibliothèque numérique multimédia" />
     
-    <!-- Open Graph Tags -->
     <meta property="og:title" content="mookka-media-verse" />
     <meta property="og:description" content="Votre bibliothèque numérique multimédia" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/lovable-uploads/34db9168-1159-46fb-8dea-647ac3684f99.png" />
 
-    <!-- Twitter Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="/lovable-uploads/34db9168-1159-46fb-8dea-647ac3684f99.png" />
 
-    <!-- Prevent caching of the HTML file -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-    <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
   </head>
   <body>
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Service Worker Registration -->
-    <script>
-      // Vérifier si les Service Workers sont supportés
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-              console.log('Service Worker enregistré avec succès:', registration);
-            })
-            .catch(function(error) {
-              console.log('Échec d\'enregistrement du Service Worker:', error);
-            });
-        });
-      }
-    </script>
   </body>
 </html>
