@@ -115,7 +115,7 @@ export async function updateSocialShareSettings(settings: Partial<SocialShareSet
     const currentSettings = await getSocialShareSettings();
     
     // Fusionner avec les nouveaux paramètres
-    const updatedSettings = {
+    const updatedSettings: SocialShareSettings = {
       ...currentSettings,
       ...settings
     };
