@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { Button } from "@/components/ui/button";
-import { Coffee, Heart, Rocket, Gift, Info, ArrowUp } from "lucide-react";
+import { HandCoins, Heart, Rocket, Gift, Info, ArrowUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 
@@ -42,7 +41,7 @@ const Soutenir = () => {
                   size="lg" 
                   className="w-full gap-2 rounded-full px-8 py-6 hover:scale-105 transition-transform text-lg font-medium shadow-lg shadow-primary/20"
                 >
-                  <Coffee size={22} className="animate-bounce" />
+                  <HandCoins size={22} />
                   <span>Soutenir Mookka</span>
                 </Button>
               </a>
@@ -119,7 +118,6 @@ const Soutenir = () => {
           </div>
         </ScrollArea>
         
-        {/* Scroll to top button */}
         {showScrollToTop && (
           <button 
             onClick={scrollToTop}
@@ -136,4 +134,3 @@ const Soutenir = () => {
 };
 
 export default Soutenir;
-
