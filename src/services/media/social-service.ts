@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/hooks/use-profile";
 import { toast } from "@/components/ui/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 // Types pour les demandes d'amitié
 export interface FriendRequest {
@@ -88,14 +88,18 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return DEFAULT_SHARE_SETTINGS;
     }
 
-    // Fix the spread error by ensuring we're spreading an object
+    // Ensure we have an object to work with
     const settings = typeof data.social_share_settings === 'object' 
-      ? data.social_share_settings as Partial<SocialShareSettings>
+      ? data.social_share_settings 
       : {};
 
+    // Apply defaults and cast to the correct type
     return {
-      ...DEFAULT_SHARE_SETTINGS,
-      ...settings
+      shareRatings: settings.shareRatings ?? DEFAULT_SHARE_SETTINGS.shareRatings,
+      shareReviews: settings.shareReviews ?? DEFAULT_SHARE_SETTINGS.shareReviews,
+      shareCollections: settings.shareCollections ?? DEFAULT_SHARE_SETTINGS.shareCollections,
+      shareProgress: settings.shareProgress ?? DEFAULT_SHARE_SETTINGS.shareProgress,
+      shareLibraryAdditions: settings.shareLibraryAdditions ?? DEFAULT_SHARE_SETTINGS.shareLibraryAdditions
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);
@@ -120,10 +124,19 @@ export async function updateSocialShareSettings(settings: Partial<SocialShareSet
       ...settings
     };
 
+    // Convert to a plain object for Supabase
+    const dbSettings = {
+      shareRatings: updatedSettings.shareRatings,
+      shareReviews: updatedSettings.shareReviews,
+      shareCollections: updatedSettings.shareCollections,
+      shareProgress: updatedSettings.shareProgress,
+      shareLibraryAdditions: updatedSettings.shareLibraryAdditions
+    };
+
     const { error } = await supabase
       .from('profiles')
       .update({
-        social_share_settings: updatedSettings,
+        social_share_settings: dbSettings as Json,
         updated_at: new Date().toISOString()
       })
       .eq('id', user.user.id);
