@@ -12,7 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { helpSections } from "./data/help-section-data";
 import { HelpCard } from "@/components/ui/help-card";
-import { HelpFeedback } from "@/components/profile/help-feedback";
 
 export function HelpSection() {
   const navigate = useNavigate();
@@ -79,6 +78,22 @@ export function HelpSection() {
           >
             <MessageSquare className="mr-2 h-4 w-4" />
             Signaler un problème
+          </Button>
+          
+          {/* Added new button for general feedback */}
+          <Button
+            onClick={() => {
+              // Find and click the feedback trigger button
+              const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+              if (helpFeedback) {
+                helpFeedback.click();
+              }
+            }}
+            variant="default"
+            className="w-full"
+          >
+            <HelpCircle className="mr-2 h-4 w-4" />
+            Envoyer un feedback
           </Button>
         </div>
       </div>

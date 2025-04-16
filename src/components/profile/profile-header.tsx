@@ -3,11 +3,13 @@ import React from "react";
 import { Profile } from "@/hooks/use-profile";
 import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
 import { Separator } from "@/components/ui/separator";
-import { Users, Heart, Settings } from "lucide-react";
+import { Users, Heart, Settings, Edit, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
@@ -17,18 +19,47 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: ProfileHeaderProps) {
   const isMobile = useIsMobile();
+  const [editingImage, setEditingImage] = React.useState<'avatar' | 'cover' | null>(null);
+  
+  // Function to update just the avatar or cover image
+  const updateSingleImage = async (type: 'avatar' | 'cover', value: string) => {
+    if (!profile) return;
+    
+    if (type === 'avatar') {
+      await onUpdateProfile({ avatar_url: value });
+    } else {
+      await onUpdateProfile({ cover_image: value });
+    }
+    
+    setEditingImage(null);
+  };
 
   return (
     <>
       <div 
-        className="h-40 relative bg-cover bg-center transition-all duration-300"
+        className="h-40 relative bg-cover bg-center transition-all duration-300 cursor-pointer"
         style={{ 
           backgroundImage: `url(${profile?.cover_image || DEFAULT_COVER})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
+        onClick={() => isAuthenticated && setEditingImage('cover')}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        
+        {/* Edit Cover Image button */}
+        {isAuthenticated && (
+          <div className="absolute bottom-2 right-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="bg-background/20 hover:bg-background/30 backdrop-blur-sm text-white"
+            >
+              <Image size={16} className="mr-1" />
+              Modifier
+            </Button>
+          </div>
+        )}
         
         {/* Settings button in top right */}
         <div className="absolute top-3 right-3 flex items-center gap-2">
@@ -44,12 +75,27 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
         </div>
         
         <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
-          <div className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300">
+          <div 
+            className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300 relative cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent triggering cover image click
+              if (isAuthenticated) {
+                setEditingImage('avatar');
+              }
+            }}
+          >
             <img 
               src={profile?.avatar_url || DEFAULT_AVATAR} 
               alt={profile?.username || "Utilisateur"}
               className="w-full h-full rounded-full object-cover"
             />
+            
+            {/* Edit Avatar overlay button */}
+            {isAuthenticated && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
+                <Edit size={18} className="text-white" />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -93,6 +139,35 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
         
         <Separator className="my-4" />
       </div>
+      
+      {/* Image Editing Dialog */}
+      <Dialog open={editingImage !== null} onOpenChange={(open) => !open && setEditingImage(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingImage === 'avatar' 
+                ? 'Modifier votre avatar' 
+                : 'Modifier votre bannière'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {editingImage === 'avatar' && (
+            <ProfileImagePicker 
+              value={profile?.avatar_url || DEFAULT_AVATAR}
+              onChange={(value) => updateSingleImage('avatar', value)}
+              type="avatar"
+            />
+          )}
+          
+          {editingImage === 'cover' && (
+            <ProfileImagePicker 
+              value={profile?.cover_image || DEFAULT_COVER}
+              onChange={(value) => updateSingleImage('cover', value)}
+              type="cover"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

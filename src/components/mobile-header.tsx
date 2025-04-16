@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Bell } from "lucide-react";
+import { User, Bell, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/hooks/use-profile";
@@ -20,7 +20,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const { profile } = useProfile();
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
       {title && <h1 className="text-lg font-semibold">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0">
@@ -36,9 +36,8 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       <div className="flex items-center gap-4">
         {children}
         <div className="hidden">
-          {/* We're adding the HelpFeedback component here without props 
-              so it can be triggered programmatically from other components */}
-          <HelpFeedback />
+          {/* Hidden HelpFeedback component for programmatic triggering */}
+          <HelpFeedback data-help-feedback-trigger />
         </div>
         <Link to="/notifications" className={cn(
           "relative",
@@ -58,16 +57,41 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <Avatar className="w-8 h-8">
-            <AvatarImage 
-              src={profile?.avatar_url || "/placeholder.svg"} 
-              alt={profile?.username || "Utilisateur"} 
-            />
-            <AvatarFallback>
-              <User size={20} />
-            </AvatarFallback>
-          </Avatar>
+          {profile?.avatar_url ? (
+            <Avatar className="w-8 h-8">
+              <AvatarImage 
+                src={profile.avatar_url} 
+                alt={profile?.username || "Utilisateur"}
+                className="object-cover"
+              />
+              <AvatarFallback>
+                <User size={20} />
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <Avatar className="w-8 h-8">
+              <AvatarFallback>
+                <User size={20} />
+              </AvatarFallback>
+            </Avatar>
+          )}
         </Link>
+        
+        {/* Help button added to the header */}
+        <Button 
+          variant="ghost" 
+          size="icon"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            // Find and click the hidden trigger button
+            const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+            if (helpFeedback) {
+              helpFeedback.click();
+            }
+          }}
+        >
+          <HelpCircle size={20} />
+        </Button>
       </div>
     </div>
   );
