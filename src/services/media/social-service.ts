@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/hooks/use-profile";
 import { toast } from "@/components/ui/use-toast";
@@ -87,9 +88,14 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return DEFAULT_SHARE_SETTINGS;
     }
 
+    // Fix the spread error by ensuring we're spreading an object
+    const settings = typeof data.social_share_settings === 'object' 
+      ? data.social_share_settings as Partial<SocialShareSettings>
+      : {};
+
     return {
       ...DEFAULT_SHARE_SETTINGS,
-      ...data.social_share_settings
+      ...settings
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);

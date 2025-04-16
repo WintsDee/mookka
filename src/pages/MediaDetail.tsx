@@ -108,10 +108,15 @@ const MediaDetail = () => {
     <Background>
       <div className="relative flex flex-col h-screen pt-safe">
         <MediaDetailHeader 
-          media={media} 
-          formattedMedia={formattedMedia} 
+          title={formattedMedia.title}
+          year={formattedMedia.year}
           type={type as MediaType}
-          onAddToCollection={() => setAddToCollectionOpen(true)}
+          rating={formattedMedia.rating}
+          coverImage={formattedMedia.coverImage}
+          genres={formattedMedia.genres}
+          duration={formattedMedia.duration}
+          backTo={previousPath}
+          backLabel="Retour"
         />
         
         <div className="flex-1 overflow-hidden">
