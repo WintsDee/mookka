@@ -1,10 +1,11 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Bell } from "lucide-react";
+import { User, Bell, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/hooks/use-profile";
+import { FeedbackModule } from "@/components/help/feedback-module";
 
 interface MobileHeaderProps {
   title?: string;
@@ -37,6 +38,11 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       
       <div className="flex items-center gap-4">
         {children}
+        
+        <div className="md:hidden">
+          <FeedbackModule />
+        </div>
+        
         <Link to="/notifications" className={cn(
           "relative",
           isNotificationsActive ? "text-primary" : "text-muted-foreground"

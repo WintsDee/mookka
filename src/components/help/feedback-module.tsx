@@ -12,17 +12,20 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { HelpSection } from "./help-section";
 import { FeedbackForm } from "./feedback-form";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function FeedbackModule() {
+  const isMobile = useIsMobile();
+  
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button 
           variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-2 text-sm hover:bg-muted"
+          size={isMobile ? "sm" : "default"}
+          className="flex items-center gap-2 text-sm hover:bg-muted w-full justify-center sm:w-auto"
         >
-          <HelpCircle size={16} />
+          <HelpCircle size={isMobile ? 16 : 18} />
           <span>Aide & Feedback</span>
         </Button>
       </SheetTrigger>
