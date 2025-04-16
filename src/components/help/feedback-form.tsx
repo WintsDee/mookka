@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { submitFeedback } from "@/services/github/feedback-service";
 
+// Modify the schema to ensure type is required
 const feedbackSchema = z.object({
   type: z.enum(["bug", "idea", "suggestion"], {
     required_error: "Veuillez sélectionner un type de retour",
@@ -45,7 +46,7 @@ export function FeedbackForm() {
   const form = useForm<FeedbackFormValues>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
-      type: undefined,
+      type: undefined, // Ensure this matches the schema
       message: "",
       contact: "",
     },
@@ -54,7 +55,13 @@ export function FeedbackForm() {
   async function onSubmit(data: FeedbackFormValues) {
     setIsSubmitting(true);
     try {
-      await submitFeedback(data);
+      // Explicitly cast to match FeedbackData type
+      await submitFeedback({
+        type: data.type,
+        message: data.message,
+        contact: data.contact,
+      });
+      
       toast({
         title: "Merci pour votre retour !",
         description: "Votre feedback a été envoyé avec succès.",
@@ -83,7 +90,10 @@ export function FeedbackForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type de retour</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                  onValueChange={field.onChange} 
+                  value={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionnez un type" />
