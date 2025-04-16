@@ -65,13 +65,15 @@ export async function getFriendsActivity() {
       social_share_settings?: any
     }> = {};
     
-    profiles?.forEach(profile => {
-      profileMap[profile.id] = {
-        username: profile.username,
-        avatar_url: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
-        social_share_settings: profile.social_share_settings
-      };
-    });
+    if (profiles) {
+      profiles.forEach(profile => {
+        profileMap[profile.id] = {
+          username: profile.username,
+          avatar_url: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`,
+          social_share_settings: profile.social_share_settings
+        };
+      });
+    }
 
     // Récupérer les likes pour chaque activité
     const activityIds = activityData.map(item => item.id);
@@ -86,12 +88,14 @@ export async function getFriendsActivity() {
     const likesCount: Record<string, number> = {};
     const userLikes: Record<string, boolean> = {};
     
-    likesData?.forEach(like => {
-      likesCount[like.activity_id] = (likesCount[like.activity_id] || 0) + 1;
-      if (like.user_id === userId) {
-        userLikes[like.activity_id] = true;
-      }
-    });
+    if (likesData) {
+      likesData.forEach(like => {
+        likesCount[like.activity_id] = (likesCount[like.activity_id] || 0) + 1;
+        if (like.user_id === userId) {
+          userLikes[like.activity_id] = true;
+        }
+      });
+    }
 
     // Récupérer les commentaires pour chaque activité
     const { data: commentsData, error: commentsError } = await supabase
@@ -103,9 +107,11 @@ export async function getFriendsActivity() {
 
     // Créer un compteur de commentaires par activité
     const commentsCount: Record<string, number> = {};
-    commentsData?.forEach(comment => {
-      commentsCount[comment.activity_id] = (commentsCount[comment.activity_id] || 0) + 1;
-    });
+    if (commentsData) {
+      commentsData.forEach(comment => {
+        commentsCount[comment.activity_id] = (commentsCount[comment.activity_id] || 0) + 1;
+      });
+    }
 
     // Formater les données pour l'affichage
     const activities: SocialActivity[] = activityData

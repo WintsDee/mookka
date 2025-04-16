@@ -15,13 +15,13 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       .eq('id', user.user.id)
       .single();
 
-    if (error || !data || !data.social_share_settings) {
+    if (error || !data) {
       return DEFAULT_SHARE_SETTINGS;
     }
 
     return {
       ...DEFAULT_SHARE_SETTINGS,
-      ...data.social_share_settings
+      ...(data.social_share_settings || {})
     };
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);
