@@ -15,6 +15,7 @@ import Notifications from "./pages/Notifications";
 import MediaDetail from "./pages/MediaDetail";
 import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
+import Soutenir from "./pages/Soutenir";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/media/:type/:id" element={<MediaDetail />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/collections/:id" element={<CollectionDetail />} />
+          <Route path="/soutenir" element={<Soutenir />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
