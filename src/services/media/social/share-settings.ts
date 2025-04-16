@@ -20,7 +20,9 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
     }
 
     // Ensure data.social_share_settings is an object before spreading
-    const settings = data.social_share_settings || {};
+    const settings = typeof data.social_share_settings === 'object' && data.social_share_settings !== null 
+      ? data.social_share_settings 
+      : {};
     
     return {
       ...DEFAULT_SHARE_SETTINGS,
