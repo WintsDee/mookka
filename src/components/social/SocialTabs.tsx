@@ -11,12 +11,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { SocialShareSettingsCard } from "@/components/social/settings/SocialShareSettings";
 
 export function SocialTabs() {
@@ -67,21 +67,21 @@ export function SocialTabs() {
               </TabsTrigger>
             </TabsList>
             
-            <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <SheetTrigger asChild>
+            <Drawer open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <DrawerTrigger asChild>
                 <Button variant="ghost" size="icon" className="ml-2 shrink-0">
                   <Settings className="h-5 w-5" />
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle>Paramètres sociaux</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Paramètres sociaux</DrawerTitle>
+                </DrawerHeader>
+                <div className="px-4 pb-4">
                   <SocialShareSettingsCard />
                 </div>
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
           </div>
           
           <TabsContent value="activity" className="mt-4">
