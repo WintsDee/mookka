@@ -47,8 +47,7 @@ export class RealtimeSyncService {
     // Set up listeners for all watched tables and events
     ['user_media', 'collections', 'profiles', 'media_progressions'].forEach((table: TableName) => {
       ['INSERT', 'UPDATE', 'DELETE'].forEach((event: DatabaseEvent) => {
-        // Fix: Use the correct type structure for the Supabase realtime API
-        // The 'on' method expects a specific event name and configuration
+        // Use the channel.on method with the correct signature for Postgres changes
         mainChannel.on(
           'postgres_changes', 
           { 
