@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Platform, PlatformHookResult } from "./types";
 import { PlatformList } from "./platform-list";
-import { Platform, usePlatforms } from "./use-platforms";
+import { usePlatforms } from "./use-platforms";
 import { WhereToWatchLoading } from "./where-to-watch-loading";
 import { WhereToWatchEmpty } from "./where-to-watch-empty";
 
@@ -17,7 +17,7 @@ interface WhereToWatchTabProps {
 export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabProps) {
   const { platforms, isLoading } = usePlatforms(mediaId, mediaType, title);
   
-  // Filtrer uniquement les plateformes disponibles
+  // Filter only available platforms
   const availablePlatforms = platforms.filter(platform => platform.isAvailable === true);
 
   if (isLoading) {

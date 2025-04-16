@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MediaType } from "@/types";
-import { Platform } from "./use-platforms";
+import { Platform } from "./types";
 import { PlatformItem } from "./platform-item";
 
 interface PlatformListProps {

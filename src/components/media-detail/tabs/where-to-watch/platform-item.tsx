@@ -1,10 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, ShoppingCart, Tv, Film, Store, Video } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MediaType } from "@/types";
-import { Platform } from "./use-platforms";
+import { Platform } from "./types";
 
 interface PlatformItemProps {
   platform: Platform;
@@ -13,29 +13,24 @@ interface PlatformItemProps {
 }
 
 export function PlatformItem({ platform, mediaType, title }: PlatformItemProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        {platform.logo ? (
-          <div className="flex-shrink-0 h-8 w-8 relative bg-background rounded-md overflow-hidden border border-border flex items-center justify-center">
+        <div className="flex-shrink-0 h-8 w-8 relative bg-background rounded-md overflow-hidden border border-border flex items-center justify-center">
+          {platform.logo && !imageError ? (
             <img 
               src={platform.logo} 
               alt={platform.name}
               className="max-h-full max-w-full object-contain p-0.5"
               loading="lazy"
-              onError={(e) => {
-                // En cas d'erreur de chargement du logo, afficher une icône à la place
-                e.currentTarget.style.display = 'none';
-                const parent = e.currentTarget.parentNode as HTMLElement;
-                if (parent) {
-                  parent.innerHTML = '<div class="flex items-center justify-center h-full w-full"></div>';
-                }
-              }}
+              onError={() => setImageError(true)}
             />
-          </div>
-        ) : (
-          <PlatformIcon type={platform.type} mediaType={mediaType} />
-        )}
+          ) : (
+            <PlatformIcon type={platform.type} mediaType={mediaType} />
+          )}
+        </div>
         <span className="text-sm md:text-base">{platform.name}</span>
       </div>
       <div className="flex items-center gap-2">
