@@ -10,8 +10,20 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { EpisodeList } from "./episode-list";
 
+interface Season {
+  season_number: number;
+  name?: string;
+  episode_count: number;
+  air_date?: string;
+  episodes?: Array<{
+    number: number;
+    title?: string;
+    airDate?: string;
+  }>;
+}
+
 interface SeasonAccordionProps {
-  seasons: any[];
+  seasons: Season[];
   progression: any;
   onToggleEpisode: (seasonNumber: number, episodeNumber: number) => void;
   onToggleSeason: (seasonNumber: number, episodeCount: number) => void;
@@ -27,13 +39,37 @@ export function SeasonAccordion({
     return null;
   }
 
+  const formatSeasonDate = (dateString?: string) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      
+      // Format year only
+      return date.getFullYear().toString();
+    } catch (error) {
+      return '';
+    }
+  };
+
   return (
     <Accordion type="multiple" className="w-full space-y-4">
-      {seasons.map((season, index) => {
-        const seasonNumber = season.season_number || index + 1;
-        const episodeCount = season.episode_count || 10;
+      {seasons.map((season) => {
+        const seasonNumber = season.season_number;
+        const episodeCount = season.episode_count;
+        const seasonName = season.name || `Saison ${seasonNumber}`;
+        const seasonDate = formatSeasonDate(season.air_date);
         const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
         const seasonProgress = episodeCount > 0 ? (watchedEpisodesForSeason.length / episodeCount) * 100 : 0;
+        
+        // Préparer les données d'épisodes pour cette saison
+        const seasonEpisodes = season.episodes || 
+          Array.from({ length: episodeCount }, (_, i) => ({
+            number: i + 1,
+            title: `Épisode ${i + 1}`,
+            airDate: undefined
+          }));
         
         return (
           <AccordionItem 
@@ -44,7 +80,14 @@ export function SeasonAccordion({
             <AccordionTrigger className="px-4 py-3 hover:no-underline">
               <div className="flex flex-col w-full">
                 <div className="flex justify-between items-center w-full">
-                  <span className="text-xl font-semibold">Saison {seasonNumber}</span>
+                  <div>
+                    <span className="text-xl font-semibold">{seasonName}</span>
+                    {seasonDate && (
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        ({seasonDate})
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
                       {watchedEpisodesForSeason.length}/{episodeCount} épisodes
@@ -71,7 +114,7 @@ export function SeasonAccordion({
             <AccordionContent className="border-t border-border/30">
               <EpisodeList 
                 seasonNumber={seasonNumber} 
-                episodeCount={episodeCount} 
+                episodes={seasonEpisodes} 
                 watchedEpisodes={watchedEpisodesForSeason} 
                 onToggleEpisode={onToggleEpisode} 
               />

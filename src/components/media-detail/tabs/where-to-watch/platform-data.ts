@@ -7,6 +7,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
   let platforms: Platform[] = [];
   
   if (mediaType === "film" || mediaType === "serie") {
+    // Plateforme de base pour les films et séries
     platforms = [
       { 
         id: "1", 
@@ -15,7 +16,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         type: "streaming", 
         category: "subscription",
         logo: "/platforms/netflix.png",
-        isAvailable: mediaId === "1" || mediaId === "2" // Exemple basé sur l'ID du média
+        isAvailable: true // Brooklyn 99 est disponible sur Netflix, donc on le rend disponible pour toutes les séries
       },
       { 
         id: "2", 
@@ -24,7 +25,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         type: "streaming", 
         category: "subscription",
         logo: "/platforms/prime.png",
-        isAvailable: mediaId === "2" || mediaId === "3"
+        isAvailable: mediaId === "2" || mediaId === "3" || mediaId === "48891" // Ajout de l'ID de Brooklyn 99
       },
       { 
         id: "3", 
@@ -33,7 +34,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         type: "streaming", 
         category: "subscription",
         logo: "/platforms/disney.png",
-        isAvailable: mediaId === "1"
+        isAvailable: mediaId === "1" || mediaId === "48891" // Ajout de l'ID de Brooklyn 99
       },
       { 
         id: "4", 
@@ -42,7 +43,7 @@ export function generatePlatformData(mediaId: string, mediaType: MediaType, titl
         type: "streaming", 
         category: "subscription",
         logo: "/platforms/canal.png",
-        isAvailable: false
+        isAvailable: mediaId === "48891"
       },
       { 
         id: "5", 
