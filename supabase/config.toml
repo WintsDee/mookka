@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions."fetch-news/extract-content"]
 verify_jwt = false
+
+[functions.create-github-issue]
+verify_jwt = false
