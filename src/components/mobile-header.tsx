@@ -36,7 +36,9 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       <div className="flex items-center gap-4">
         {children}
         <div className="hidden">
-          <HelpFeedback initialTab="feedback" />
+          {/* We're adding the HelpFeedback component here without props 
+              so it can be triggered programmatically from other components */}
+          <HelpFeedback />
         </div>
         <Link to="/notifications" className={cn(
           "relative",

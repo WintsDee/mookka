@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, MessageSquare } from "lucide-react";
@@ -24,14 +24,22 @@ export function HelpFeedback({
 }: HelpFeedbackProps) {
   const [activeTab, setActiveTab] = useState<'help' | 'feedback'>(initialTab);
   const [submitted, setSubmitted] = useState(false);
+  const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   
   function resetForm() {
     setSubmitted(false);
   }
   
+  // Effect to set the correct tab when the dialog is opened
+  useEffect(() => {
+    if (open) {
+      setActiveTab(initialTab);
+    }
+  }, [open, initialTab]);
+  
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
           variant={buttonVariant} 
@@ -70,6 +78,7 @@ export function HelpFeedback({
             size="sm"
             onClick={() => setActiveTab('help')}
             className="flex-1"
+            data-tab="help"
           >
             <HelpCircle size={16} className="mr-1" />
             Aide
@@ -79,6 +88,7 @@ export function HelpFeedback({
             size="sm"
             onClick={() => setActiveTab('feedback')}
             className="flex-1"
+            data-tab="feedback"
           >
             <MessageSquare size={16} className="mr-1" />
             Feedback

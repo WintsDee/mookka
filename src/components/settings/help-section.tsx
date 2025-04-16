@@ -17,6 +17,23 @@ import { HelpFeedback } from "@/components/profile/help-feedback";
 export function HelpSection() {
   const navigate = useNavigate();
   
+  const openFeedbackForm = () => {
+    // Find the hidden trigger button in the DOM and click it
+    const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+    if (helpFeedback) {
+      // Click the button to open the dialog
+      helpFeedback.click();
+      
+      // After a small delay, switch to the feedback tab
+      setTimeout(() => {
+        const feedbackTab = document.querySelector('[data-tab="feedback"]') as HTMLButtonElement;
+        if (feedbackTab) {
+          feedbackTab.click();
+        }
+      }, 100);
+    }
+  };
+  
   return (
     <div>
       <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
@@ -56,12 +73,7 @@ export function HelpSection() {
         
         <div className="mt-4 flex flex-col gap-2">
           <Button
-            onClick={() => {
-              const helpFeedback = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-              if (helpFeedback) {
-                helpFeedback.click();
-              }
-            }}
+            onClick={openFeedbackForm}
             variant="outline"
             className="w-full"
           >
