@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -10,6 +9,7 @@ import { ProfileSkeleton } from "@/components/profile/profile-skeleton";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { ProfileActions } from "@/components/profile/profile-actions";
+import { HelpFeedback } from "@/components/profile/help-feedback";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -116,6 +116,8 @@ const Profil = () => {
                 isAuthenticated={isAuthenticated} 
                 onLogout={handleLogout} 
               />
+              
+              <HelpFeedback />
             </div>
           </>
         )}
