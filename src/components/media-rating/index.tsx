@@ -25,7 +25,7 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     userRating,
     userReview,
     saveRating
-  } = useMediaRating(mediaId);
+  } = useMediaRating(mediaId, mediaType);
   
   const { isAuthenticated } = useProfile();
   

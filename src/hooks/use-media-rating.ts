@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/use-profile";
+import { MediaType } from "@/types";
 
 export interface MediaRatingData {
   rating: number;
   review: string;
 }
 
-export function useMediaRating(mediaId: string) {
+export function useMediaRating(mediaId: string, mediaType?: MediaType) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userRating, setUserRating] = useState(0);
@@ -99,6 +100,7 @@ export function useMediaRating(mediaId: string) {
           .insert({
             user_id: user.user.id,
             media_id: mediaId,
+            media_type: mediaType || 'film', // Ensure we always have a media type
             user_rating: values.rating,
             notes: values.review,
             status: 'rated'
