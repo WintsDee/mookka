@@ -39,6 +39,14 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
     }
   };
 
+  // Function to navigate to critique tab when clicking the user rating badge
+  const handleUserRatingClick = () => {
+    const tabsElement = document.querySelector('[value="critique"]');
+    if (tabsElement instanceof HTMLElement) {
+      tabsElement.click();
+    }
+  };
+
   return (
     <div className="relative h-52 w-full pt-8">
       <Button 
@@ -53,18 +61,26 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         <X className="text-white w-6 h-6" />
       </Button>
       
-      <div className="absolute top-2 right-4 z-20 flex gap-2">
+      <div className="absolute top-2 right-4 z-20 flex gap-2 flex-col items-end">
         {formattedMedia.rating && (
-          <MediaRatingBadge 
-            rating={formattedMedia.rating} 
-            size="large"
-          />
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-xs text-white font-medium drop-shadow-md">Note globale</span>
+            <MediaRatingBadge 
+              rating={formattedMedia.rating} 
+              size="large"
+            />
+          </div>
         )}
+        
         {formattedMedia.userRating && formattedMedia.userRating > 0 && (
-          <MediaRatingBadge 
-            rating={formattedMedia.userRating}
-            size="large"
-          />
+          <div className="flex flex-col items-center gap-1" onClick={handleUserRatingClick}>
+            <span className="text-xs text-white font-medium drop-shadow-md">Ma note</span>
+            <MediaRatingBadge 
+              rating={formattedMedia.userRating}
+              size="large"
+              className="bg-purple-500 hover:bg-purple-600 cursor-pointer transition-colors"
+            />
+          </div>
         )}
       </div>
       

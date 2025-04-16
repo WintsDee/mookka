@@ -9,20 +9,27 @@ interface CritiqueTabProps {
   mediaId: string;
   mediaType: MediaType;
   initialRating?: number;
+  initialReview?: string;
 }
 
-export function CritiqueTab({ mediaId, mediaType, initialRating = 0 }: CritiqueTabProps) {
-  // Always consider the user as authenticated for now
-  const { isAuthenticated } = useProfile();
+export function CritiqueTab({ mediaId, mediaType, initialRating = 0, initialReview = "" }: CritiqueTabProps) {
+  if (!mediaId || !mediaType) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div>
+    <div className="space-y-4">
       <h2 className="text-lg font-medium mb-4">Critiquer ce média</h2>
       
       <MediaRating 
         mediaId={mediaId} 
         mediaType={mediaType}
         initialRating={initialRating}
+        initialReview={initialReview}
       />
     </div>
   );

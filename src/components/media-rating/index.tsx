@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormField } from "@/components/ui/form";
@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { useMediaRating, MediaRatingData } from "@/hooks/use-media-rating";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
-import { NotLoggedInCard } from "./not-logged-in-card";
 import { MediaType } from "@/types";
 
 interface MediaRatingProps {
@@ -29,30 +28,32 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
   
   const form = useForm<MediaRatingData>({
     defaultValues: {
-      rating: initialRating || userRating,
-      review: initialReview || userReview
+      rating: initialRating || 0,
+      review: initialReview || ""
     }
   });
   
-  // Mise à jour des valeurs du formulaire quand les données sont chargées
-  React.useEffect(() => {
-    form.reset({
-      rating: userRating,
-      review: userReview
-    });
+  // Update form values when data is loaded
+  useEffect(() => {
+    if (userRating || userReview) {
+      form.reset({
+        rating: userRating || 0,
+        review: userReview || ""
+      });
+    }
   }, [userRating, userReview, form]);
 
   const onSubmit = (values: MediaRatingData) => {
     saveRating(values);
   };
 
-  // Fonction pour sauvegarder automatiquement lorsque le rating change
+  // Save rating automatically when it changes
   const handleRatingChange = async (newRating: number) => {
     form.setValue("rating", newRating);
     await form.handleSubmit(onSubmit)();
   };
 
-  // Fonction pour sauvegarder automatiquement lorsque la critique change
+  // Save review automatically when focus is lost
   const handleReviewChange = async () => {
     await form.handleSubmit(onSubmit)();
   };
@@ -65,56 +66,53 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     );
   }
 
-  // Always render the form as if the user is authenticated
   return (
     <div className="space-y-4">
-      {!form.formState.isSubmitted && (
-        <Card className="bg-secondary/40 border-border">
-          <CardContent className="p-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="rating"
-                  render={() => (
-                    <RatingSlider 
-                      form={form} 
-                      userRating={form.watch("rating")} 
-                      onRatingChange={handleRatingChange} 
-                    />
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="review"
-                  render={() => (
-                    <ReviewTextarea 
-                      form={form} 
-                      onReviewChange={handleReviewChange} 
-                    />
-                  )}
-                />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    "Enregistrer ma critique"
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-secondary/40 border-border">
+        <CardContent className="p-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="rating"
+                render={() => (
+                  <RatingSlider 
+                    form={form} 
+                    userRating={form.watch("rating")} 
+                    onRatingChange={handleRatingChange} 
+                  />
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="review"
+                render={() => (
+                  <ReviewTextarea 
+                    form={form} 
+                    onReviewChange={handleReviewChange} 
+                  />
+                )}
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  "Enregistrer ma critique"
+                )}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

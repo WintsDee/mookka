@@ -6,12 +6,14 @@ interface MediaRatingBadgeProps {
   rating: number;
   size?: "small" | "medium" | "large";
   maxRating?: number;
+  className?: string;
 }
 
 export function MediaRatingBadge({ 
   rating, 
   size = "medium", 
-  maxRating = 10
+  maxRating = 10,
+  className
 }: MediaRatingBadgeProps) {
   // Normalize rating to scale of 10 if necessary
   const normalizedRating = maxRating !== 10 
@@ -42,7 +44,8 @@ export function MediaRatingBadge({
       className={cn(
         "flex items-center justify-center rounded-md font-bold shadow-md",
         getColorClass(Number(normalizedRating)),
-        sizeClasses[size]
+        sizeClasses[size],
+        className
       )}
     >
       {formattedRating}

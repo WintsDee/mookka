@@ -19,8 +19,11 @@ export function useMediaRating(mediaId: string) {
 
   useEffect(() => {
     const fetchRating = async () => {
-      // Always assume the user is authenticated for now
-      if (!mediaId) return;
+      // Only fetch if we have a mediaId
+      if (!mediaId) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
         setIsLoading(true);
@@ -69,7 +72,7 @@ export function useMediaRating(mediaId: string) {
         throw new Error("Utilisateur non connecté");
       }
       
-      // Vérifier si le média existe déjà dans la bibliothèque de l'utilisateur
+      // Check if the media already exists in the user's library
       const { data: existingMedia } = await supabase
         .from('user_media')
         .select('id')
@@ -78,7 +81,7 @@ export function useMediaRating(mediaId: string) {
         .maybeSingle();
       
       if (existingMedia) {
-        // Mettre à jour la note existante
+        // Update existing rating
         const { error } = await supabase
           .from('user_media')
           .update({
@@ -90,7 +93,7 @@ export function useMediaRating(mediaId: string) {
           
         if (error) throw error;
       } else {
-        // Créer une nouvelle entrée
+        // Create a new entry
         const { error } = await supabase
           .from('user_media')
           .insert({
