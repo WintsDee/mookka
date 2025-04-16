@@ -3,7 +3,6 @@ import React from "react";
 import { MediaRating } from "@/components/media-rating";
 import { MediaType } from "@/types";
 import { Loader2 } from "lucide-react";
-import { useProfile } from "@/hooks/use-profile";
 
 interface CritiqueTabProps {
   mediaId: string;

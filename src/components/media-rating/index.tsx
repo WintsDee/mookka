@@ -9,6 +9,7 @@ import { useMediaRating, MediaRatingData } from "@/hooks/use-media-rating";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
 import { MediaType } from "@/types";
+import { useProfile } from "@/hooks/use-profile";
 
 interface MediaRatingProps {
   mediaId: string;
@@ -25,6 +26,8 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     userReview,
     saveRating
   } = useMediaRating(mediaId);
+  
+  const { isAuthenticated } = useProfile();
   
   const form = useForm<MediaRatingData>({
     defaultValues: {
