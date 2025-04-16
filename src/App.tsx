@@ -20,30 +20,32 @@ import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/bibliotheque" element={<Bibliotheque />} />
-          <Route path="/recherche" element={<Recherche />} />
-          <Route path="/social" element={<Social />} />
-          <Route path="/actualites" element={<Actualites />} />
-          <Route path="/profil" element={<Profil />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/media/:type/:id" element={<MediaDetail />} />
-          <Route path="/collections" element={<Collections />} />
-          <Route path="/collections/:id" element={<CollectionDetail />} />
-          <Route path="/soutenir" element={<Soutenir />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/bibliotheque" element={<Bibliotheque />} />
+            <Route path="/recherche" element={<Recherche />} />
+            <Route path="/social" element={<Social />} />
+            <Route path="/actualites" element={<Actualites />} />
+            <Route path="/profil" element={<Profil />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/media/:type/:id" element={<MediaDetail />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/collections/:id" element={<CollectionDetail />} />
+            <Route path="/soutenir" element={<Soutenir />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
