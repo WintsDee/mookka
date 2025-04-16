@@ -72,6 +72,24 @@ const DEFAULT_SHARE_SETTINGS: SocialShareSettings = {
   shareLibraryAdditions: true
 };
 
+// Helper function to safely convert Json to SocialShareSettings
+function jsonToSocialShareSettings(jsonData: Json | null): SocialShareSettings {
+  if (!jsonData || typeof jsonData !== 'object' || Array.isArray(jsonData)) {
+    return { ...DEFAULT_SHARE_SETTINGS };
+  }
+  
+  // Cast to record with string keys and any values for safe property access
+  const settings = jsonData as Record<string, any>;
+  
+  return {
+    shareRatings: typeof settings.shareRatings === 'boolean' ? settings.shareRatings : DEFAULT_SHARE_SETTINGS.shareRatings,
+    shareReviews: typeof settings.shareReviews === 'boolean' ? settings.shareReviews : DEFAULT_SHARE_SETTINGS.shareReviews,
+    shareCollections: typeof settings.shareCollections === 'boolean' ? settings.shareCollections : DEFAULT_SHARE_SETTINGS.shareCollections,
+    shareProgress: typeof settings.shareProgress === 'boolean' ? settings.shareProgress : DEFAULT_SHARE_SETTINGS.shareProgress,
+    shareLibraryAdditions: typeof settings.shareLibraryAdditions === 'boolean' ? settings.shareLibraryAdditions : DEFAULT_SHARE_SETTINGS.shareLibraryAdditions
+  };
+}
+
 // Récupérer les paramètres de partage social
 export async function getSocialShareSettings(): Promise<SocialShareSettings> {
   try {
@@ -88,19 +106,7 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return DEFAULT_SHARE_SETTINGS;
     }
 
-    // Ensure we have an object to work with
-    const settings = typeof data.social_share_settings === 'object' 
-      ? data.social_share_settings 
-      : {};
-
-    // Apply defaults and cast to the correct type
-    return {
-      shareRatings: settings.shareRatings ?? DEFAULT_SHARE_SETTINGS.shareRatings,
-      shareReviews: settings.shareReviews ?? DEFAULT_SHARE_SETTINGS.shareReviews,
-      shareCollections: settings.shareCollections ?? DEFAULT_SHARE_SETTINGS.shareCollections,
-      shareProgress: settings.shareProgress ?? DEFAULT_SHARE_SETTINGS.shareProgress,
-      shareLibraryAdditions: settings.shareLibraryAdditions ?? DEFAULT_SHARE_SETTINGS.shareLibraryAdditions
-    };
+    return jsonToSocialShareSettings(data.social_share_settings);
   } catch (error) {
     console.error("Erreur lors de la récupération des paramètres de partage:", error);
     return DEFAULT_SHARE_SETTINGS;
