@@ -21,8 +21,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    {/* Wrap the entire app with TooltipProvider */}
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>

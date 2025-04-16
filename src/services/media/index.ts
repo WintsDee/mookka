@@ -3,19 +3,3 @@
 export { searchMedia, getMediaById } from './search-service';
 export { addMediaToLibrary, getUserMediaLibrary, updateMediaStatus, removeMediaFromLibrary } from './library-service';
 export { filterAdultContent } from './filters';
-export { 
-  getSocialShareSettings,
-  updateSocialShareSettings,
-  getFriendsActivity,
-  getFriendSuggestions,
-  getPendingFriendRequests,
-  getUserFriends,
-  sendFriendRequest,
-  respondToFriendRequest,
-  removeFriend,
-  likeActivity,
-  addComment,
-  getActivityComments,
-  searchUsers,
-  getPopularProfiles
-} from './social-service';
