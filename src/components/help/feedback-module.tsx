@@ -23,10 +23,9 @@ export function FeedbackModule() {
         <Button 
           variant="ghost" 
           size={isMobile ? "sm" : "default"}
-          className="flex items-center gap-2 text-sm hover:bg-muted w-full justify-center sm:w-auto"
+          className="flex items-center justify-center hover:bg-muted w-full sm:w-auto"
         >
           <HelpCircle size={isMobile ? 16 : 18} />
-          <span>Aide & Feedback</span>
         </Button>
       </SheetTrigger>
       <SheetContent className="overflow-y-auto">
@@ -45,3 +44,4 @@ export function FeedbackModule() {
     </Sheet>
   );
 }
+
