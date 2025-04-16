@@ -4,7 +4,7 @@ import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { Button } from "@/components/ui/button";
-import { Coffee, Heart, Rocket, Gift, Sparkles, Info, ArrowUp } from "lucide-react";
+import { Coffee, Heart, Rocket, Gift, Info, ArrowUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 
@@ -63,7 +63,7 @@ const Soutenir = () => {
                 </p>
               </div>
               
-              {/* Why support section - Updated icon */}
+              {/* Why support section */}
               <div className="flex flex-col gap-4 bg-secondary/10 p-5 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Info size={22} className="text-primary shrink-0" />
@@ -93,7 +93,7 @@ const Soutenir = () => {
                 </ul>
               </div>
               
-              {/* What we do section */}
+              {/* What we do with support section */}
               <div className="flex flex-col gap-4 bg-secondary/10 p-5 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Rocket size={22} className="text-primary shrink-0" />
@@ -109,26 +109,11 @@ const Soutenir = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles size={14} />
+                      <Rocket size={14} />
                     </span>
-                    <span>Garder Mookka libre, fluide et beau ✨</span>
+                    <span>Payer les serveurs, la base de données et maintenir l'infrastructure</span>
                   </li>
                 </ul>
-              </div>
-              
-              {/* Support button section - Now just the thank you section */}
-              <div className="flex flex-col items-center gap-4 my-2">
-                <h3 className="text-xl font-semibold">Tu veux aider ? 🚀</h3>
-                <p className="text-center text-muted-foreground">
-                  Tu peux nous offrir un petit café, un gros cookie ou même une pizza 🍕 !
-                </p>
-                
-                <div className="flex justify-center mt-3">
-                  <div className="flex items-center gap-2 text-center text-muted-foreground">
-                    <Heart size={16} className="text-primary" />
-                    <span>Merci pour ton soutien !</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -151,3 +136,4 @@ const Soutenir = () => {
 };
 
 export default Soutenir;
+
