@@ -44,11 +44,14 @@ export function EpisodeList({
     }
   };
   
+  // Make sure we have a valid watchedEpisodes array
+  const validWatchedEpisodes = Array.isArray(watchedEpisodes) ? watchedEpisodes : [];
+  
   return (
     <div className="divide-y divide-border/20">
       {episodes.map(episode => {
         const episodeNumber = episode.number;
-        const isWatched = watchedEpisodes.includes(episodeNumber);
+        const isWatched = validWatchedEpisodes.includes(episodeNumber);
         
         return (
           <div key={`s${seasonNumber}e${episodeNumber}`} className="flex items-center p-3 border-b last:border-b-0 border-border/30">

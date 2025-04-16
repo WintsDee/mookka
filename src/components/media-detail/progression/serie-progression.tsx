@@ -25,19 +25,30 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
   } = useSerieProgression(mediaDetails, progression);
 
   const handleToggleEpisode = (seasonNumber: number, episodeNumber: number) => {
+    console.log(`Toggling episode ${episodeNumber} of season ${seasonNumber}`);
     const updatedProgression = toggleEpisode(seasonNumber, episodeNumber);
     onUpdate(updatedProgression);
   };
 
   const handleToggleSeason = (seasonNumber: number, episodeCount: number) => {
+    console.log(`Toggling entire season ${seasonNumber} with ${episodeCount} episodes`);
     const updatedProgression = toggleSeason(seasonNumber, episodeCount);
     onUpdate(updatedProgression);
   };
 
   const handleStatusChange = (newStatus: string) => {
+    console.log(`Changing status to: ${newStatus}`);
     const updatedProgression = updateStatus(newStatus);
     onUpdate(updatedProgression);
   };
+
+  console.log("Rendering SerieProgression with data:", {
+    seasons,
+    totalEpisodes,
+    watchedEpisodes,
+    status,
+    progression
+  });
 
   return (
     <div className="space-y-6">

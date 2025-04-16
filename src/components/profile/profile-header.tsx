@@ -7,7 +7,6 @@ import { Users, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HelpFeedback } from "./help-feedback";
 
 // Updated to abstract images that match the app's style with colors more aligned with the app's theme
 const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
@@ -34,10 +33,8 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         
-        {/* Boutons d'action en haut à droite */}
+        {/* Settings button in top right */}
         <div className="absolute top-3 right-3 flex items-center gap-2">
-          <HelpFeedback />
-          
           <Link to="/settings">
             <Button 
               variant="ghost" 

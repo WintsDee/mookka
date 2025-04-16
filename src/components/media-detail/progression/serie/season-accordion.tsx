@@ -63,7 +63,7 @@ export function SeasonAccordion({
         const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
         const seasonProgress = episodeCount > 0 ? (watchedEpisodesForSeason.length / episodeCount) * 100 : 0;
         
-        // Préparer les données d'épisodes pour cette saison
+        // Ensure we have correct episode data for this season
         const seasonEpisodes = season.episodes || 
           Array.from({ length: episodeCount }, (_, i) => ({
             number: i + 1,
