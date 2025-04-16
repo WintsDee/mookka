@@ -7,7 +7,7 @@ import { Users } from "lucide-react";
 
 // Updated to abstract images that match the app's style with colors more aligned with the app's theme
 const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
-const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?q=80&w=1635&auto=format&fit=crop";
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 
 interface ProfileHeaderProps {
   profile: Profile | null;

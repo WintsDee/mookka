@@ -13,6 +13,7 @@ import { ProfileActions } from "@/components/profile/profile-actions";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { MediaType } from "@/types";
 
 const Profil = () => {
   const { profile, loading, isAuthenticated, updateProfile } = useProfile();
@@ -72,11 +73,10 @@ const Profil = () => {
         id: item.media?.id || item.media_id,
         externalId: item.media?.external_id,
         title: item.media?.title || 'Média inconnu',
-        type: item.media?.type,
+        type: item.media?.type as MediaType,
         coverImage: item.media?.cover_image || '',
         year: item.media?.year,
         rating: item.media?.rating,
-        // Add additional fields as needed
       })).filter(item => item.title && item.coverImage);
     },
     enabled: !!profile?.id && isAuthenticated
