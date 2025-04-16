@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { User, Bell, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { HelpFeedback } from "@/components/profile/help-feedback";
 
