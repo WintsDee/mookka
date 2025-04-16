@@ -1,8 +1,9 @@
+
 import { Platform } from "../types";
 
 export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: string): Platform[] {
   // Base platforms available to most content
-  const basePlatforms = [
+  const basePlatforms: Platform[] = [
     { 
       id: "5", 
       name: "Google Play Films", 
@@ -73,7 +74,7 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
   const availabilityMap = platformAvailabilityMap[mediaId] || {};
   
   // Streaming platforms with conditional availability
-  const streamingPlatforms = [
+  const streamingPlatforms: Platform[] = [
     { 
       id: "1", 
       name: "Netflix", 
