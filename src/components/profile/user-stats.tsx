@@ -1,6 +1,6 @@
 
 import { MediaType } from "@/types";
-import { BookOpen, Film, Gamepad, Tv, LibraryBig } from "lucide-react";
+import { BookOpen, Film, Gamepad, Tv, Library } from "lucide-react";
 
 interface UserStatsProps {
   stats: {
@@ -17,7 +17,7 @@ export function UserStats({ stats }: UserStatsProps) {
     <div className="flex justify-between text-sm text-center">
       <div>
         <div className="flex justify-center mb-1">
-          <LibraryBig size={18} className="text-primary" />
+          <Library size={18} className="text-primary" />
         </div>
         <p className="font-bold">{stats.total}</p>
         <p className="text-xs text-muted-foreground">Total</p>

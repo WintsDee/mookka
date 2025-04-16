@@ -6,26 +6,8 @@ import {
   MessagesSquare, 
   Globe,
   Bookmark,
+  Library
 } from 'lucide-react';
-
-// Custom Library Icon Component matching the exact design
-const BookIcon = ({ size = 22, className = '' }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-  </svg>
-);
 
 export function MobileNav() {
   const location = useLocation();
@@ -36,7 +18,7 @@ export function MobileNav() {
   }
 
   const navItems = [
-    { path: '/bibliotheque', icon: BookIcon, label: 'Bibliothèque' },
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
@@ -45,7 +27,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
-      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4"> {/* Added px-4 for horizontal padding */}
+      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4">
         {navItems.map((item) => (
           <Link 
             key={item.path} 

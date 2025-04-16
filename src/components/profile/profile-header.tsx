@@ -5,9 +5,8 @@ import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Users } from "lucide-react";
 
-// Updated to abstract images that match the app's style
-const DEFAULT_COVER = "https://images.unsplash.com/photo-1482881497185-d4a9ddbe4151?q=80&w=2025&auto=format&fit=crop";
-// Using the same avatar image as mobile header for consistency
+// Updated to abstract images that match the app's style with colors more aligned with the app's theme
+const DEFAULT_COVER = "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=3000&auto=format&fit=crop";
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1493397212122-2b85dda8106b?q=80&w=1635&auto=format&fit=crop";
 
 interface ProfileHeaderProps {
@@ -27,9 +26,9 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
           backgroundPosition: 'center'
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
         <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
-          <div className="w-20 h-20 rounded-full bg-background p-1">
+          <div className="w-20 h-20 rounded-full bg-background p-1 shadow-md">
             <img 
               src={profile?.avatar_url || DEFAULT_AVATAR} 
               alt={profile?.username || "Utilisateur"}
