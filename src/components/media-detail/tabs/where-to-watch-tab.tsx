@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MediaType } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar } from "@/components/ui/avatar";
 
 interface Platform {
   id: string;
@@ -303,7 +304,17 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
                 {typePlatforms.map((platform) => (
                   <div key={platform.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {getIconByType(mediaType, type)}
+                      {platform.logo ? (
+                        <Avatar className="h-8 w-8 rounded-md">
+                          <img 
+                            src={platform.logo} 
+                            alt={platform.name}
+                            className="object-contain"
+                          />
+                        </Avatar>
+                      ) : (
+                        getIconByType(mediaType, type)
+                      )}
                       <span>{platform.name}</span>
                     </div>
                     <TooltipProvider>

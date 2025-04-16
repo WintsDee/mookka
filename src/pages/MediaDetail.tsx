@@ -111,10 +111,6 @@ const MediaDetail = () => {
   const formattedMedia = formatMediaDetails(media, type as MediaType);
   const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
 
-  console.log("Media: ", media);
-  console.log("Formatted Media: ", formattedMedia);
-  console.log("Additional Info: ", additionalInfo);
-
   return (
     <Background>
       <div className="relative flex flex-col h-screen pt-safe">
