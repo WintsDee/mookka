@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { localCache } from '@/services/cache/local-cache';
-import { realtimeSync } from '@/services/realtime/realtime-sync';
+import { realtimeSync } from '@/services/realtime';
 import { QueryKey, useQuery, UseQueryOptions, useQueryClient } from '@tanstack/react-query';
+import { TableName, DatabaseEvent } from '@/services/realtime/types';
 
 // Options pour le cache
 interface CachedQueryOptions<TData, TError> extends Omit<UseQueryOptions<TData, TError, TData>, 'queryKey' | 'queryFn'> {
@@ -12,8 +13,8 @@ interface CachedQueryOptions<TData, TError> extends Omit<UseQueryOptions<TData, 
   cacheTtl?: number;
   // Tables Supabase à surveiller pour les mises à jour en temps réel
   watchTables?: Array<{
-    table: 'user_media' | 'collections' | 'profiles' | 'media_progressions';
-    event: 'INSERT' | 'UPDATE' | 'DELETE';
+    table: TableName;
+    event: DatabaseEvent;
   }>;
   // Forcer le rechargement depuis la source (ignorer le cache)
   forceRefresh?: boolean;

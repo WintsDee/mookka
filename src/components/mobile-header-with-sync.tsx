@@ -1,7 +1,7 @@
 
 import React from "react";
 import { SyncStatus } from "@/components/ui/sync-status";
-import { realtimeSync } from "@/services/realtime/realtime-sync";
+import { realtimeSync } from "@/services/realtime";
 
 interface MobileHeaderWithSyncProps {
   title?: string;

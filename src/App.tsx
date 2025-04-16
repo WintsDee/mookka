@@ -24,9 +24,6 @@ import Soutenir from "./pages/Soutenir";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Ne pas renvoyer automatiquement d'erreurs de requête
-      // afin de pouvoir les gérer et afficher les données du cache comme fallback
-      useErrorBoundary: false,
       // Désactiver la récupération automatique pour contrôler nous-mêmes la logique
       retry: false,
       // Ralentir le polling en production

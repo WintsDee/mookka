@@ -15,13 +15,13 @@ export function SyncStatus({ status, className, ...props }: SyncStatusProps) {
       icon: <Wifi size={12} />,
       text: "Synchronisé",
       tooltip: "Toutes les données sont synchronisées",
-      variant: "success" as const
+      variant: "secondary" as const
     },
     local: {
       icon: <RotateCw size={12} />,
       text: "Données locales",
       tooltip: "Des données sont stockées localement en attente de synchronisation",
-      variant: "warning" as const
+      variant: "secondary" as const
     },
     offline: {
       icon: <WifiOff size={12} />,
