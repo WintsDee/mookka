@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { useAppServices } from "@/contexts/app-services-context";
 
 export type Profile = {
   id: string;
@@ -23,14 +22,6 @@ export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<{ user: User } | null>(null);
   const { toast } = useToast();
-  
-  // Utiliser les services d'app si disponibles 
-  let appServices = null;
-  try {
-    appServices = useAppServices();
-  } catch (error) {
-    // Le contexte n'est pas disponible, continuons sans
-  }
   
   useEffect(() => {
     // Vérifier s'il y a une session existante
@@ -58,49 +49,23 @@ export function useProfile() {
     
     return () => subscription.unsubscribe();
   }, []);
-
+  
   async function fetchProfile(userId: string) {
     try {
       setLoading(true);
       
-      // Si le service de cache est disponible, utiliser la mise en cache
-      if (appServices?.cacheService) {
-        const { cacheService } = appServices;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
         
-        const cachedProfile = await cacheService.get(
-          `profile-${userId}`,
-          async () => {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .single();
-              
-            if (error) {
-              throw error;
-            }
-            
-            return data;
-          },
-          { maxAge: 10 * 60 * 1000 } // 10 minutes
-        );
-        
-        setProfile(cachedProfile);
-      } else {
-        // Fallback à la méthode classique sans cache
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-          
-        if (error) {
-          console.error('Erreur lors de la récupération du profil:', error);
-          return;
-        }
-        
-        setProfile(data);
+      if (error) {
+        console.error('Erreur lors de la récupération du profil:', error);
+        return;
       }
+      
+      setProfile(data);
     } catch (error) {
       console.error('Erreur inattendue:', error);
     } finally {
@@ -143,19 +108,6 @@ export function useProfile() {
       
       // Rafraîchir les données du profil
       fetchProfile(session.user.id);
-      
-      // Diffuser la mise à jour via realtime si disponible
-      if (appServices?.syncService) {
-        appServices.syncService.broadcastChange({
-          type: 'PROFILE_CHANGE',
-          resourceId: session.user.id
-        });
-      }
-      
-      // Invalider le cache si nécessaire
-      if (appServices?.cacheService) {
-        appServices.cacheService.remove(`profile-${session.user.id}`);
-      }
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -192,12 +144,6 @@ export function useProfile() {
       
       // Rafraîchir le profil pour mettre à jour les compteurs
       fetchProfile(session.user.id);
-      
-      // Invalider le cache si nécessaire
-      if (appServices?.cacheService) {
-        appServices.cacheService.remove(`profile-${session.user.id}`);
-        appServices.cacheService.remove(`profile-${targetUserId}`);
-      }
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -232,12 +178,6 @@ export function useProfile() {
       
       // Rafraîchir le profil pour mettre à jour les compteurs
       fetchProfile(session.user.id);
-      
-      // Invalider le cache si nécessaire
-      if (appServices?.cacheService) {
-        appServices.cacheService.remove(`profile-${session.user.id}`);
-        appServices.cacheService.remove(`profile-${targetUserId}`);
-      }
     } catch (error: any) {
       toast({
         title: "Erreur",
