@@ -99,8 +99,6 @@ const Soutenir = () => {
                   <Rocket size={22} className="text-primary shrink-0" />
                   <h3 className="text-xl font-semibold">Ce qu'on fait avec ton soutien</h3>
                 </div>
-                <p className="text-muted-foreground">Tu veux aider ?
-                Tu peux nous offrir un petit café, un gros cookie ou même une pizza 🍕</p>
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
@@ -122,6 +120,27 @@ const Soutenir = () => {
                   </li>
                 </ul>
               </div>
+            </div>
+            
+            {/* Bottom call to action */}
+            <div className="mt-8 text-center p-5 bg-secondary/10 rounded-xl border border-border">
+              <p className="text-lg mb-4">
+                Tu veux aider ? Tu peux nous offrir un petit café, un gros cookie ou même une pizza 🍕
+              </p>
+              <a 
+                href="https://buymeacoffee.com/mookka"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <Button 
+                  size="lg" 
+                  className="gap-2 rounded-full px-6 py-5 hover:scale-105 transition-transform font-medium shadow-lg shadow-primary/20"
+                >
+                  <HandCoins size={20} />
+                  <span>Soutenir Mookka</span>
+                </Button>
+              </a>
             </div>
           </div>
         </ScrollArea>
