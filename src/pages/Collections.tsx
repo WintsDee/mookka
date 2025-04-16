@@ -64,7 +64,7 @@ const Collections = () => {
     <Background>
       <MobileHeader title="Collections" />
       
-      <div className="pb-24 pt-safe mt-16">
+      <div className="pt-safe mt-16 h-[calc(100vh-80px)] flex flex-col">
         <header className="px-6 mb-6">
           <div className="mt-4 relative flex items-center gap-2">
             <div className="relative flex-1">
@@ -101,37 +101,41 @@ const Collections = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <ScrollArea className="h-[calc(100vh-260px)] mt-4">
-                <TabsContent value="personal" className="mt-2">
-                  <CollectionGrid
-                    collections={filteredPersonalCollections}
-                    loading={loadingMyCollections}
-                    emptyMessage="Vous n'avez pas encore créé de collection."
-                    className="mb-6"
-                    from={location.pathname}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="followed" className="mt-2">
-                  <CollectionGrid
-                    collections={filteredFollowedCollections}
-                    loading={loadingFollowedCollections}
-                    emptyMessage="Vous ne suivez aucune collection pour le moment."
-                    className="mb-6"
-                    from={location.pathname}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="community" className="mt-2">
-                  <CollectionGrid
-                    collections={filteredCommunityCollections}
-                    loading={loadingPublicCollections}
-                    emptyMessage="Aucune collection communautaire trouvée."
-                    className="mb-6" 
-                    from={location.pathname}
-                  />
-                </TabsContent>
-              </ScrollArea>
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-[calc(100vh-240px)] mt-4 px-6">
+                  <div className="pb-24">
+                    <TabsContent value="personal" className="mt-2">
+                      <CollectionGrid
+                        collections={filteredPersonalCollections}
+                        loading={loadingMyCollections}
+                        emptyMessage="Vous n'avez pas encore créé de collection."
+                        className="mb-6"
+                        from={location.pathname}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="followed" className="mt-2">
+                      <CollectionGrid
+                        collections={filteredFollowedCollections}
+                        loading={loadingFollowedCollections}
+                        emptyMessage="Vous ne suivez aucune collection pour le moment."
+                        className="mb-6"
+                        from={location.pathname}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="community" className="mt-2">
+                      <CollectionGrid
+                        collections={filteredCommunityCollections}
+                        loading={loadingPublicCollections}
+                        emptyMessage="Aucune collection communautaire trouvée."
+                        className="mb-6" 
+                        from={location.pathname}
+                      />
+                    </TabsContent>
+                  </div>
+                </ScrollArea>
+              </div>
             </Tabs>
           </div>
         </header>

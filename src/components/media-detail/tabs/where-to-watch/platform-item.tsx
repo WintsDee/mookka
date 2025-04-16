@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ShoppingCart, Tv, Film, Store, Video } from "lucide-react";
+import { ExternalLink, ShoppingCart, Tv, Film, Store, Video, Check, X } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar } from "@/components/ui/avatar";
 import { MediaType } from "@/types";
@@ -18,37 +18,48 @@ export function PlatformItem({ platform, mediaType, title }: PlatformItemProps) 
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         {platform.logo ? (
-          <Avatar className="h-8 w-8 rounded-md">
+          <div className="flex-shrink-0 h-8 w-8 relative bg-background rounded-md overflow-hidden border border-border flex items-center justify-center">
             <img 
               src={platform.logo} 
               alt={platform.name}
-              className="object-contain"
+              className="max-h-full max-w-full object-contain p-0.5"
             />
-          </Avatar>
+          </div>
         ) : (
           <PlatformIcon type={platform.type} mediaType={mediaType} />
         )}
-        <span>{platform.name}</span>
+        <span className="text-sm md:text-base">{platform.name}</span>
       </div>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size="sm" variant="outline" asChild>
-              <a 
-                href={platform.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-1"
-              >
-                Voir <ExternalLink className="h-3 w-3" />
-              </a>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Rechercher "{title}" sur {platform.name}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="flex items-center gap-2">
+        {platform.isAvailable !== undefined && (
+          <span className="hidden md:flex items-center">
+            {platform.isAvailable ? 
+              <Check size={16} className="text-green-500" /> : 
+              <X size={16} className="text-destructive" />
+            }
+          </span>
+        )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="sm" variant="outline" asChild className="h-8 px-3">
+                <a 
+                  href={platform.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5"
+                >
+                  <span className="text-xs">Voir</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Rechercher "{title}" sur {platform.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }

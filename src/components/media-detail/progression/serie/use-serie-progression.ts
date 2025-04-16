@@ -12,6 +12,8 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any) 
   useEffect(() => {
     // Initialize season data from media details
     if (mediaDetails?.seasons) {
+      console.log("Media details seasons:", mediaDetails.seasons);
+      
       const formattedSeasons = Array.isArray(mediaDetails.seasons) 
         ? mediaDetails.seasons 
         : Array(mediaDetails.seasons).fill(null).map((_, i) => ({ 
@@ -20,6 +22,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any) 
             episode_count: 10 // Default value if not specified
           }));
       
+      console.log("Formatted seasons:", formattedSeasons);
       setSeasons(formattedSeasons);
       
       // Calculate total episodes
@@ -35,6 +38,16 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any) 
       if (mediaDetails.upcoming_episodes) {
         setUpcomingEpisodes(mediaDetails.upcoming_episodes);
       }
+    } else {
+      console.log("No seasons found in media details, creating default seasons");
+      // Si aucune saison n'est trouvée, créer des saisons par défaut
+      const defaultSeasons = Array(3).fill(null).map((_, i) => ({ 
+        season_number: i + 1, 
+        name: `Saison ${i + 1}`,
+        episode_count: 10
+      }));
+      setSeasons(defaultSeasons);
+      setTotalEpisodes(30); // 3 saisons de 10 épisodes
     }
   }, [mediaDetails, initialProgression]);
 

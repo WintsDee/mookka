@@ -100,8 +100,8 @@ const Bibliotheque = () => {
           </div>
         </header>
         
-        <ScrollArea className="h-[calc(100vh-220px)]">
-          <div className="px-6 space-y-8">
+        <ScrollArea className="h-[calc(100vh-220px)] px-6">
+          <div className="space-y-8 pb-24">
             {/* En cours de visionnage/lecture/jeu */}
             {mediaByStatus.current.length > 0 && (
               <MediaRecommendations 

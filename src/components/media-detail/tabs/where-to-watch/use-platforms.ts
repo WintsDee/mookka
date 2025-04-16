@@ -8,6 +8,7 @@ export interface Platform {
   url: string;
   type: "streaming" | "purchase" | "rent";
   logo?: string;
+  isAvailable?: boolean;
 }
 
 export function usePlatforms(mediaId: string, mediaType: MediaType, title: string) {
@@ -32,56 +33,64 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
                 name: "Netflix", 
                 url: `https://www.netflix.com/search?q=${encodedTitle}`, 
                 type: "streaming", 
-                logo: "/platforms/netflix.png" 
+                logo: "/platforms/netflix.png",
+                isAvailable: mediaId === "1" || mediaId === "2" // Exemple basé sur l'ID du média
               },
               { 
                 id: "2", 
                 name: "Amazon Prime Video", 
                 url: `https://www.primevideo.com/search/ref=atv_sr_sug_4?phrase=${encodedTitle}`, 
                 type: "streaming", 
-                logo: "/platforms/prime.png" 
+                logo: "/platforms/prime.png",
+                isAvailable: mediaId === "2" || mediaId === "3"
               },
               { 
                 id: "3", 
                 name: "Disney+", 
                 url: `https://www.disneyplus.com/fr-fr/search?q=${encodedTitle}`, 
                 type: "streaming", 
-                logo: "/platforms/disney.png" 
+                logo: "/platforms/disney.png",
+                isAvailable: mediaId === "1"
               },
               { 
                 id: "4", 
                 name: "Canal+", 
                 url: `https://www.canalplus.com/recherche?q=${encodedTitle}`, 
                 type: "streaming", 
-                logo: "/platforms/canal.png" 
+                logo: "/platforms/canal.png",
+                isAvailable: false
               },
               { 
                 id: "5", 
                 name: "Google Play Films", 
                 url: `https://play.google.com/store/search?q=${encodedTitle}&c=movies`, 
                 type: "purchase", 
-                logo: "/platforms/google-play.png" 
+                logo: "/platforms/google-play.png",
+                isAvailable: true
               },
               { 
                 id: "6", 
                 name: "Apple TV", 
                 url: `https://tv.apple.com/fr/search?term=${encodedTitle}`, 
                 type: "streaming", 
-                logo: "/platforms/apple-tv.png" 
+                logo: "/platforms/apple-tv.png",
+                isAvailable: mediaId === "3"
               },
               {
                 id: "7",
                 name: "Molotov TV",
                 url: `https://www.molotov.tv/search?search=${encodedTitle}`,
                 type: "streaming",
-                logo: "/platforms/molotov.png"
+                logo: "/platforms/molotov.png",
+                isAvailable: false
               },
               {
                 id: "8",
                 name: "OCS",
                 url: `https://www.ocs.fr/recherche?q=${encodedTitle}`,
                 type: "streaming",
-                logo: "/platforms/ocs.png"
+                logo: "/platforms/ocs.png",
+                isAvailable: mediaId === "2"
               }
             ];
           } else if (mediaType === "book") {
@@ -196,6 +205,10 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
               }
             ];
           }
+          
+          // Filtrer pour n'afficher que les plateformes disponibles, ou toutes avec indicateur
+          // Décommentez la ligne ci-dessous pour filtrer uniquement les disponibles
+          // mockPlatforms = mockPlatforms.filter(platform => platform.isAvailable === true);
           
           setPlatforms(mockPlatforms);
           setIsLoading(false);

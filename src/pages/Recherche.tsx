@@ -16,6 +16,7 @@ import {
   getSelectedTypeColor, 
   formatSearchResults 
 } from "@/components/search/search-utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -80,16 +81,17 @@ const Recherche = () => {
         </header>
         
         <div className="flex-1 overflow-hidden">
-          {/* Remplacer par un div simple avec des propriétés CSS pour un scroll fluide */}
-          <div className="h-full px-6 overflow-y-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch">
-            <SearchResults 
-              results={searchResults}
-              isLoading={isLoading}
-              searchQuery={searchQuery}
-              selectedType={selectedType}
-              from={location.pathname}
-            />
-          </div>
+          <ScrollArea className="h-full px-6">
+            <div className="pb-24">
+              <SearchResults 
+                results={searchResults}
+                isLoading={isLoading}
+                searchQuery={searchQuery}
+                selectedType={selectedType}
+                from={location.pathname}
+              />
+            </div>
+          </ScrollArea>
         </div>
       </div>
       

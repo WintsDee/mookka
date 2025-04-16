@@ -22,6 +22,38 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
   const [progression, setProgression] = useState<any>(null);
   const { isAuthenticated } = useProfile();
 
+  // Utiliser cette fonction pour créer une progression par défaut selon le type de média
+  const createDefaultProgression = (type: MediaType) => {
+    switch (type) {
+      case 'film':
+        return {
+          status: 'to-watch',
+          watched_time: 0
+        };
+      case 'serie':
+        return {
+          status: 'to-watch',
+          watched_episodes: {},
+          watched_count: 0,
+          total_episodes: 0
+        };
+      case 'book':
+        return {
+          status: 'to-read',
+          current_page: 0,
+          total_pages: mediaDetails?.page_count || 0
+        };
+      case 'game':
+        return {
+          status: 'to-play',
+          completion_percentage: 0,
+          playtime: 0
+        };
+      default:
+        return {};
+    }
+  };
+  
   const fetchProgression = async () => {
     if (!isAuthenticated) {
       setIsLoading(false);
@@ -48,9 +80,18 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
         console.error('Erreur lors de la récupération de la progression:', error);
       }
       
-      setProgression(data?.progression_data || {});
+      // Si aucune progression n'est trouvée, créer une progression par défaut
+      if (!data || !data.progression_data) {
+        const defaultProgression = createDefaultProgression(mediaType);
+        setProgression(defaultProgression);
+      } else {
+        setProgression(data.progression_data);
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération de la progression:', error);
+      // En cas d'erreur, utiliser une progression par défaut
+      const defaultProgression = createDefaultProgression(mediaType);
+      setProgression(defaultProgression);
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +99,7 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
   
   useEffect(() => {
     fetchProgression();
-  }, [mediaId, isAuthenticated]);
+  }, [mediaId, isAuthenticated, mediaType]);
 
   const handleProgressionUpdate = async (progressionData: any) => {
     if (!isAuthenticated) return;
@@ -107,9 +148,17 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
     );
   }
 
-  // Always consider the user as authenticated for now
+  // Afficher un message si l'utilisateur n'est pas authentifié
   if (!isAuthenticated) {
-    return null;
+    return (
+      <Card className="mt-4">
+        <CardContent className="p-6 text-center">
+          <h3 className="text-lg font-medium mb-2">Vous devez être connecté pour suivre votre progression</h3>
+          <p className="text-muted-foreground mb-4">Connectez-vous pour enregistrer votre progression sur ce média.</p>
+          <Button>Se connecter</Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   const renderProgressionComponent = () => {
@@ -147,7 +196,7 @@ export function ProgressionTab({ mediaId, mediaType, mediaDetails }: Progression
           />
         );
       default:
-        return null;
+        return <p>Type de média non pris en charge</p>;
     }
   };
 
