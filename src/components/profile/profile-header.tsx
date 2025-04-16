@@ -20,6 +20,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: ProfileHeaderProps) {
   const isMobile = useIsMobile();
   const [editingImage, setEditingImage] = React.useState<'avatar' | 'cover' | null>(null);
+  const [imageDialogOpen, setImageDialogOpen] = React.useState(false);
   
   // Function to update just the avatar or cover image
   const updateSingleImage = async (type: 'avatar' | 'cover', value: string) => {
@@ -31,7 +32,15 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
       await onUpdateProfile({ cover_image: value });
     }
     
-    setEditingImage(null);
+    setImageDialogOpen(false);
+  };
+
+  // Handle clicks on avatar or cover
+  const handleImageClick = (type: 'avatar' | 'cover') => {
+    if (isAuthenticated) {
+      setEditingImage(type);
+      setImageDialogOpen(true);
+    }
   };
 
   return (
@@ -43,7 +52,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
-        onClick={() => isAuthenticated && setEditingImage('cover')}
+        onClick={() => handleImageClick('cover')}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         
@@ -54,6 +63,10 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
               variant="ghost" 
               size="sm"
               className="bg-background/20 hover:bg-background/30 backdrop-blur-sm text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleImageClick('cover');
+              }}
             >
               <Image size={16} className="mr-1" />
               Modifier
@@ -79,9 +92,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
             className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300 relative cursor-pointer"
             onClick={(e) => {
               e.stopPropagation(); // Prevent triggering cover image click
-              if (isAuthenticated) {
-                setEditingImage('avatar');
-              }
+              handleImageClick('avatar');
             }}
           >
             <img 
@@ -141,7 +152,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
       </div>
       
       {/* Image Editing Dialog */}
-      <Dialog open={editingImage !== null} onOpenChange={(open) => !open && setEditingImage(null)}>
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>

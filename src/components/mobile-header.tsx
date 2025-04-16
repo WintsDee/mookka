@@ -36,7 +36,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       
       <div className="flex items-center gap-4">
         {children}
-        {/* Garder le composant HelpFeedback mais le rendre caché pour le déclenchement programmatique */}
+        {/* Garder le composant HelpFeedback mais le rendre caché */}
         <div className="hidden">
           <HelpFeedback data-help-feedback-trigger />
         </div>
@@ -78,8 +78,6 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
             </Avatar>
           )}
         </Link>
-        
-        {/* Suppression du bouton d'aide (icône ?) */}
       </div>
     </div>
   );

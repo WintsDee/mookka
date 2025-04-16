@@ -17,29 +17,20 @@ import { HelpFeedback } from "@/components/profile/help-feedback";
 export function HelpSection() {
   const navigate = useNavigate();
   
-  const openFeedbackForm = () => {
-    // Trouve le déclencheur caché dans le DOM
-    const helpFeedbackTrigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-    if (helpFeedbackTrigger) {
-      // Clique sur le bouton pour ouvrir la boîte de dialogue
-      helpFeedbackTrigger.click();
+  const openFeedbackDialog = (initialTab: 'help' | 'feedback' = 'feedback') => {
+    // Recherche du bouton de dialogue caché dans le DOM
+    const trigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
+    if (trigger) {
+      // Cliquer pour ouvrir le dialogue
+      trigger.click();
       
-      // Après un court délai, passe à l'onglet feedback
+      // Après un court délai, simuler un clic sur l'onglet approprié
       setTimeout(() => {
-        const feedbackTab = document.querySelector('[data-tab="feedback"]') as HTMLButtonElement;
-        if (feedbackTab) {
-          feedbackTab.click();
+        const tabButton = document.querySelector(`[data-tab="${initialTab}"]`) as HTMLButtonElement;
+        if (tabButton) {
+          tabButton.click();
         }
       }, 100);
-    }
-  };
-  
-  const openHelpDialog = () => {
-    // Trouve le déclencheur caché dans le DOM
-    const helpFeedbackTrigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-    if (helpFeedbackTrigger) {
-      // Clique sur le bouton pour ouvrir la boîte de dialogue
-      helpFeedbackTrigger.click();
     }
   };
   
@@ -82,7 +73,7 @@ export function HelpSection() {
         
         <div className="mt-4 flex flex-col gap-2">
           <Button
-            onClick={openFeedbackForm}
+            onClick={() => openFeedbackDialog('feedback')}
             variant="outline"
             className="w-full"
           >
@@ -91,7 +82,7 @@ export function HelpSection() {
           </Button>
           
           <Button
-            onClick={openHelpDialog}
+            onClick={() => openFeedbackDialog('help')}
             variant="default"
             className="w-full"
           >
@@ -102,9 +93,7 @@ export function HelpSection() {
       </div>
       
       {/* Composant HelpFeedback placé ici pour le contexte de la page */}
-      <div className="hidden">
-        <HelpFeedback />
-      </div>
+      <HelpFeedback />
     </div>
   );
 }
