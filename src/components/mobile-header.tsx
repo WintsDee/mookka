@@ -11,9 +11,6 @@ interface MobileHeaderProps {
   children?: React.ReactNode;
 }
 
-// Updated to an abstract image in purple tones that better matches the app's visual theme
-const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
-
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();
   const isProfileActive = location.pathname === "/profil";
@@ -57,7 +54,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
         >
           <Avatar className="w-8 h-8">
             <AvatarImage 
-              src={profile?.avatar_url || DEFAULT_AVATAR} 
+              src={profile?.avatar_url || "/placeholder.svg"} 
               alt={profile?.username || "Utilisateur"} 
             />
             <AvatarFallback>

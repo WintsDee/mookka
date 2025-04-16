@@ -17,6 +17,10 @@ export type Profile = {
   updated_at: string;
 };
 
+// Updated abstract images that better match the app's style
+export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
+export const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
+
 export function useProfile() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);

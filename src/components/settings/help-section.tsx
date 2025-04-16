@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { helpSections } from "./data/help-section-data";
 import { HelpCard } from "@/components/ui/help-card";
+import { HelpFeedback } from "@/components/profile/help-feedback";
 
 export function HelpSection() {
   const navigate = useNavigate();
@@ -53,14 +54,9 @@ export function HelpSection() {
           </AlertDescription>
         </Alert>
         
-        <Button 
-          variant="outline" 
-          className="w-full mt-4 flex items-center gap-2 justify-center"
-          onClick={() => navigate("/profil")}
-        >
-          <MessageSquare size={16} />
-          <span>Signaler un problème</span>
-        </Button>
+        <div className="mt-4 flex flex-col gap-2">
+          <HelpFeedback initialTab="feedback" buttonVariant="outline" buttonText="Signaler un problème" />
+        </div>
       </div>
     </div>
   );

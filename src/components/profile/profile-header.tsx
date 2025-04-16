@@ -7,10 +7,7 @@ import { Users, Heart, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-// Updated to abstract images that match the app's style with colors more aligned with the app's theme
-const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
-const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
+import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
@@ -24,7 +21,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
   return (
     <>
       <div 
-        className="h-40 relative bg-cover bg-center"
+        className="h-40 relative bg-cover bg-center transition-all duration-300"
         style={{ 
           backgroundImage: `url(${profile?.cover_image || DEFAULT_COVER})`,
           backgroundSize: 'cover',
@@ -47,7 +44,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
         </div>
         
         <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
-          <div className="w-20 h-20 rounded-full bg-background p-1 shadow-md">
+          <div className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300">
             <img 
               src={profile?.avatar_url || DEFAULT_AVATAR} 
               alt={profile?.username || "Utilisateur"}

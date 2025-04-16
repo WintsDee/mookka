@@ -7,9 +7,22 @@ import { FeedbackForm } from "./feedback-form";
 import { FeedbackSuccess } from "./feedback-success";
 import { HelpItems } from "./help-items";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ButtonProps } from "@/components/ui/button";
 
-export function HelpFeedback() {
-  const [activeTab, setActiveTab] = useState<'help' | 'feedback'>('help');
+interface HelpFeedbackProps {
+  initialTab?: 'help' | 'feedback';
+  buttonVariant?: ButtonProps['variant'];
+  buttonText?: string;
+  buttonIcon?: boolean;
+}
+
+export function HelpFeedback({ 
+  initialTab = 'help',
+  buttonVariant = 'ghost',
+  buttonText = 'Aide et Feedback',
+  buttonIcon = true 
+}: HelpFeedbackProps) {
+  const [activeTab, setActiveTab] = useState<'help' | 'feedback'>(initialTab);
   const [submitted, setSubmitted] = useState(false);
   const isMobile = useIsMobile();
   
@@ -21,14 +34,16 @@ export function HelpFeedback() {
     <Dialog>
       <DialogTrigger asChild>
         <Button 
-          variant="ghost" 
+          variant={buttonVariant} 
           size="sm" 
-          className={`flex items-center gap-1.5 text-muted-foreground hover:text-foreground ${
+          className={`flex items-center gap-1.5 ${
+            buttonVariant === 'ghost' ? 'text-muted-foreground hover:text-foreground' : ''
+          } ${
             isMobile ? 'text-xs py-1 px-2 h-auto' : ''
           }`}
         >
-          <HelpCircle size={isMobile ? 14 : 16} />
-          <span>Aide et Feedback</span>
+          {buttonIcon && <HelpCircle size={isMobile ? 14 : 16} />}
+          <span>{buttonText}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
