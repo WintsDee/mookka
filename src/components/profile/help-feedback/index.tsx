@@ -6,7 +6,6 @@ import { HelpCircle, MessageSquare } from "lucide-react";
 import { FeedbackForm } from "./feedback-form";
 import { FeedbackSuccess } from "./feedback-success";
 import { HelpItems } from "./help-items";
-import { helpItems } from "./data";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export function HelpFeedback() {
@@ -71,7 +70,7 @@ export function HelpFeedback() {
         </div>
         
         {activeTab === 'help' ? (
-          <HelpItems items={helpItems} />
+          <HelpItems />
         ) : (
           <>
             {submitted ? (
