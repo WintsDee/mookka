@@ -12,6 +12,7 @@ interface ProfileActionsProps {
 export function ProfileActions({ isAuthenticated, onLogout }: ProfileActionsProps) {
   return (
     <div className="mt-8 space-y-4">
+      {/* Bouton Soutenir le projet - toujours visible */}
       <Button 
         variant="secondary" 
         className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
@@ -23,6 +24,7 @@ export function ProfileActions({ isAuthenticated, onLogout }: ProfileActionsProp
         </Link>
       </Button>
       
+      {/* Bouton de déconnexion - visible seulement si authentifié */}
       {isAuthenticated && (
         <Button 
           variant="outline" 
