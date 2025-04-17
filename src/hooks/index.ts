@@ -1,9 +1,23 @@
+
 // Auth hooks
 export * from './use-auth';
 export * from './auth';
 
-// Profile hooks
-export * from './profile';
+// Profile hooks 
+// Only export specific items from profile directory to avoid conflicts
+export { 
+  useProfileData,
+  useProfileUpdate,
+  useProfileSocial
+} from './profile';
+
+// Export profile-related types and constants only from use-profile
+export { 
+  useProfile, 
+  DEFAULT_AVATAR,
+  DEFAULT_COVER
+} from './use-profile';
+export type { Profile } from './use-profile';
 
 // Media hooks
 export * from './media';
