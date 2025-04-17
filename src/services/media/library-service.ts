@@ -1,413 +1,324 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType, MediaStatus } from "@/types";
+import { MediaType, MediaStatus } from "@/types";
+import { formatLibraryMedia } from "./formatters";
 
 /**
- * Add media to user's library
+ * Ajoute un média à la bibliothèque de l'utilisateur
  */
-export async function addMediaToLibrary(media: any, type: MediaType): Promise<Media> {
-  try {
-    // Vérifier que l'utilisateur est connecté
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      throw new Error("Vous devez être connecté pour ajouter un média à votre bibliothèque");
-    }
-    
-    // Formater les données du média selon le type
-    let formattedMedia: any = {
-      external_id: media.id.toString() || '',
-      title: '',
-      type: type,
-      genres: [],
-    };
+export async function addMediaToLibrary(media: any, type: MediaType, status?: MediaStatus) {
+  if (!media) {
+    throw new Error("Aucun média fourni");
+  }
 
-    switch (type) {
-      case 'film':
-        formattedMedia = {
-          ...formattedMedia,
-          title: media.title || '',
-          cover_image: media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null,
-          year: media.release_date ? parseInt(media.release_date.substring(0, 4)) : null,
-          rating: media.vote_average || null,
-          genres: media.genres ? media.genres.map((g: any) => g.name) : [],
-          description: media.overview || '',
-          duration: media.runtime ? `${media.runtime} min` : '',
-          director: media.director || '',
-        };
-        break;
-      case 'serie':
-        formattedMedia = {
-          ...formattedMedia,
-          title: media.name || '',
-          cover_image: media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : null,
-          year: media.first_air_date ? parseInt(media.first_air_date.substring(0, 4)) : null,
-          rating: media.vote_average || null,
-          genres: media.genres ? media.genres.map((g: any) => g.name) : [],
-          description: media.overview || '',
-          duration: media.number_of_seasons ? `${media.number_of_seasons} saison(s)` : '',
-        };
-        break;
-      case 'book':
-        formattedMedia = {
-          ...formattedMedia,
-          title: media.volumeInfo?.title || '',
-          cover_image: media.volumeInfo?.imageLinks?.thumbnail || null,
-          year: media.volumeInfo?.publishedDate ? parseInt(media.volumeInfo.publishedDate.substring(0, 4)) : null,
-          genres: media.volumeInfo?.categories || [],
-          description: media.volumeInfo?.description || '',
-          author: media.volumeInfo?.authors ? media.volumeInfo.authors.join(', ') : '',
-        };
-        break;
-      case 'game':
-        formattedMedia = {
-          ...formattedMedia,
-          title: media.name || '',
-          cover_image: media.background_image || null,
-          year: media.released ? parseInt(media.released.substring(0, 4)) : null,
-          rating: media.rating || null,
-          genres: media.genres ? media.genres.map((g: any) => g.name) : [],
-          description: media.description_raw || '',
-          publisher: media.publishers && media.publishers.length > 0 ? media.publishers[0].name : '',
-          platform: media.platforms ? media.platforms.map((p: any) => p.platform.name).join(', ') : '',
-        };
-        break;
-    }
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    throw new Error("Utilisateur non connecté");
+  }
 
-    // D'abord vérifier si le média existe déjà dans la base de données
-    const { data: existingMedia, error: fetchError } = await supabase
+  // Vérifier si le média existe déjà dans la base de données
+  const { data: existingMedia } = await supabase
+    .from('media')
+    .select('id')
+    .eq('external_id', media.id.toString())
+    .eq('type', type)
+    .maybeSingle();
+
+  let mediaId;
+
+  if (existingMedia) {
+    // Si le média existe déjà, utiliser l'ID existant
+    mediaId = existingMedia.id;
+  } else {
+    // Sinon, créer un nouveau média
+    const { data: newMedia, error: mediaError } = await supabase
       .from('media')
-      .select('id')
-      .eq('external_id', media.id.toString())
-      .eq('type', type)
-      .maybeSingle();
-
-    let mediaId;
-
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 signifie "no rows returned"
-      console.error("Erreur lors de la vérification du média:", fetchError);
-      throw fetchError;
-    }
-
-    if (existingMedia) {
-      // Le média existe déjà, utiliser son ID
-      mediaId = existingMedia.id;
-    } else {
-      // Le média n'existe pas, l'insérer
-      const { data: newMedia, error: insertError } = await supabase
-        .from('media')
-        .insert(formattedMedia)
-        .select('id')
-        .single();
-
-      if (insertError) {
-        console.error("Erreur lors de l'insertion du média:", insertError);
-        throw insertError;
-      }
-
-      mediaId = newMedia.id;
-    }
-
-    // Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
-    const { data: existingUserMedia, error: userMediaCheckError } = await supabase
-      .from('user_media')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('media_id', mediaId)
-      .maybeSingle();
-      
-    if (userMediaCheckError && userMediaCheckError.code !== 'PGRST116') {
-      console.error("Erreur lors de la vérification du média de l'utilisateur:", userMediaCheckError);
-      throw userMediaCheckError;
-    }
-    
-    if (existingUserMedia) {
-      // L'utilisateur a déjà ce média, renvoyer les détails
-      return {
-        id: mediaId,
+      .insert({
+        external_id: media.id.toString(),
+        title: media.title || media.name || media.volumeInfo?.title,
         type: type,
-        title: formattedMedia.title,
-        coverImage: formattedMedia.cover_image,
-        year: formattedMedia.year,
-        rating: formattedMedia.rating,
-        genres: formattedMedia.genres,
-        description: formattedMedia.description,
-        status: 'to-watch' as MediaStatus,
-        duration: formattedMedia.duration,
-        director: formattedMedia.director,
-        author: formattedMedia.author,
-        publisher: formattedMedia.publisher,
-        platform: formattedMedia.platform
-      };
+        year: media.release_date ? parseInt(media.release_date.substring(0, 4)) : 
+              media.first_air_date ? parseInt(media.first_air_date.substring(0, 4)) : 
+              media.volumeInfo?.publishedDate ? parseInt(media.volumeInfo.publishedDate.substring(0, 4)) : 
+              media.released ? parseInt(media.released.substring(0, 4)) : null,
+        cover_image: 
+          type === 'film' || type === 'serie' 
+            ? (media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : null)
+            : type === 'book' 
+              ? (media.volumeInfo?.imageLinks?.thumbnail || null)
+              : (media.background_image || null),
+        description: media.overview || media.volumeInfo?.description || media.description || media.description_raw,
+        genres: Array.isArray(media.genres) 
+          ? media.genres.map((g: any) => typeof g === 'string' ? g : g.name) 
+          : (media.volumeInfo?.categories || []),
+        rating: media.vote_average || media.volumeInfo?.averageRating || media.rating || null,
+        duration: 
+          type === 'film' ? (media.runtime ? `${media.runtime} min` : null) :
+          type === 'serie' ? (media.number_of_seasons ? `${media.number_of_seasons} saison(s)` : null) :
+          type === 'book' ? (media.volumeInfo?.pageCount ? `${media.volumeInfo.pageCount} pages` : null) :
+          null,
+        director: type === 'film' ? (media.credits?.crew?.find((c: any) => c.job === 'Director')?.name || null) : null,
+        author: type === 'book' ? (media.volumeInfo?.authors?.join(', ') || null) : null,
+        publisher: type === 'game' ? (media.publishers?.[0]?.name || null) : null,
+        platform: type === 'game' ? (media.platforms?.map((p: any) => p.platform.name).join(', ') || null) : null
+      })
+      .select('id')
+      .single();
+
+    if (mediaError) {
+      console.error("Erreur lors de la création du média:", mediaError);
+      throw mediaError;
     }
 
-    // Déterminer le statut initial en fonction du type de média
-    let initialStatus: MediaStatus = 'to-watch';
-    if (type === 'book') {
-      initialStatus = 'to-read';
-    } else if (type === 'game') {
-      initialStatus = 'to-play';
-    }
+    mediaId = newMedia.id;
+  }
 
-    // Ajouter l'entrée dans user_media
-    const { data: userMedia, error: userMediaInsertError } = await supabase
+  // Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
+  const { data: existingUserMedia } = await supabase
+    .from('user_media')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('media_id', mediaId)
+    .maybeSingle();
+
+  if (existingUserMedia) {
+    // Si le média est déjà dans la bibliothèque de l'utilisateur, mettre à jour le statut si nécessaire
+    if (status) {
+      const { error: updateError } = await supabase
+        .from('user_media')
+        .update({ 
+          status: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingUserMedia.id);
+
+      if (updateError) {
+        console.error("Erreur lors de la mise à jour du média utilisateur:", updateError);
+        throw updateError;
+      }
+    }
+    return existingUserMedia.id;
+  } else {
+    // Sinon, ajouter le média à la bibliothèque de l'utilisateur
+    const { data: userMedia, error: userMediaError } = await supabase
       .from('user_media')
       .insert({
         user_id: user.id,
         media_id: mediaId,
-        status: initialStatus
+        status: status || getDefaultStatus(type)
       })
-      .select('*')
+      .select('id')
       .single();
 
-    if (userMediaInsertError) {
-      console.error("Erreur lors de l'ajout du média à la bibliothèque:", userMediaInsertError);
-      throw userMediaInsertError;
+    if (userMediaError) {
+      console.error("Erreur lors de l'ajout du média à la bibliothèque:", userMediaError);
+      throw userMediaError;
     }
 
-    return {
-      id: mediaId,
-      type: type,
-      title: formattedMedia.title,
-      coverImage: formattedMedia.cover_image,
-      year: formattedMedia.year,
-      rating: formattedMedia.rating,
-      genres: formattedMedia.genres,
-      description: formattedMedia.description,
-      status: userMedia.status as MediaStatus,
-      duration: formattedMedia.duration,
-      director: formattedMedia.director,
-      author: formattedMedia.author,
-      publisher: formattedMedia.publisher,
-      platform: formattedMedia.platform
-    };
-  } catch (error) {
-    console.error("Erreur dans addMediaToLibrary:", error);
-    throw error;
+    return userMedia.id;
   }
 }
 
 /**
- * Récupérer les médias de la bibliothèque de l'utilisateur
+ * Récupère la bibliothèque de médias de l'utilisateur
  */
-export async function getUserMediaLibrary(): Promise<Media[]> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      return [];
-    }
-    
-    const { data, error } = await supabase
-      .from('user_media')
-      .select(`
-        id,
-        status,
-        added_at,
-        user_rating,
-        notes,
-        media:media_id (
-          id,
-          title,
-          type,
-          year,
-          rating,
-          genres,
-          description,
-          cover_image,
-          duration,
-          director,
-          author,
-          publisher,
-          platform
-        )
-      `)
-      .eq('user_id', user.user.id)
-      .order('added_at', { ascending: false });
-      
-    if (error) {
-      console.error("Erreur lors de la récupération de la bibliothèque:", error);
-      throw error;
-    }
-    
-    if (!data || data.length === 0) {
-      return [];
-    }
-    
-    return data.map((item) => {
-      const media = item.media;
-      return {
-        id: media.id,
-        title: media.title,
-        type: media.type as MediaType,  // Type assertion
-        coverImage: media.cover_image,
-        year: media.year,
-        rating: media.rating,
-        genres: media.genres,
-        description: media.description,
-        status: item.status as MediaStatus,  // Type assertion
-        duration: media.duration,
-        director: media.director,
-        author: media.author,
-        publisher: media.publisher,
-        platform: media.platform
-      };
+export async function getUserMediaLibrary() {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('user_media')
+    .select(`
+      id,
+      status,
+      user_rating,
+      notes,
+      media(*)
+    `)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error("Erreur lors de la récupération de la bibliothèque:", error);
+    throw error;
+  }
+
+  // Formater les données pour l'affichage
+  return data.map(item => formatLibraryMedia(item));
+}
+
+/**
+ * Met à jour le statut d'un média dans la bibliothèque
+ */
+export async function updateMediaStatus(mediaId: string, status: MediaStatus) {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    throw new Error("Utilisateur non connecté");
+  }
+
+  const { error } = await supabase
+    .from('user_media')
+    .update({ 
+      status: status,
+      updated_at: new Date().toISOString()
+    })
+    .match({ 
+      user_id: user.id,
+      media_id: mediaId 
     });
-  } catch (error) {
-    console.error("Erreur dans getUserMediaLibrary:", error);
+
+  if (error) {
+    console.error("Erreur lors de la mise à jour du statut:", error);
     throw error;
   }
+
+  return true;
 }
 
 /**
- * Mettre à jour le statut d'un média dans la bibliothèque
+ * Retire un média de la bibliothèque
  */
-export async function updateMediaStatus(mediaId: string, status: MediaStatus): Promise<void> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      throw new Error("Utilisateur non connecté");
-    }
-    
+export async function removeMediaFromLibrary(mediaId: string) {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    throw new Error("Utilisateur non connecté");
+  }
+
+  const { error } = await supabase
+    .from('user_media')
+    .delete()
+    .match({
+      user_id: user.id,
+      media_id: mediaId
+    });
+
+  if (error) {
+    console.error("Erreur lors de la suppression du média:", error);
+    throw error;
+  }
+
+  return true;
+}
+
+/**
+ * Met à jour la note et la critique d'un média
+ */
+export async function updateMediaRating(mediaId: string, rating: number, review: string = "") {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    throw new Error("Utilisateur non connecté");
+  }
+
+  // Vérifier si le média est dans la bibliothèque de l'utilisateur
+  const { data } = await supabase
+    .from('user_media')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('media_id', mediaId)
+    .maybeSingle();
+
+  if (data) {
+    // Mettre à jour la note et la critique
     const { error } = await supabase
       .from('user_media')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId);
-      
+      .update({ 
+        user_rating: rating,
+        notes: review,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', data.id);
+
     if (error) {
-      console.error("Erreur lors de la mise à jour du statut:", error);
+      console.error("Erreur lors de la mise à jour de la note:", error);
       throw error;
     }
-  } catch (error) {
-    console.error("Erreur dans updateMediaStatus:", error);
-    throw error;
-  }
-}
-
-/**
- * Supprimer un média de la bibliothèque
- */
-export async function removeMediaFromLibrary(mediaId: string): Promise<void> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      throw new Error("Utilisateur non connecté");
-    }
-    
+  } else {
+    // Le média n'est pas dans la bibliothèque, l'ajouter d'abord
     const { error } = await supabase
       .from('user_media')
-      .delete()
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId);
-      
+      .insert({
+        user_id: user.id,
+        media_id: mediaId,
+        user_rating: rating,
+        notes: review
+      });
+
     if (error) {
-      console.error("Erreur lors de la suppression du média:", error);
+      console.error("Erreur lors de l'ajout du média et de la note:", error);
       throw error;
     }
-  } catch (error) {
-    console.error("Erreur dans removeMediaFromLibrary:", error);
-    throw error;
   }
+
+  return true;
 }
 
 /**
- * Mettre à jour la note et la critique d'un média
+ * Récupère la note et la critique d'un média
  */
-export async function updateMediaRating(mediaId: string, rating: number, review: string): Promise<void> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      throw new Error("Utilisateur non connecté");
-    }
-    
-    // Vérifier si le média existe déjà dans la bibliothèque de l'utilisateur
-    const { data: existingMedia, error: checkError } = await supabase
-      .from('user_media')
-      .select('id')
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId)
-      .maybeSingle();
-      
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error("Erreur lors de la vérification du média:", checkError);
-      throw checkError;
-    }
-    
-    if (existingMedia) {
-      // Mettre à jour la note et la critique
-      const { error: updateError } = await supabase
-        .from('user_media')
-        .update({ 
-          user_rating: rating, 
-          notes: review,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingMedia.id);
-        
-      if (updateError) {
-        console.error("Erreur lors de la mise à jour de la note:", updateError);
-        throw updateError;
-      }
-    } else {
-      // Si le média n'est pas dans la bibliothèque, l'ajouter avec la note et la critique
-      const { error: insertError } = await supabase
-        .from('user_media')
-        .insert({
-          user_id: user.user.id,
-          media_id: mediaId,
-          user_rating: rating,
-          notes: review,
-          status: 'completed' as MediaStatus // Si l'utilisateur note, il a probablement terminé
-        });
-        
-      if (insertError) {
-        console.error("Erreur lors de l'ajout de la note:", insertError);
-        throw insertError;
-      }
-    }
-  } catch (error) {
-    console.error("Erreur dans updateMediaRating:", error);
+export async function getMediaRating(mediaId: string) {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('user_media')
+    .select('user_rating, notes')
+    .eq('user_id', user.id)
+    .eq('media_id', mediaId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erreur lors de la récupération de la note:", error);
     throw error;
   }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    rating: data.user_rating || 0,
+    review: data.notes || ""
+  };
 }
 
 /**
- * Récupérer la note et la critique d'un média
+ * Vérifie si un média est dans la bibliothèque de l'utilisateur
  */
-export async function getMediaRating(mediaId: string): Promise<{ rating: number, review: string } | null> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      return null;
-    }
-    
-    const { data, error } = await supabase
-      .from('user_media')
-      .select('user_rating, notes')
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId)
-      .maybeSingle();
-      
-    if (error && error.code !== 'PGRST116') {
-      console.error("Erreur lors de la récupération de la note:", error);
-      throw error;
-    }
-    
-    if (!data) {
-      return null;
-    }
-    
-    return {
-      rating: data.user_rating || 0,
-      review: data.notes || ''
-    };
-  } catch (error) {
-    console.error("Erreur dans getMediaRating:", error);
+export async function isMediaInLibrary(mediaId: string) {
+  const user = (await supabase.auth.getUser()).data.user;
+  if (!user) {
+    return false;
+  }
+
+  const { data, error } = await supabase
+    .from('user_media')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('media_id', mediaId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erreur lors de la vérification de la bibliothèque:", error);
     throw error;
+  }
+
+  return !!data;
+}
+
+// Fonction utilitaire pour obtenir le statut par défaut en fonction du type de média
+function getDefaultStatus(type: MediaType): MediaStatus {
+  switch (type) {
+    case 'film':
+    case 'serie':
+      return 'to-watch';
+    case 'book':
+      return 'to-read';
+    case 'game':
+      return 'to-play';
+    default:
+      return 'to-watch';
   }
 }

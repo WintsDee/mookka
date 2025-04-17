@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { useProfile } from "@/hooks/use-profile";
+import { useAuth } from "@/providers/auth-provider";
 import { MediaType } from "@/types";
 import { updateMediaRating, getMediaRating } from "@/services/media";
 
@@ -17,12 +16,12 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
   const [userRating, setUserRating] = useState(0);
   const [userReview, setUserReview] = useState("");
   const { toast } = useToast();
-  const { isAuthenticated } = useProfile();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchRating = async () => {
-      // Only fetch if we have a mediaId
-      if (!mediaId || !isAuthenticated) {
+      // Only fetch if we have a mediaId and user is authenticated
+      if (!mediaId || !user) {
         setIsLoading(false);
         return;
       }
@@ -43,10 +42,10 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     };
     
     fetchRating();
-  }, [mediaId, isAuthenticated]);
+  }, [mediaId, user]);
 
   const saveRating = async (values: MediaRatingData) => {
-    if (!isAuthenticated) {
+    if (!user) {
       toast({
         title: "Erreur",
         description: "Vous devez être connecté pour noter un média",

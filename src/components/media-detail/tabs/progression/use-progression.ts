@@ -4,6 +4,7 @@ import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/auth-provider";
+import { updateMediaStatus } from "@/services/media";
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
@@ -132,11 +133,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       
       // Mettre à jour le statut dans user_media si approprié
       if (progressionData.status) {
-        await supabase
-          .from('user_media')
-          .update({ status: progressionData.status })
-          .eq('media_id', mediaId)
-          .eq('user_id', user.id);
+        await updateMediaStatus(mediaId, progressionData.status);
       }
       
       setProgression(progressionData);

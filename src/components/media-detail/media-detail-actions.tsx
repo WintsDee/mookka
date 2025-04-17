@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, BookmarkPlus, FolderPlus, Share, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { MediaType } from "@/types";
-import { addMediaToLibrary, removeMediaFromLibrary } from "@/services/media";
+import { addMediaToLibrary, removeMediaFromLibrary, isMediaInLibrary } from "@/services/media";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
@@ -32,6 +32,23 @@ export function MediaDetailActions({
   const isMobile = useIsMobile();
   const { user } = useAuth();
 
+  // Vérifier si le média est dans la bibliothèque au chargement du composant
+  useEffect(() => {
+    const checkLibraryStatus = async () => {
+      if (media && user) {
+        try {
+          const inUserLibrary = await isMediaInLibrary(media.id);
+          setInLibrary(inUserLibrary);
+        } catch (error) {
+          console.error("Erreur lors de la vérification de la bibliothèque:", error);
+        }
+      }
+    };
+
+    checkLibraryStatus();
+  }, [media, user]);
+
+  // Mettre à jour l'état lorsque la prop isInLibrary change
   useEffect(() => {
     setInLibrary(isInLibrary);
   }, [isInLibrary]);

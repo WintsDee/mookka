@@ -1,18 +1,22 @@
 
-import { Media, MediaType } from "@/types";
+import { Media, MediaType, MediaStatus } from "@/types";
 
-export function formatLibraryMedia(item: any): Media {
-  const media = item.media;
+/**
+ * Formate les données d'un média de la bibliothèque de l'utilisateur
+ */
+export function formatLibraryMedia(userMediaItem: any): Media {
+  const media = userMediaItem.media;
+
   return {
     id: media.id,
     title: media.title,
-    type: media.type as MediaType,  // Add type assertion
-    coverImage: media.cover_image,
+    type: media.type as MediaType,
+    coverImage: media.cover_image || '/placeholder.svg',
     year: media.year,
     rating: media.rating,
+    status: userMediaItem.status as MediaStatus,
     genres: media.genres,
     description: media.description,
-    status: item.status as Media['status'], // Add type assertion
     duration: media.duration,
     director: media.director,
     author: media.author,
@@ -21,68 +25,63 @@ export function formatLibraryMedia(item: any): Media {
   };
 }
 
-// Film search result formatting
-export function formatFilmSearchResult(item: any): Media {
+/**
+ * Formate les résultats de recherche de livres pour l'affichage
+ */
+export function formatBookSearchResult(book: any): Media {
   return {
-    id: item.id.toString(),
-    title: item.title || item.original_title || "",
-    type: "film",
-    coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "/placeholder.svg",
-    year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : undefined,
-    rating: item.vote_average || undefined,
-    genres: item.genre_ids || [],
-    description: item.overview || "",
-    popularity: item.popularity,
-    director: item.director,
+    id: book.id,
+    title: book.volumeInfo?.title || 'Titre inconnu',
+    type: 'book' as MediaType,
+    coverImage: book.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+    year: book.volumeInfo?.publishedDate ? parseInt(book.volumeInfo.publishedDate.substring(0, 4)) : undefined,
+    rating: book.volumeInfo?.averageRating ? parseFloat((book.volumeInfo.averageRating * 2).toFixed(1)) : undefined,
+    author: book.volumeInfo?.authors?.join(', '),
+    genres: book.volumeInfo?.categories || []
   };
 }
 
-// Serie search result formatting
-export function formatSerieSearchResult(item: any): Media {
+/**
+ * Formate les résultats de recherche de films pour l'affichage
+ */
+export function formatFilmSearchResult(film: any): Media {
   return {
-    id: item.id.toString(),
-    title: item.name || item.original_name || "",
-    type: "serie",
-    coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "/placeholder.svg",
-    year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : undefined,
-    rating: item.vote_average || undefined,
-    genres: item.genre_ids || [],
-    description: item.overview || "",
-    popularity: item.popularity,
+    id: film.id.toString(),
+    title: film.title || film.original_title || 'Titre inconnu',
+    type: 'film' as MediaType,
+    coverImage: film.poster_path ? `https://image.tmdb.org/t/p/w500${film.poster_path}` : '/placeholder.svg',
+    year: film.release_date ? parseInt(film.release_date.substring(0, 4)) : undefined,
+    rating: film.vote_average ? parseFloat(film.vote_average.toFixed(1)) : undefined,
+    popularity: film.popularity
   };
 }
 
-// Book search result formatting
-export function formatBookSearchResult(item: any): Media {
-  const volumeInfo = item.volumeInfo || {};
-  
+/**
+ * Formate les résultats de recherche de séries pour l'affichage
+ */
+export function formatSerieSearchResult(serie: any): Media {
   return {
-    id: item.id,
-    title: volumeInfo.title || "",
-    type: "book",
-    coverImage: volumeInfo.imageLinks?.thumbnail || "/placeholder.svg",
-    year: volumeInfo.publishedDate ? parseInt(volumeInfo.publishedDate.substring(0, 4)) : undefined,
-    rating: volumeInfo.averageRating || undefined,
-    genres: volumeInfo.categories || [],
-    description: volumeInfo.description || "",
-    author: volumeInfo.authors ? volumeInfo.authors.join(", ") : undefined,
-    popularity: item.saleInfo?.saleability === "FOR_SALE" ? 10 : 0, // Give higher score to books that are for sale
+    id: serie.id.toString(),
+    title: serie.name || serie.original_name || 'Titre inconnu',
+    type: 'serie' as MediaType,
+    coverImage: serie.poster_path ? `https://image.tmdb.org/t/p/w500${serie.poster_path}` : '/placeholder.svg',
+    year: serie.first_air_date ? parseInt(serie.first_air_date.substring(0, 4)) : undefined,
+    rating: serie.vote_average ? parseFloat(serie.vote_average.toFixed(1)) : undefined,
+    popularity: serie.popularity
   };
 }
 
-// Game search result formatting
-export function formatGameSearchResult(item: any): Media {
+/**
+ * Formate les résultats de recherche de jeux pour l'affichage
+ */
+export function formatGameSearchResult(game: any): Media {
   return {
-    id: item.id.toString(),
-    title: item.name || "",
-    type: "game",
-    coverImage: item.background_image || "/placeholder.svg",
-    year: item.released ? parseInt(item.released.substring(0, 4)) : undefined,
-    rating: item.rating || undefined,
-    genres: item.genres ? item.genres.map((g: any) => g.name) : [],
-    description: item.description_raw || "",
-    publisher: item.publishers?.length > 0 ? item.publishers[0].name : undefined,
-    platform: item.platforms ? item.platforms.map((p: any) => p.platform.name).join(", ") : undefined,
-    popularity: item.ratings_count || 0,
+    id: game.id.toString(),
+    title: game.name || 'Titre inconnu',
+    type: 'game' as MediaType,
+    coverImage: game.background_image || '/placeholder.svg',
+    year: game.released ? parseInt(game.released.substring(0, 4)) : undefined,
+    rating: game.rating ? parseFloat(game.rating.toFixed(1)) : undefined,
+    platform: game.platforms?.map((p: any) => p.platform.name).join(', ')
   };
 }
