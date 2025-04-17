@@ -8,11 +8,20 @@ interface ProtectedRouteProps {
   children: ReactNode;
 }
 
+// Mode développement pour contourner l'authentification
+const DEV_MODE = true; // Mettre à false pour réactiver l'authentification obligatoire
+
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const location = useLocation();
 
   useEffect(() => {
+    // Si on est en mode développement, on considère l'utilisateur comme authentifié
+    if (DEV_MODE) {
+      setIsAuthenticated(true);
+      return;
+    }
+
     const checkAuth = async () => {
       const { data } = await supabase.auth.getSession();
       setIsAuthenticated(!!data.session);
@@ -28,6 +37,11 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // En mode développement, on affiche directement le contenu
+  if (DEV_MODE) {
+    return <>{children}</>;
+  }
 
   if (isAuthenticated === null) {
     return (

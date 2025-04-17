@@ -1,6 +1,7 @@
 
 import React from "react";
 import MainContent from "@/components/home/MainContent";
+import { MobileNav } from "@/components/mobile-nav";
 
 const Index = () => {
   return (
@@ -23,6 +24,8 @@ const Index = () => {
       <div className="relative z-10 min-h-screen overflow-auto scrollbar-hide">
         <MainContent />
       </div>
+      
+      <MobileNav />
     </div>
   );
 };

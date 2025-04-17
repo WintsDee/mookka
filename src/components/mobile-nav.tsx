@@ -14,6 +14,18 @@ export function MobileNav() {
     <div className="mobile-nav">
       <div className="flex items-center justify-around">
         <Link
+          to="/"
+          className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+            isActive("/") 
+              ? "text-primary" 
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Home className="h-5 w-5 mb-1" />
+          <span>Accueil</span>
+        </Link>
+        
+        <Link
           to="/bibliotheque"
           className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
             isActive("/bibliotheque") 
