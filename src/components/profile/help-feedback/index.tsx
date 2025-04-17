@@ -42,8 +42,8 @@ export function HelpFeedback({
     }
   }, [open, initialTab]);
 
+  // Global event handler for remote dialog activation
   useEffect(() => {
-    // Handle clicks on elements with tab attributes
     const handleGlobalClicks = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const tabButton = target.closest('[data-tab]');
@@ -52,16 +52,28 @@ export function HelpFeedback({
         const tabName = tabButton.getAttribute('data-tab') as 'help' | 'feedback';
         if (tabName === 'help' || tabName === 'feedback') {
           setActiveTab(tabName);
-          if (!open) {
-            setOpen(true);
-          }
+          setOpen(true);
         }
       }
     };
     
     document.addEventListener('click', handleGlobalClicks);
     return () => document.removeEventListener('click', handleGlobalClicks);
-  }, [open]);
+  }, []);
+
+  // Expose a method to allow other components to open this dialog
+  useEffect(() => {
+    // Définir la fonction globale pour ouvrir le dialogue
+    window.openHelpFeedbackDialog = (tab: 'help' | 'feedback') => {
+      setActiveTab(tab);
+      setOpen(true);
+    };
+    
+    return () => {
+      // Nettoyer
+      delete window.openHelpFeedbackDialog;
+    };
+  }, []);
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -135,4 +147,11 @@ export function HelpFeedback({
       </DialogContent>
     </Dialog>
   );
+}
+
+// Déclarer une interface globale pour ajouter la méthode openHelpFeedbackDialog
+declare global {
+  interface Window {
+    openHelpFeedbackDialog: (tab: 'help' | 'feedback') => void;
+  }
 }

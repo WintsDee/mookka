@@ -18,19 +18,15 @@ export function HelpSection() {
   const navigate = useNavigate();
   
   const openFeedbackDialog = (initialTab: 'help' | 'feedback' = 'feedback') => {
-    // Recherche du bouton de dialogue caché dans le DOM
-    const trigger = document.querySelector('[data-help-feedback-trigger]') as HTMLButtonElement;
-    if (trigger) {
-      // Cliquer pour ouvrir le dialogue
-      trigger.click();
-      
-      // Après un court délai, simuler un clic sur l'onglet approprié
-      setTimeout(() => {
-        const tabButton = document.querySelector(`[data-tab="${initialTab}"]`) as HTMLButtonElement;
-        if (tabButton) {
-          tabButton.click();
-        }
-      }, 100);
+    // Utiliser la fonction globale si elle existe
+    if (typeof window.openHelpFeedbackDialog === 'function') {
+      window.openHelpFeedbackDialog(initialTab);
+    } else {
+      // Fallback en cherchant un élément dans le DOM
+      const element = document.querySelector('[data-tab="' + initialTab + '"]') as HTMLElement;
+      if (element) {
+        element.click();
+      }
     }
   };
   
@@ -92,8 +88,10 @@ export function HelpSection() {
         </div>
       </div>
       
-      {/* Composant HelpFeedback placé ici pour le contexte de la page */}
-      <HelpFeedback />
+      {/* Ajout du composant HelpFeedback caché pour l'activer depuis n'importe où */}
+      <div className="hidden">
+        <HelpFeedback data-help-feedback-trigger />
+      </div>
     </div>
   );
 }

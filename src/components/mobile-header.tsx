@@ -36,7 +36,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
       
       <div className="flex items-center gap-4">
         {children}
-        {/* Garder le composant HelpFeedback mais le rendre caché */}
+        {/* Formulaire d'aide caché mais accessible via data attribute */}
         <div className="hidden">
           <HelpFeedback data-help-feedback-trigger />
         </div>
@@ -60,7 +60,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
           )}
         >
           {profile?.avatar_url ? (
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-8 h-8 border border-border/20">
               <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile?.username || "Utilisateur"}
@@ -71,7 +71,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
               </AvatarFallback>
             </Avatar>
           ) : (
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-8 h-8 border border-border/20">
               <AvatarFallback>
                 <User size={20} />
               </AvatarFallback>

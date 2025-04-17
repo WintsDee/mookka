@@ -52,7 +52,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
-        onClick={() => handleImageClick('cover')}
+        onClick={() => isAuthenticated && handleImageClick('cover')}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         
@@ -92,7 +92,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
             className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300 relative cursor-pointer"
             onClick={(e) => {
               e.stopPropagation(); // Prevent triggering cover image click
-              handleImageClick('avatar');
+              isAuthenticated && handleImageClick('avatar');
             }}
           >
             <img 
