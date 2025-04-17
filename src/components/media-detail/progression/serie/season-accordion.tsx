@@ -71,6 +71,10 @@ export function SeasonAccordion({
             airDate: undefined
           }));
         
+        // Déterminer le texte du bouton en fonction de l'état actuel
+        const isAllWatched = watchedEpisodesForSeason.length === episodeCount;
+        const toggleButtonText = isAllWatched ? 'Tout décocher' : 'Tout cocher';
+        
         return (
           <AccordionItem 
             key={`season-${seasonNumber}`} 
@@ -101,7 +105,7 @@ export function SeasonAccordion({
                         onToggleSeason(seasonNumber, episodeCount);
                       }}
                     >
-                      {watchedEpisodesForSeason.length === episodeCount ? 'Tout décocher' : 'Tout cocher'}
+                      {toggleButtonText}
                     </Button>
                   </div>
                 </div>

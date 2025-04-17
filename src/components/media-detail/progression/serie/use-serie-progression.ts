@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 interface Season {
@@ -384,8 +385,6 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
 
   const toggleSeason = (seasonNumber: number, episodeCount: number) => {
     const newWatchedEpisodes = { ...(progression.watched_episodes || {}) };
-    
-    // Vérifier si tous les épisodes de la saison sont déjà visionnés
     const seasonEpisodes = newWatchedEpisodes[seasonNumber] || [];
     const allWatched = seasonEpisodes.length === episodeCount;
     
@@ -394,7 +393,11 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       newWatchedEpisodes[seasonNumber] = [];
     } else {
       // Sinon, marquer tous les épisodes comme visionnés
-      newWatchedEpisodes[seasonNumber] = Array.from({ length: episodeCount }, (_, i) => i + 1);
+      // Créer un tableau avec tous les numéros d'épisodes de 1 à episodeCount
+      newWatchedEpisodes[seasonNumber] = Array.from(
+        { length: episodeCount }, 
+        (_, i) => i + 1
+      );
     }
     
     // Calculer le nouveau nombre d'épisodes visionnés

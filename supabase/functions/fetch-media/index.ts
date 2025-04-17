@@ -36,7 +36,18 @@ Deno.serve(async (req) => {
       case 'serie':
         apiKey = Deno.env.get('TMDB_API_KEY') ?? ''
         if (id) {
-          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false`
+          // Ajouter append_to_response pour obtenir plus de détails, y compris les saisons détaillées pour les séries
+          const appendParams = type === 'serie' 
+            ? 'credits,seasons,episode_groups,external_ids,content_ratings,videos,watch/providers' 
+            : 'credits,external_ids,videos,watch/providers,release_dates';
+            
+          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false&append_to_response=${appendParams}`
+          
+          // Pour les séries, on peut également récupérer les informations détaillées sur chaque saison
+          if (type === 'serie') {
+            // La requête principale inclut déjà les saisons de base, mais on pourrait enrichir avec plus de détails
+            // par exemple en faisant des requêtes pour chaque saison si nécessaire
+          }
         } else {
           // Utiliser une requête plus complète pour inclure les personnes (réalisateurs, acteurs)
           apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false&append_to_response=credits`
@@ -59,8 +70,8 @@ Deno.serve(async (req) => {
       case 'game':
         apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
         apiUrl = id
-          ? `https://api.rawg.io/api/games/${id}?key=${apiKey}`
-          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&search_precise=true&page=1&page_size=40&exclude_additions=true&exclude_parents=false&ordering=-rating`
+          ? `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`
+          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&search_precise=true&page=1&page_size=40&exclude_additions=true&exclude_parents=false&ordering=-rating&language=fr`
         break
       default:
         throw new Error('Type de média non pris en charge')
@@ -68,8 +79,44 @@ Deno.serve(async (req) => {
 
     // Fetch data from the appropriate API
     const response = await fetch(apiUrl)
-    const data = await response.json()
+    let data = await response.json()
 
+    // Pour les séries, récupérer des détails supplémentaires sur chaque saison
+    if (type === 'serie' && id && data.seasons && Array.isArray(data.seasons)) {
+      // Enrichir chaque saison avec des détails si nécessaire
+      // Note: Cette approche peut générer beaucoup de requêtes API
+      // On le fait uniquement pour les premières saisons ou selon une logique métier
+      const enrichedSeasons = [];
+      
+      for (const season of data.seasons) {
+        if (season.season_number > 0) { // Ignorer les "saisons" spéciales (0)
+          // Optionnellement, récupérer des détails supplémentaires pour certaines saisons
+          try {
+            // On peut limiter le nombre de requêtes pour éviter de surcharger l'API
+            if (enrichedSeasons.length < 3) { // Limiter à 3 saisons enrichies
+              const seasonDetailUrl = `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=fr-FR`;
+              const seasonResponse = await fetch(seasonDetailUrl);
+              const seasonDetail = await seasonResponse.json();
+              
+              // Fusionner les données de base avec les détails
+              enrichedSeasons.push({
+                ...season,
+                episodes: seasonDetail.episodes
+              });
+            } else {
+              enrichedSeasons.push(season);
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération des détails pour la saison ${season.season_number}:`, error);
+            enrichedSeasons.push(season);
+          }
+        }
+      }
+      
+      // Mettre à jour les données avec les saisons enrichies
+      data.seasons = enrichedSeasons;
+    }
+    
     // Filtrage plus flexible pour les livres
     if (type === 'book' && !id && data.items) {
       // Mots-clés pour le contenu adulte (keep only the most explicit ones)
