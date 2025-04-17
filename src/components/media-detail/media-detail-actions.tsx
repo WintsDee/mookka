@@ -1,12 +1,16 @@
 
-import React, { memo, useCallback, useEffect, useState } from "react";
-import { Share2, Plus, X, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { addMediaToLibrary, removeMediaFromLibrary, isMediaInLibrary } from "@/services/media";
-import { useAuth } from "@/providers/auth-provider";
-import { MediaType } from "@/types";
+import React, { memo, useCallback } from "react";
+import { Share2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MediaType } from "@/types";
+import { ActionButton } from "./action-button";
+import { useMediaLibrary } from "@/hooks/use-media-library";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MediaDetailActionsProps {
   mediaId: string;
@@ -23,130 +27,46 @@ const MediaDetailActions = memo(({
   className,
   onLibraryChange
 }: MediaDetailActionsProps) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const [isInLibrary, setIsInLibrary] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isAdding, setIsAdding] = useState<boolean>(false);
-  const [isRemoving, setIsRemoving] = useState<boolean>(false);
-
-  useEffect(() => {
-    const checkLibraryStatus = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        const inLibrary = await isMediaInLibrary(mediaId);
-        setIsInLibrary(inLibrary);
-      } catch (error) {
-        console.error("Erreur lors de la vérification de la bibliothèque:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de vérifier la bibliothèque",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkLibraryStatus();
-  }, [mediaId, user, toast]);
+  const {
+    isInLibrary,
+    isLoading,
+    isAdding,
+    isRemoving,
+    addToLibrary,
+    removeFromLibrary
+  } = useMediaLibrary(mediaId, mediaType, mediaTitle);
 
   const handleAddToLibrary = useCallback(async () => {
-    if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour ajouter des médias à votre bibliothèque",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsAdding(true);
-    
-    try {
-      await addMediaToLibrary({
-        mediaId,
-        mediaType,
-        status: "to_consume" // Status par défaut
-      });
-      
-      setIsInLibrary(true);
-      toast({
-        title: "Ajouté à la bibliothèque",
-        description: `${mediaTitle} a été ajouté à votre bibliothèque`
-      });
-      if (onLibraryChange) onLibraryChange();
-    } catch (error) {
-      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAdding(false);
-    }
-  }, [mediaId, mediaType, mediaTitle, toast, user, onLibraryChange]);
+    await addToLibrary();
+    if (onLibraryChange) onLibraryChange();
+  }, [addToLibrary, onLibraryChange]);
 
   const handleRemoveFromLibrary = useCallback(async () => {
-    if (!user) return;
-    
-    setIsRemoving(true);
-    
-    try {
-      await removeMediaFromLibrary(mediaId);
-      
-      setIsInLibrary(false);
-      toast({
-        title: "Supprimé de la bibliothèque",
-        description: `${mediaTitle} a été supprimé de votre bibliothèque`
-      });
-      if (onLibraryChange) onLibraryChange();
-    } catch (error) {
-      console.error("Erreur lors de la suppression de la bibliothèque:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer ce média de votre bibliothèque",
-        variant: "destructive"
-      });
-    } finally {
-      setIsRemoving(false);
-    }
-  }, [mediaId, mediaTitle, toast, user, onLibraryChange]);
-
-  const ActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined 
-  }> = ({ onClick, disabled, children, variant, className }) => (
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      variant={variant || "outline"}
-      size="sm"
-      className={cn("text-xs", className)}
-    >
-      {isLoading ? (
-        <AlertCircle className="mr-1 h-3 w-3" />
-      ) : (
-        children
-      )}
-    </Button>
-  );
+    await removeFromLibrary();
+    if (onLibraryChange) onLibraryChange();
+  }, [removeFromLibrary, onLibraryChange]);
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <ActionButton onClick={() => {}}>
-        <Share2 className="mr-1 h-3 w-3" />
-        Partager
-      </ActionButton>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <ActionButton onClick={() => {}} isLoading={false}>
+              <Share2 className="mr-1 h-3 w-3" />
+              Partager
+            </ActionButton>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Partager ce média</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
       {isInLibrary ? (
         <ActionButton 
           onClick={handleRemoveFromLibrary}
           disabled={isRemoving}
+          isLoading={isRemoving}
           className="text-destructive border-destructive/20 hover:bg-destructive/10"
         >
           <X className="mr-1 h-3 w-3" />
@@ -156,6 +76,7 @@ const MediaDetailActions = memo(({
         <ActionButton
           onClick={handleAddToLibrary}
           disabled={isAdding}
+          isLoading={isAdding || isLoading}
           className={`text-media-${mediaType} border-media-${mediaType}/30 hover:bg-media-${mediaType}/10`}
         >
           <Plus className="mr-1 h-3 w-3" />
