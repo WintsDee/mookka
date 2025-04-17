@@ -12,7 +12,7 @@ const Index = () => {
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
           loading="eager" 
-          fetchpriority="high" 
+          fetchPriority="high" 
           decoding="async"
         />
         {/* Réduire l'opacité du fond sombre */}
