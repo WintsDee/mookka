@@ -58,7 +58,7 @@ const MediaDetailActions = memo(({
   const handleAddToLibrary = useCallback(async () => {
     if (!user) {
       toast({
-        title: "Action requise",
+        title: "Connexion requise",
         description: "Vous devez être connecté pour ajouter des médias à votre bibliothèque",
         variant: "destructive"
       });
