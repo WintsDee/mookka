@@ -12,7 +12,7 @@ const Index = () => {
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
           loading="eager" // Assure un chargement prioritaire
-          fetchpriority="high" // Attribut HTML moderne pour donner priorité élevée
+          fetchPriority="high" // Attribut HTML moderne pour donner priorité élevée
         />
         {/* Réduire l'opacité du fond sombre */}
         <div className="absolute inset-0 bg-black/50" />
