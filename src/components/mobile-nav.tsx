@@ -68,7 +68,7 @@ export function MobileNav() {
           </div>
           
           <div
-            onClick={() => handleNavigation(user ? "/profil" : "/auth")}
+            onClick={() => handleNavigation("/profil")}
             className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/profil") || isActive("/auth")
                 ? "text-primary" 
@@ -77,16 +77,13 @@ export function MobileNav() {
           >
             {!isLoading && (
               <div className="relative">
-                {user ? (
-                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-[10px] font-bold mb-1">
-                    {user.email?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                ) : (
-                  <Bell className="h-5 w-5 mb-1" />
-                )}
+                {/* Toujours utiliser l'avatar basique en phase de test */}
+                <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-[10px] font-bold mb-1">
+                  U
+                </div>
               </div>
             )}
-            <span>{user ? 'Profil' : 'Connexion'}</span>
+            <span>Profil</span>
           </div>
         </div>
       </div>

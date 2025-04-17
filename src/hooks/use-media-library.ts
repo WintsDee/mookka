@@ -57,26 +57,12 @@ export function useMediaLibrary(mediaId: string, mediaType: MediaType, mediaTitl
     
     try {
       // Determine default status based on media type
-      let defaultStatus: MediaStatus;
-      switch(mediaType) {
-        case 'film':
-        case 'serie':
-          defaultStatus = 'to-watch';
-          break;
-        case 'book':
-          defaultStatus = 'to-read';
-          break;
-        case 'game':
-          defaultStatus = 'to-play';
-          break;
-        default:
-          defaultStatus = 'to-watch';
-      }
+      const defaultStatus: MediaStatus = getDefaultStatus(mediaType);
       
       await addMediaToLibrary({
         mediaId,
         mediaType,
-        status: defaultStatus // Use proper MediaStatus type value
+        status: defaultStatus
       }, mediaType, mediaTitle);
       
       setIsInLibrary(true);
@@ -95,6 +81,21 @@ export function useMediaLibrary(mediaId: string, mediaType: MediaType, mediaTitl
       setIsAdding(false);
     }
   }, [mediaId, mediaType, mediaTitle, toast, user]);
+
+  // Helper function to get default status based on media type
+  const getDefaultStatus = (type: MediaType): MediaStatus => {
+    switch(type) {
+      case 'film':
+      case 'serie':
+        return 'to-watch';
+      case 'book':
+        return 'to-read';
+      case 'game':
+        return 'to-play';
+      default:
+        return 'to-watch';
+    }
+  };
 
   // Remove media from library
   const removeFromLibrary = useCallback(async () => {

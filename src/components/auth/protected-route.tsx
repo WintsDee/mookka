@@ -14,12 +14,22 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Pour la phase de test, on considère que l'utilisateur est authentifié
+      // En mode production, décommentez le code ci-dessous
+      /*
       const { data } = await supabase.auth.getSession();
       setIsAuthenticated(!!data.session);
+      */
+      
+      // Pour le test, on passe toujours à true
+      setIsAuthenticated(true);
     };
 
     checkAuth();
 
+    // Pour la phase de test, on n'écoute pas les changements d'authentification
+    // En mode production, décommentez le code ci-dessous
+    /*
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setIsAuthenticated(!!session);
@@ -27,6 +37,10 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
 
     return () => subscription.unsubscribe();
+    */
+    
+    // Version pour les tests
+    return () => {}; // Cleanup vide pour les tests
   }, []);
 
   if (isAuthenticated === null) {
@@ -37,9 +51,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
-  }
-
+  // Pour la phase de test, on ne redirige jamais vers la page d'authentification
   return <>{children}</>;
-};
+}
