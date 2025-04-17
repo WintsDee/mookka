@@ -9,7 +9,7 @@ const MookkaHeader: React.FC = () => {
         alt="Mookka Logo" 
         className="w-36 h-36 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
         loading="eager"
-        fetchpriority="high"
+        fetchPriority="high"
         decoding="async"
         width="160"
         height="160"
