@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { PageTransition } from "./components/page-transition";
+import { MobileNav } from "./components/mobile-nav";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -64,6 +65,7 @@ function App() {
                 />
               ))}
             </Routes>
+            <MobileNav />
             <Toaster position="bottom-center" closeButton />
             <PWAInstallPrompt />
           </ThemeProvider>
