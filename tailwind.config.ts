@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -108,11 +107,8 @@ export default {
         'scale-in': 'scale-in 0.2s ease-out',
         'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
-      spacing: {
-        'safe-top': 'var(--sat)',
-        'safe-right': 'var(--sar)',
-        'safe-bottom': 'var(--sab)',
-        'safe-left': 'var(--sal)',
+      padding: {
+        'safe': 'env(safe-area-inset-top)',
       }
     }
   },

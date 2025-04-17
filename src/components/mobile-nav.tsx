@@ -1,92 +1,46 @@
 
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Home, BookOpen, Search, Activity, Bell } from "lucide-react";
-import { useAuth } from "@/providers/auth-provider";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  Search, 
+  MessagesSquare, 
+  Globe,
+  Bookmark,
+  Library  // Replace BookStack with Library
+} from 'lucide-react';
 
 export function MobileNav() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isLoading, user } = useAuth();
   
-  const isActive = (path: string) => location.pathname === path;
-  
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
-  
+  // Hide navigation on media detail pages
+  if (location.pathname.startsWith('/media/')) {
+    return null;
+  }
+
+  const navItems = [
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' }, // Updated icon
+    { path: '/collections', icon: Bookmark, label: 'Collections' },
+    { path: '/recherche', icon: Search, label: 'Recherche' },
+    { path: '/social', icon: MessagesSquare, label: 'Social' },
+    { path: '/actualites', icon: Globe, label: 'Actualités' },
+  ];
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/40 pt-2 pb-safe z-40">
-      <div className="mx-auto px-4">
-        <div className="flex items-center justify-around">
-          <div
-            onClick={() => handleNavigation("/")}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
-              isActive("/") 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
+      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4">
+        {navItems.map((item) => (
+          <Link 
+            key={item.path} 
+            to={item.path} 
+            className={`flex flex-col items-center justify-center ${
+              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
           >
-            <Home className="h-5 w-5 mb-1" />
-            <span>Accueil</span>
-          </div>
-          
-          <div
-            onClick={() => handleNavigation("/bibliotheque")}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
-              isActive("/bibliotheque") 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <BookOpen className="h-5 w-5 mb-1" />
-            <span>Bibliothèque</span>
-          </div>
-          
-          <div
-            onClick={() => handleNavigation("/recherche")}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
-              isActive("/recherche") 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Search className="h-5 w-5 mb-1" />
-            <span>Recherche</span>
-          </div>
-          
-          <div
-            onClick={() => handleNavigation("/social")}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
-              isActive("/social") 
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Activity className="h-5 w-5 mb-1" />
-            <span>Social</span>
-          </div>
-          
-          <div
-            onClick={() => handleNavigation("/profil")}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
-              isActive("/profil") || isActive("/auth")
-                ? "text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {!isLoading && (
-              <div className="relative">
-                {/* Toujours utiliser l'avatar basique en phase de test */}
-                <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-[10px] font-bold mb-1">
-                  U
-                </div>
-              </div>
-            )}
-            <span>Profil</span>
-          </div>
-        </div>
+            <item.icon size={22} />
+            <span className="text-xs mt-1.5">{item.label}</span>
+          </Link>
+        ))}
       </div>
-    </div>
+    </nav>
   );
-};
+}

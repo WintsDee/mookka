@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
-import { getMediaById, getUserMediaLibrary } from "@/services/media";
+import { getMediaById } from "@/services/media"; // Updated import path
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
@@ -14,43 +14,20 @@ import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-d
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
-import { useAuth } from "@/providers/auth-provider";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  const [isCheckingLibrary, setIsCheckingLibrary] = useState(true);
   const [media, setMedia] = useState<any>(null);
-  const [isInLibrary, setIsInLibrary] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
-  const { user } = useAuth();
 
   // Store the previous path and search parameters to navigate back correctly
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
-
-  // Vérifier si le média est dans la bibliothèque de l'utilisateur
-  const checkIfInLibrary = async () => {
-    if (!user || !id) {
-      setIsCheckingLibrary(false);
-      return;
-    }
-
-    try {
-      setIsCheckingLibrary(true);
-      const userLibrary = await getUserMediaLibrary();
-      const mediaInLibrary = userLibrary.some(item => item.id === id);
-      setIsInLibrary(mediaInLibrary);
-    } catch (error) {
-      console.error("Erreur lors de la vérification de la bibliothèque:", error);
-    } finally {
-      setIsCheckingLibrary(false);
-    }
-  };
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
@@ -88,10 +65,6 @@ const MediaDetail = () => {
     fetchMediaDetails();
   }, [type, id, toast]);
 
-  useEffect(() => {
-    checkIfInLibrary();
-  }, [user, id]);
-
   const handleAddToCollection = (collectionId: string) => {
     if (!id) return;
     
@@ -109,11 +82,6 @@ const MediaDetail = () => {
     } else {
       navigate(previousPath, { replace: true });
     }
-  };
-
-  const handleLibraryStatusChange = () => {
-    // Réactualiser depuis la base de données pour s'assurer que tout est à jour
-    checkIfInLibrary();
   };
 
   if (isLoading) {
@@ -163,10 +131,9 @@ const MediaDetail = () => {
         </div>
         
         <MediaDetailActions 
-          mediaId={id!}
-          mediaType={type as MediaType}
-          mediaTitle={formattedMedia.title || ""}
-          onLibraryChange={handleLibraryStatusChange}
+          media={media} 
+          type={type as MediaType} 
+          onAddToCollection={() => setAddToCollectionOpen(true)} 
         />
       </div>
       

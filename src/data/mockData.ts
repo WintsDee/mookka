@@ -1,5 +1,5 @@
 
-import { User } from '@/types';
+import { Media, User } from '@/types';
 
 // Mock des données utilisateur
 export const currentUser: User = {
@@ -10,6 +10,85 @@ export const currentUser: User = {
   following: 42,
   followers: 128
 };
+
+// Mock des données médias
+export const mockMedia: Media[] = [
+  {
+    id: '1',
+    title: 'Inception',
+    type: 'film',
+    coverImage: 'https://source.unsplash.com/random/300x450?movie',
+    year: 2010,
+    rating: 4.8,
+    status: 'completed',
+    genres: ['Science-Fiction', 'Action', 'Thriller'],
+    description: 'Un voleur qui s\'infiltre dans les rêves des autres pour y voler leurs secrets les plus profonds.',
+    duration: '2h28',
+    director: 'Christopher Nolan'
+  },
+  {
+    id: '2',
+    title: 'The Witcher',
+    type: 'serie',
+    coverImage: 'https://source.unsplash.com/random/300x450?fantasy',
+    year: 2019,
+    rating: 4.5,
+    status: 'watching',
+    genres: ['Fantastique', 'Action', 'Drame'],
+    description: 'Un chasseur de monstres solitaire lutte pour trouver sa place dans un monde où les humains se révèlent souvent plus vicieux que les bêtes.',
+    duration: '3 saisons'
+  },
+  {
+    id: '3',
+    title: 'Dune',
+    type: 'book',
+    coverImage: 'https://source.unsplash.com/random/300x450?book',
+    year: 1965,
+    rating: 4.9,
+    status: 'completed',
+    genres: ['Science-Fiction', 'Fantasy'],
+    description: 'L\'histoire de la lutte entre deux familles nobles pour le contrôle d\'Arrakis, la seule planète où l\'on trouve l\'épice, substance qui prolonge la vie humaine.',
+    author: 'Frank Herbert'
+  },
+  {
+    id: '4',
+    title: 'The Legend of Zelda: Breath of the Wild',
+    type: 'game',
+    coverImage: 'https://source.unsplash.com/random/300x450?game',
+    year: 2017,
+    rating: 4.9,
+    status: 'completed',
+    genres: ['Action', 'Aventure', 'RPG'],
+    description: 'Un jeu d\'aventure en monde ouvert où vous incarnez Link qui se réveille d\'un sommeil de 100 ans pour découvrir un royaume d\'Hyrule dévasté.',
+    platform: 'Nintendo Switch',
+    publisher: 'Nintendo'
+  },
+  {
+    id: '5',
+    title: 'Parasite',
+    type: 'film',
+    coverImage: 'https://source.unsplash.com/random/300x450?parasite',
+    year: 2019,
+    rating: 4.6,
+    status: 'to-watch',
+    genres: ['Drame', 'Thriller', 'Comédie noire'],
+    description: 'Toute la famille de Ki-taek est au chômage, et s\'intéresse fortement au train de vie de la richissime famille Park.',
+    duration: '2h12',
+    director: 'Bong Joon-ho'
+  },
+  {
+    id: '6',
+    title: 'Breaking Bad',
+    type: 'serie',
+    coverImage: 'https://source.unsplash.com/random/300x450?desert',
+    year: 2008,
+    rating: 4.9,
+    status: 'completed',
+    genres: ['Drame', 'Crime', 'Thriller'],
+    description: 'Un professeur de chimie atteint d\'un cancer du poumon inopérable se tourne vers la fabrication et la vente de méthamphétamine.',
+    duration: '5 saisons'
+  }
+];
 
 // Mock des actualités
 export const mockNews = [

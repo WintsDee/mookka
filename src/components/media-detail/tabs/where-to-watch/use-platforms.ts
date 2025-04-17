@@ -1,16 +1,12 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { MediaType } from "@/types";
 import { Platform, PlatformHookResult } from "./types";
 import { generatePlatformData } from "./platform-data";
 import { useToast } from "@/components/ui/use-toast";
 
-// Timeout duration in milliseconds - reduce to improve perceived performance
-const FETCH_TIMEOUT = 3000;
-
-// Cache pour améliorer les performances
-const platformsCache = new Map<string, { data: Platform[], timestamp: number }>();
-const CACHE_DURATION = 1000 * 60 * 30; // 30 minutes
+// Timeout duration in milliseconds
+const FETCH_TIMEOUT = 5000;
 
 export function usePlatforms(mediaId: string, mediaType: MediaType, title: string): PlatformHookResult {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
@@ -18,78 +14,57 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Extraction de la fonction de fetch dans un useCallback
-  const fetchPlatforms = useCallback(async () => {
-    // Vérifier le cache
-    const cacheKey = `${mediaType}-${mediaId}-${title}`;
-    const cachedData = platformsCache.get(cacheKey);
-    
-    if (cachedData && (Date.now() - cachedData.timestamp < CACHE_DURATION)) {
-      setPlatforms(cachedData.data);
-      setIsLoading(false);
-      return;
-    }
-    
-    // Create a timeout promise
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => {
-        reject(new Error('Request timed out'));
-      }, FETCH_TIMEOUT);
-    });
-    
-    try {
-      // Simulate API call with timeout protection - reduced to 200ms
-      const dataPromise = new Promise<Platform[]>((resolve) => {
-        setTimeout(() => {
-          const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
-          resolve(mockPlatforms);
-        }, 200); 
-      });
-      
-      // Race between the data fetch and the timeout
-      const data = await Promise.race([dataPromise, timeoutPromise]);
-      
-      // Mise en cache des résultats
-      platformsCache.set(cacheKey, {
-        data,
-        timestamp: Date.now()
-      });
-      
-      setPlatforms(data);
-      setIsLoading(false);
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Une erreur s'est produite lors de la récupération des plateformes";
-      
-      console.error("Erreur lors de la récupération des plateformes:", error);
-      setError(errorMessage);
-      setIsLoading(false);
-      
-      toast({
-        title: "Erreur",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  }, [mediaId, mediaType, title, toast]);
-
   useEffect(() => {
     // Reset states when inputs change
     setPlatforms([]);
     setIsLoading(true);
     setError(null);
     
+    // Function to fetch platforms where to watch/buy the media
+    const fetchPlatforms = async () => {
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timed out'));
+        }, FETCH_TIMEOUT);
+      });
+      
+      try {
+        // Simulate API call with timeout protection
+        const dataPromise = new Promise<Platform[]>((resolve) => {
+          setTimeout(() => {
+            const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
+            resolve(mockPlatforms);
+          }, 1000);
+        });
+        
+        // Race between the data fetch and the timeout
+        const data = await Promise.race([dataPromise, timeoutPromise]);
+        
+        // Filter available platforms if needed
+        // const availablePlatforms = data.filter(platform => platform.isAvailable === true);
+        setPlatforms(data);
+        setIsLoading(false);
+      } catch (error) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Une erreur s'est produite lors de la récupération des plateformes";
+        
+        console.error("Erreur lors de la récupération des plateformes:", error);
+        setError(errorMessage);
+        setIsLoading(false);
+        
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    };
+    
     // Execute the fetch function
     fetchPlatforms();
-  }, [fetchPlatforms]);
-
-  // Mémoriser les plateformes disponibles avec useMemo pour éviter les recalculs
-  const availablePlatforms = useMemo(() => {
-    return platforms.filter(platform => platform.isAvailable === true);
-  }, [platforms]);
-  
-  const hasAvailablePlatforms = availablePlatforms.length > 0;
+  }, [mediaId, mediaType, title, toast]);
 
   // Return enhanced result object
   return { 
@@ -97,9 +72,9 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     isLoading, 
     error,
     // Helper function to get only available platforms
-    availablePlatforms,
+    availablePlatforms: platforms.filter(platform => platform.isAvailable === true),
     // Flag indicating if any platforms are available
-    hasAvailablePlatforms
+    hasAvailablePlatforms: platforms.some(platform => platform.isAvailable === true)
   };
 }
 

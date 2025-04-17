@@ -21,7 +21,6 @@ export interface Media {
   author?: string; // Pour livres
   publisher?: string; // Pour jeux
   platform?: string; // Pour jeux
-  popularity?: number; // Pour les résultats de recherche
 }
 
 export interface User {

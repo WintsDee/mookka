@@ -1,92 +1,98 @@
 
-import React, { memo, useCallback } from "react";
-import { Share2, Plus, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Heart, BookmarkPlus, FolderPlus, Share, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { MediaType } from "@/types";
-import { ActionButton } from "./action-button";
-import { useMediaLibrary } from "@/hooks/use-media-library";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { addMediaToLibrary } from "@/services/media-service";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn, floatingElement } from "@/lib/utils";
 
 interface MediaDetailActionsProps {
-  mediaId: string;
-  mediaType: MediaType;
-  mediaTitle: string;
-  className?: string;
-  onLibraryChange?: () => void;
+  media: any;
+  type: MediaType;
+  onAddToCollection: () => void;
 }
 
-const MediaDetailActions = memo(({
-  mediaId,
-  mediaType,
-  mediaTitle,
-  className,
-  onLibraryChange
-}: MediaDetailActionsProps) => {
-  const {
-    isInLibrary,
-    isLoading,
-    isAdding,
-    isRemoving,
-    addToLibrary,
-    removeFromLibrary
-  } = useMediaLibrary(mediaId, mediaType, mediaTitle);
+export function MediaDetailActions({ media, type, onAddToCollection }: MediaDetailActionsProps) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
 
-  const handleAddToLibrary = useCallback(async () => {
-    await addToLibrary();
-    if (onLibraryChange) onLibraryChange();
-  }, [addToLibrary, onLibraryChange]);
+  const handleAddToLibrary = async () => {
+    if (!media) return;
 
-  const handleRemoveFromLibrary = useCallback(async () => {
-    await removeFromLibrary();
-    if (onLibraryChange) onLibraryChange();
-  }, [removeFromLibrary, onLibraryChange]);
+    setIsAddingToLibrary(true);
+    try {
+      await addMediaToLibrary(media, type);
+      toast({
+        title: "Succès",
+        description: `${type === 'film' ? 'Le film' : type === 'serie' ? 'La série' : type === 'book' ? 'Le livre' : 'Le jeu'} a été ajouté à votre bibliothèque`,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToLibrary(false);
+    }
+  };
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <ActionButton onClick={() => {}} isLoading={false}>
-              <Share2 className="mr-1 h-3 w-3" />
-              Partager
-            </ActionButton>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Partager ce média</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <div className={cn(
+      "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 mb-6 mx-3 rounded-xl",
+      "bg-background/40 backdrop-blur-md",
+      "pb-safe-area", // Ajout de padding au bas de l'écran
+      "py-4", // Augmentation du padding vertical
+      "border border-border/20 shadow-lg" // Ajout d'une bordure subtile
+    )}>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+        onClick={() => setIsLiked(!isLiked)}
+      >
+        <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+        <span className="text-xs">J'aime</span>
+      </Button>
       
-      {isInLibrary ? (
-        <ActionButton 
-          onClick={handleRemoveFromLibrary}
-          disabled={isRemoving}
-          isLoading={isRemoving}
-          className="text-destructive border-destructive/20 hover:bg-destructive/10"
-        >
-          <X className="mr-1 h-3 w-3" />
-          Retirer
-        </ActionButton>
-      ) : (
-        <ActionButton
-          onClick={handleAddToLibrary}
-          disabled={isAdding}
-          isLoading={isAdding || isLoading}
-          className={`text-media-${mediaType} border-media-${mediaType}/30 hover:bg-media-${mediaType}/10`}
-        >
-          <Plus className="mr-1 h-3 w-3" />
-          Ajouter
-        </ActionButton>
-      )}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+        onClick={handleAddToLibrary}
+        disabled={isAddingToLibrary}
+      >
+        {isAddingToLibrary ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <BookmarkPlus className="h-4 w-4" />
+        )}
+        <span className="text-xs">Ajouter</span>
+      </Button>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+        onClick={onAddToCollection}
+      >
+        <FolderPlus className="h-4 w-4" />
+        <span className="text-xs">Collection</span>
+      </Button>
+      
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+      >
+        <Share className="h-4 w-4" />
+        <span className="text-xs">Partager</span>
+      </Button>
     </div>
   );
-});
-
-MediaDetailActions.displayName = "MediaDetailActions";
-
-export { MediaDetailActions };
+}

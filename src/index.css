@@ -74,7 +74,6 @@
   
   html, body, #root {
     @apply h-full w-full overflow-hidden;
-    height: 100%;
   }
   
   body {
@@ -223,50 +222,4 @@
     opacity: 0.7;
     filter: drop-shadow(0 0 0.5rem rgba(245, 158, 11, 0.5));
   }
-}
-
-/* Ajout des styles pour les safe areas (spécifique au PWA) */
-:root {
-  --sat: env(safe-area-inset-top, 0px);
-  --sar: env(safe-area-inset-right, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-}
-
-/* Classes d'utilitaires pour les safe areas */
-.pt-safe {
-  padding-top: var(--sat);
-}
-
-.pr-safe {
-  padding-right: var(--sar);
-}
-
-.pb-safe {
-  padding-bottom: var(--sab);
-}
-
-.pl-safe {
-  padding-left: var(--sal);
-}
-
-.px-safe {
-  padding-left: var(--sal);
-  padding-right: var(--sar);
-}
-
-.py-safe {
-  padding-top: var(--sat);
-  padding-bottom: var(--sab);
-}
-
-.p-safe {
-  padding: var(--sat) var(--sar) var(--sab) var(--sal);
-}
-
-/* Styles pour le conteneur principal des pages */
-.page-container {
-  @apply min-h-screen w-full overflow-auto pt-16 pb-16;
-  padding-top: calc(4rem + var(--sat));
-  padding-bottom: calc(4rem + var(--sab));
 }

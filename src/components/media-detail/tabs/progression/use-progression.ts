@@ -1,36 +1,26 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "@/providers/auth-provider";
-import { updateMediaStatus } from "@/services/media";
-
-// Cache client pour réduire les appels API
-const progressionCache = new Map<string, { data: any, timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [progression, setProgression] = useState<any>(null);
-  const { user } = useAuth();
-  const { toast } = useToast();
 
-  // Create a default progression based on media type - memoized with useCallback
-  const createDefaultProgression = useCallback((type: MediaType) => {
+  // Create a default progression based on media type
+  const createDefaultProgression = (type: MediaType) => {
     switch (type) {
       case 'film':
         return {
           status: 'to-watch',
-          watched_time: 0,
-          total_time: mediaDetails?.runtime || 0
+          watched_time: 0
         };
       case 'serie':
         return {
           status: 'to-watch',
           watched_episodes: {},
           watched_count: 0,
-          total_episodes: mediaDetails?.number_of_episodes || 0
+          total_episodes: 0
         };
       case 'book':
         return {
@@ -47,63 +37,38 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       default:
         return {};
     }
-  }, [mediaDetails]);
+  };
   
-  const fetchProgression = useCallback(async () => {
+  const fetchProgression = async () => {
     try {
       setIsLoading(true);
+      const { data: user } = await supabase.auth.getUser();
       
-      // Create a default progression
+      // Create a default progression regardless of user status
       const defaultProgression = createDefaultProgression(mediaType);
       
-      if (!user) {
-        setProgression(defaultProgression);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Vérifier le cache
-      const cacheKey = `progression-${user.id}-${mediaId}`;
-      const cachedData = progressionCache.get(cacheKey);
-      
-      if (cachedData && (Date.now() - cachedData.timestamp < CACHE_DURATION)) {
-        setProgression(cachedData.data);
-        setIsLoading(false);
-        return;
-      }
-      
-      // Si pas dans le cache, rechercher dans la BDD
-      const { data, error } = await supabase
-        .from('media_progressions')
-        .select('progression_data')
-        .eq('media_id', mediaId)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Erreur lors de la récupération de la progression:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de récupérer votre progression",
-          variant: "destructive"
-        });
-      }
-      
-      // If progression data exists, use it; otherwise use default
-      let progressionData;
-      if (data && data.progression_data) {
-        progressionData = data.progression_data;
+      if (user.user) {
+        const { data, error } = await supabase
+          .from('media_progressions')
+          .select('progression_data')
+          .eq('media_id', mediaId)
+          .eq('user_id', user.user.id)
+          .maybeSingle();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erreur lors de la récupération de la progression:', error);
+        }
+        
+        // If progression data exists, use it; otherwise use default
+        if (data && data.progression_data) {
+          setProgression(data.progression_data);
+        } else {
+          setProgression(defaultProgression);
+        }
       } else {
-        progressionData = defaultProgression;
+        // Use default progression if no user
+        setProgression(defaultProgression);
       }
-      
-      // Mettre en cache
-      progressionCache.set(cacheKey, {
-        data: progressionData,
-        timestamp: Date.now()
-      });
-      
-      setProgression(progressionData);
     } catch (error) {
       console.error('Erreur lors de la récupération de la progression:', error);
       // In case of error, use default progression
@@ -112,42 +77,25 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
     } finally {
       setIsLoading(false);
     }
-  }, [mediaId, mediaType, user, createDefaultProgression, toast]);
+  };
   
   useEffect(() => {
     fetchProgression();
-  }, [fetchProgression]);
+  }, [mediaId, mediaType]);
 
-  const handleProgressionUpdate = useCallback(async (progressionData: any) => {
+  const handleProgressionUpdate = async (progressionData: any) => {
     try {
-      if (!user) {
-        toast({
-          title: "Connexion requise",
-          description: "Vous devez être connecté pour enregistrer votre progression",
-          variant: "destructive"
-        });
-        return;
-      }
+      const { data: user } = await supabase.auth.getUser();
       
-      // Mettre à jour le cache immédiatement pour une réactivité optimale
-      const cacheKey = `progression-${user.id}-${mediaId}`;
-      progressionCache.set(cacheKey, {
-        data: progressionData,
-        timestamp: Date.now()
-      });
+      if (!user.user) return;
       
-      // Mettre à jour l'interface immédiatement
-      setProgression(progressionData);
-      
-      // Vérifier si il y a un enregistrement existant
       const { data: existingProgression } = await supabase
         .from('media_progressions')
         .select('id')
         .eq('media_id', mediaId)
-        .eq('user_id', user.id)
+        .eq('user_id', user.user.id)
         .maybeSingle();
       
-      // Mise à jour ou création de la progression
       if (existingProgression) {
         await supabase
           .from('media_progressions')
@@ -161,29 +109,16 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           .from('media_progressions')
           .insert({
             media_id: mediaId,
-            user_id: user.id,
+            user_id: user.user.id,
             progression_data: progressionData
           });
       }
       
-      // Mettre à jour le statut dans user_media si approprié
-      if (progressionData.status) {
-        await updateMediaStatus(mediaId, progressionData.status);
-      }
-      
-      toast({
-        title: "Progression enregistrée",
-        description: "Votre progression a été mise à jour"
-      });
+      setProgression(progressionData);
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la progression:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer votre progression",
-        variant: "destructive"
-      });
     }
-  }, [mediaId, user, toast]);
+  };
 
   return {
     isLoading,

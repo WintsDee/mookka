@@ -1,23 +1,13 @@
 
-import React, { useState, Suspense, lazy } from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
+import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
+import { ProgressionTab } from "@/components/media-detail/tabs/progression";
+import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch";
 import { MediaType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
-
-// Lazy loading des onglets pour améliorer les performances
-const OverviewTab = lazy(() => import("@/components/media-detail/tabs/overview-tab").then(module => ({ default: module.OverviewTab })));
-const CritiqueTab = lazy(() => import("@/components/media-detail/tabs/rating-tab").then(module => ({ default: module.CritiqueTab })));
-const WhereToWatchTab = lazy(() => import("@/components/media-detail/tabs/where-to-watch").then(module => ({ default: module.WhereToWatchTab })));
-const ProgressionTab = lazy(() => import("@/components/media-detail/tabs/progression").then(module => ({ default: module.ProgressionTab })));
-
-// Composant de chargement réutilisable
-const TabLoader = () => (
-  <div className="flex justify-center items-center p-8">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
 
 interface MediaContentProps {
   id: string;
@@ -66,45 +56,37 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       <ScrollArea className="flex-1 overflow-auto">
         <div className="px-4 py-4 pb-28">
           <TabsContent value="overview" className="mt-0 mb-0">
-            <Suspense fallback={<TabLoader />}>
-              <OverviewTab 
-                description={formattedMedia.description} 
-                additionalInfo={additionalInfo} 
-                mediaId={id}
-                mediaType={type}
-              />
-            </Suspense>
+            <OverviewTab 
+              description={formattedMedia.description} 
+              additionalInfo={additionalInfo} 
+              mediaId={id}
+              mediaType={type}
+            />
           </TabsContent>
           
           <TabsContent value="critique" className="mt-0 mb-0">
-            <Suspense fallback={<TabLoader />}>
-              <CritiqueTab 
-                mediaId={id} 
-                mediaType={type} 
-                initialRating={formattedMedia.userRating}
-                initialReview={formattedMedia.userReview}
-              />
-            </Suspense>
+            <CritiqueTab 
+              mediaId={id} 
+              mediaType={type} 
+              initialRating={formattedMedia.userRating}
+              initialReview={formattedMedia.userReview}
+            />
           </TabsContent>
           
           <TabsContent value="whereto" className="mt-0 mb-0">
-            <Suspense fallback={<TabLoader />}>
-              <WhereToWatchTab 
-                mediaId={id} 
-                mediaType={type} 
-                title={formattedMedia.title || ""}
-              />
-            </Suspense>
+            <WhereToWatchTab 
+              mediaId={id} 
+              mediaType={type} 
+              title={formattedMedia.title || ""}
+            />
           </TabsContent>
           
           <TabsContent value="progression" className="mt-0 mb-0">
-            <Suspense fallback={<TabLoader />}>
-              <ProgressionTab 
-                mediaId={id} 
-                mediaType={type} 
-                mediaDetails={additionalInfo}
-              />
-            </Suspense>
+            <ProgressionTab 
+              mediaId={id} 
+              mediaType={type} 
+              mediaDetails={additionalInfo}
+            />
           </TabsContent>
         </div>
       </ScrollArea>

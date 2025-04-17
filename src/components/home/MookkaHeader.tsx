@@ -1,32 +1,13 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 const MookkaHeader: React.FC = () => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  
-  useEffect(() => {
-    // Précharger l'image du logo dès le montage du composant
-    const logoImg = new Image();
-    logoImg.src = "/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png";
-    logoImg.onload = () => setImageLoaded(true);
-    
-    // Vérifier si l'image est déjà dans le cache du navigateur
-    if (logoImg.complete) {
-      setImageLoaded(true);
-    }
-  }, []);
-
   return (
     <>
       <img 
         src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
         alt="Mookka Logo" 
-        className={`w-36 h-36 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg critical-img ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-        loading="eager"
-        fetchPriority="high"
-        decoding="sync"
-        width="160"
-        height="160"
+        className="w-36 h-36 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
       />
       
       <h1 className="text-5xl font-bold mb-2 flex items-center justify-center">

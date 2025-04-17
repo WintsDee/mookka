@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaTypeSelector } from "@/components/media-type-selector";
@@ -27,57 +27,37 @@ const Recherche = () => {
   const { toast } = useToast();
   const location = useLocation();
   
-  // Mémoïser les props statiques pour éviter les re-rendus
-  const selectedTypeColor = useMemo(() => getSelectedTypeColor(selectedType), [selectedType]);
-  const searchPlaceholder = useMemo(() => getSearchPlaceholder(selectedType), [selectedType]);
-  
-  // Fonction fetch mémoïsée pour éviter les recréations à chaque rendu
-  const fetchSearchResults = useCallback(async (term: string, type: MediaType | "") => {
-    if (term && type) {
-      setIsLoading(true);
-      try {
-        const result = await searchMedia(type as MediaType, term);
-        
-        if (result.results && result.results.length > 0) {
-          const formattedResults = formatSearchResults(result.results, type as MediaType);
-          setSearchResults(formattedResults);
-        } else {
-          setSearchResults([]);
-        }
-      } catch (error) {
-        console.error("Erreur de recherche:", error);
-        toast({
-          title: "Erreur de recherche",
-          description: "Impossible de récupérer les résultats",
-          variant: "destructive",
-        });
-        setSearchResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      setSearchResults([]);
-    }
-  }, [toast]);
-  
-  // Effet pour déclencher la recherche
   useEffect(() => {
-    if (debouncedSearchTerm || !searchQuery) {
-      fetchSearchResults(debouncedSearchTerm, selectedType);
-    }
-  }, [debouncedSearchTerm, selectedType, fetchSearchResults, searchQuery]);
-  
-  // Gestionnaire de changement de type mémoïsé
-  const handleTypeChange = useCallback((type: MediaType | string) => {
-    setSelectedType(type as MediaType);
-    // Si une recherche est déjà en cours, effectuer immédiatement la recherche avec le nouveau type
-    if (searchQuery.trim().length > 0) {
-      fetchSearchResults(searchQuery, type as MediaType);
-    }
-  }, [searchQuery, fetchSearchResults]);
+    const fetchSearchResults = async () => {
+      if (debouncedSearchTerm && selectedType) {
+        setIsLoading(true);
+        try {
+          const result = await searchMedia(selectedType, debouncedSearchTerm);
+          
+          if (result.results && result.results.length > 0) {
+            const formattedResults = formatSearchResults(result.results, selectedType);
+            setSearchResults(formattedResults);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Erreur de recherche:", error);
+          toast({
+            title: "Erreur de recherche",
+            description: "Impossible de récupérer les résultats",
+            variant: "destructive",
+          });
+          setSearchResults([]);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
 
-  // Create a key for animation transitions
-  const contentKey = `${selectedType}-${debouncedSearchTerm}`;
+    fetchSearchResults();
+  }, [debouncedSearchTerm, selectedType, toast]);
 
   return (
     <Background>
@@ -86,26 +66,23 @@ const Recherche = () => {
         <header className="px-6 mb-4">
           <MediaTypeSelector 
             selectedType={selectedType}
-            onSelectType={handleTypeChange}
+            onSelectType={(type) => setSelectedType(type as MediaType)}
             className="mt-6"
           />
           
           <SearchBar 
-            placeholder={searchPlaceholder}
+            placeholder={getSearchPlaceholder(selectedType)}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             isLoading={isLoading}
             isDisabled={!selectedType}
-            selectedTypeColor={selectedTypeColor}
+            selectedTypeColor={getSelectedTypeColor(selectedType)}
           />
         </header>
         
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full px-6">
-            <div 
-              key={contentKey}
-              className="animate-fade-in pb-24"
-            >
+            <div className="pb-24">
               <SearchResults 
                 results={searchResults}
                 isLoading={isLoading}

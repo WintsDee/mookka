@@ -1,257 +1,230 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { MediaType } from "@/types";
-import { formatBookSearchResult, formatFilmSearchResult, formatSerieSearchResult, formatGameSearchResult } from "./formatters";
-import { filterAdultContent } from "./filters";
-
-// Amélioration du cache avec LRU (Least Recently Used) pour optimiser la mémoire
-class LRUCache<T> {
-  private capacity: number;
-  private cache: Map<string, T>;
-  
-  constructor(capacity: number) {
-    this.capacity = capacity;
-    this.cache = new Map<string, T>();
-  }
-
-  get(key: string): T | undefined {
-    if (!this.cache.has(key)) return undefined;
-    
-    // Refresh the key's position in the map by deleting and re-adding it
-    const value = this.cache.get(key);
-    this.cache.delete(key);
-    this.cache.set(key, value!);
-    
-    return value;
-  }
-
-  put(key: string, value: T): void {
-    // If key exists, remove it first to refresh position
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    } 
-    // If at capacity, remove the oldest entry
-    else if (this.cache.size >= this.capacity) {
-      this.cache.delete(this.cache.keys().next().value);
-    }
-    
-    this.cache.set(key, value);
-  }
-
-  has(key: string): boolean {
-    return this.cache.has(key);
-  }
-  
-  delete(key: string): boolean {
-    return this.cache.delete(key);
-  }
-  
-  clear(): void {
-    this.cache.clear();
-  }
-  
-  // Make keys accessible to allow iteration
-  keys(): IterableIterator<string> {
-    return this.cache.keys();
-  }
-}
-
-// Cache pour stocker les résultats de recherche avec meilleure gestion de la mémoire
-const searchCache = new LRUCache<{ results: any[], timestamp: number, totalPages: number, totalResults: number }>(50); // Limiter à 50 requêtes en cache
-const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
+import { Media, MediaType } from "@/types";
+import { filterAdultContent } from './filters';
+import { formatBookSearchResult, formatFilmSearchResult, formatGameSearchResult, formatSerieSearchResult } from './formatters';
 
 /**
- * Génère une clé de cache pour la recherche
+ * Recherche fuzzy qui détecte les termes similaires et les fautes de frappe
  */
-function getCacheKey(type: MediaType, query: string, page: number): string {
-  return `${type}:${query}:${page}`;
-}
-
-/**
- * Nettoie les entrées de cache expirées
- */
-function cleanupCache(): void {
-  const now = Date.now();
-  for (const key of Array.from(searchCache.keys() || [])) {
-    const entry = searchCache.get(key);
-    if (entry && now - entry.timestamp > CACHE_DURATION) {
-      searchCache.delete(key);
-    }
-  }
-}
-
-// Exécuter la purge de cache périodiquement pour éviter la consommation excessive de mémoire
-let cleanupInterval: NodeJS.Timeout | null = null;
-if (typeof window !== 'undefined' && !cleanupInterval) {
-  cleanupInterval = setInterval(cleanupCache, CACHE_DURATION);
-}
-
-/**
- * Recherche de médias par type et terme de recherche avec optimisations de performance
- */
-export async function searchMedia(type: MediaType, query: string, page: number = 1, adultContentAllowed: boolean = false) {
-  if (!query) {
-    return { results: [], total_pages: 0, total_results: 0 };
-  }
-
-  // Nettoyer périodiquement le cache
-  cleanupCache();
-
-  const cacheKey = getCacheKey(type, query, page);
-  const cachedResult = searchCache.get(cacheKey);
-
-  // Si résultat en cache et non expiré, l'utiliser
-  if (cachedResult) {
-    // Filtrer le contenu pour adultes si nécessaire (au cas où les préférences ont changé)
-    const filteredResults = filterAdultContent(cachedResult.results, adultContentAllowed);
-    return {
-      results: filteredResults,
-      total_pages: cachedResult.totalPages,
-      total_results: cachedResult.totalResults
-    };
-  }
-
-  try {
-    let results: any[] = [];
-    let totalPages = 0;
-    let totalResults = 0;
-
-    // Appeler la fonction Edge de recherche appropriée selon le type avec un timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes de timeout
-    
-    try {
-      const { data, error } = await supabase.functions.invoke(`search-${type}`, {
-        body: { query, page }
-      });
-
-      clearTimeout(timeoutId);
-
-      if (error) {
-        console.error(`Erreur lors de la recherche de ${type}:`, error);
-        throw error;
-      }
-
-      if (data) {
-        results = data.results || [];
-        totalPages = data.total_pages || 0;
-        totalResults = data.total_results || 0;
-
-        // Filtrer le contenu pour adultes si nécessaire
-        results = filterAdultContent(results, adultContentAllowed);
-
-        // Formater les résultats selon le type
-        switch (type) {
-          case 'film':
-            results = results.map(formatFilmSearchResult);
-            break;
-          case 'serie':
-            results = results.map(formatSerieSearchResult);
-            break;
-          case 'book':
-            results = results.map(formatBookSearchResult);
-            break;
-          case 'game':
-            results = results.map(formatGameSearchResult);
-            break;
+function isSimilarText(text: string, query: string, threshold: number = 0.7): boolean {
+  if (!text || !query) return false;
+  
+  // Convertir en minuscules pour la comparaison
+  const textLower = text.toLowerCase();
+  const queryLower = query.toLowerCase();
+  
+  // Si le texte contient la requête, c'est un match direct
+  if (textLower.includes(queryLower)) return true;
+  
+  // Diviser la requête en mots et vérifier si l'un d'eux est présent
+  const queryWords = queryLower.split(/\s+/).filter(word => word.length > 2);
+  
+  // Si l'un des mots de la requête est dans le texte, c'est un match
+  if (queryWords.some(word => textLower.includes(word))) return true;
+  
+  // Algorithme simple de distance d'édition (Levenshtein simplifié)
+  // Pour détecter les fautes de frappe légères
+  const distanceMax = Math.floor(queryLower.length * (1 - threshold));
+  
+  // Pour chaque mot dans le texte, vérifier s'il est suffisamment proche d'un mot de la requête
+  const textWords = textLower.split(/\s+/).filter(word => word.length > 2);
+  
+  for (const textWord of textWords) {
+    for (const queryWord of queryWords) {
+      // Si les longueurs sont trop différentes, ce n'est probablement pas similaire
+      if (Math.abs(textWord.length - queryWord.length) > distanceMax) continue;
+      
+      // Compter les caractères communs dans l'ordre
+      let matches = 0;
+      let i = 0, j = 0;
+      
+      while (i < textWord.length && j < queryWord.length) {
+        if (textWord[i] === queryWord[j]) {
+          matches++;
+          i++;
+          j++;
+        } else {
+          // Si pas de correspondance, avancer dans le mot le plus long
+          if (textWord.length > queryWord.length) i++;
+          else j++;
         }
-
-        // Mettre en cache les résultats
-        searchCache.put(cacheKey, {
-          results: [...results], // Copie pour éviter les modifications par référence
-          timestamp: Date.now(),
-          totalPages,
-          totalResults
-        });
       }
-    } catch (e: any) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError') {
-        console.warn(`La requête de recherche pour ${type} a expiré`);
-        throw new Error(`La recherche a pris trop de temps. Veuillez réessayer.`);
-      }
-      throw e;
+      
+      // Calculer la similarité en fonction des correspondances
+      const similarity = matches / Math.max(textWord.length, queryWord.length);
+      
+      if (similarity >= threshold) return true;
     }
+  }
+  
+  return false;
+}
 
-    return {
-      results,
-      total_pages: totalPages,
-      total_results: totalResults
-    };
+/**
+ * Search for media in external APIs and local database
+ */
+export async function searchMedia(type: MediaType, query: string): Promise<any> {
+  try {
+    // 1. D'abord, rechercher dans la base de données Mookka
+    // Utilisez .or pour chercher dans titre ET dans l'auteur/réalisateur
+    const { data: localMedia, error: localError } = await supabase
+      .from('media')
+      .select('*')
+      .eq('type', type)
+      .or(`title.ilike.%${query}%, author.ilike.%${query}%, director.ilike.%${query}%`)
+      .order('rating', { ascending: false })
+      .limit(20);
+    
+    if (localError) {
+      console.error("Erreur lors de la recherche locale de médias:", localError);
+    }
+    
+    // 2. Ensuite, rechercher via l'API externe
+    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
+      body: { type, query }
+    });
+
+    if (apiError) {
+      console.error("Erreur lors de la recherche de médias:", apiError);
+      throw apiError;
+    }
+    
+    // 3. Traiter les résultats de l'API
+    let apiResults: any[] = [];
+    if (apiData) {
+      switch (type) {
+        case 'film':
+          apiResults = apiData.results?.map(formatFilmSearchResult) || [];
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'serie':
+          apiResults = apiData.results?.map(formatSerieSearchResult) || [];
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'book':
+          apiResults = apiData.items?.map(formatBookSearchResult) || [];
+          // Filtrer les livres avec un score de pertinence trop bas
+          apiResults = apiResults.filter(item => item.popularity > -20);
+          // Tri par score de pertinence pour Google Books
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'game':
+          apiResults = apiData.results?.map(formatGameSearchResult) || [];
+          // Tri par pertinence pour RAWG
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+      }
+    }
+    
+    // 4. Filtrer plus strictement les contenus inappropriés
+    apiResults = filterAdultContent(apiResults);
+    
+    // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
+    apiResults = apiResults.filter(item => {
+      // Vérifier la pertinence sur le titre
+      const titleMatch = isSimilarText(item.title, query);
+      
+      // Vérifier aussi la pertinence sur les champs auteur/réalisateur
+      const creatorMatch = (
+        isSimilarText(item.author, query) || 
+        isSimilarText(item.director, query)
+      );
+      
+      // Accepter si l'un des deux correspond
+      return titleMatch || creatorMatch;
+    });
+    
+    // 6. Fusionner les résultats (base de données + API) en évitant les doublons
+    let mergedResults: any[] = [];
+    
+    // D'abord, ajouter les résultats locaux (Mookka)
+    if (localMedia && localMedia.length > 0) {
+      mergedResults = localMedia.map((item) => ({
+        id: item.id,
+        externalId: item.external_id,
+        title: item.title,
+        type: item.type,
+        coverImage: item.cover_image,
+        year: item.year,
+        rating: item.rating,
+        genres: item.genres,
+        description: item.description,
+        author: item.author,
+        director: item.director,
+        fromDatabase: true // Marquer comme venant de la base de données
+      }));
+    }
+    
+    // Ensuite, ajouter les résultats de l'API en évitant les doublons
+    const existingExternalIds = new Set(mergedResults.map(item => item.externalId));
+    
+    for (const apiItem of apiResults) {
+      if (!existingExternalIds.has(apiItem.id)) {
+        mergedResults.push(apiItem);
+      }
+    }
+    
+    // 7. Trier les résultats finaux par pertinence
+    mergedResults.sort((a, b) => {
+      // Donner priorité aux médias de la base de données
+      if (a.fromDatabase && !b.fromDatabase) return -1;
+      if (!a.fromDatabase && b.fromDatabase) return 1;
+      
+      // Pour les médias de l'API, calculer un score de pertinence
+      // basé sur la correspondance du titre/auteur avec la requête
+      const queryLower = query.toLowerCase();
+      
+      // Calculer le score de pertinence du titre
+      const titleScoreA = a.title && a.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      const titleScoreB = b.title && b.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      
+      // Calculer le score de pertinence de l'auteur/réalisateur
+      const authorScoreA = 
+        (a.author && a.author.toLowerCase().includes(queryLower)) || 
+        (a.director && a.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      const authorScoreB = 
+        (b.author && b.author.toLowerCase().includes(queryLower)) || 
+        (b.director && b.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      // Ajouter le score de popularité
+      const popularityScoreA = (a.popularity || a.rating || 0) / 2;
+      const popularityScoreB = (b.popularity || b.rating || 0) / 2;
+      
+      // Score total
+      const totalScoreA = titleScoreA + authorScoreA + popularityScoreA;
+      const totalScoreB = titleScoreB + authorScoreB + popularityScoreB;
+      
+      return totalScoreB - totalScoreA;
+    });
+    
+    return { results: mergedResults };
   } catch (error) {
-    console.error(`Erreur lors de la recherche de ${type}:`, error);
+    console.error("Erreur dans searchMedia:", error);
     throw error;
   }
 }
 
-// Cache pour les détails des médias avec LRU pour limiter l'utilisation mémoire
-const detailsCache = new LRUCache<{ data: any, timestamp: number }>(100);
-
 /**
- * Récupère les détails d'un média par son ID avec gestion optimisée du cache
+ * Get media details by ID
  */
-export async function getMediaById(type: MediaType, id: string) {
+export async function getMediaById(type: MediaType, id: string): Promise<any> {
   try {
-    const cacheKey = `${type}:${id}`;
-    const cachedDetails = detailsCache.get(cacheKey);
-    
-    // Si données en cache et non expirées, les utiliser
-    if (cachedDetails && (Date.now() - cachedDetails.timestamp < CACHE_DURATION)) {
-      return cachedDetails.data;
-    }
-    
-    // Vérifier si le média existe déjà dans notre base de données
-    const { data: existingMedia } = await supabase
-      .from('media')
-      .select('*')
-      .eq('external_id', id)
-      .eq('type', type)
-      .maybeSingle();
+    const { data, error } = await supabase.functions.invoke('fetch-media', {
+      body: { type, id }
+    });
 
-    if (existingMedia) {
-      // Mettre en cache et retourner
-      detailsCache.put(cacheKey, {
-        data: existingMedia,
-        timestamp: Date.now()
-      });
-      return existingMedia;
+    if (error) {
+      console.error("Erreur lors de la récupération du média:", error);
+      throw error;
     }
 
-    // Sinon, appeler l'API externe via la fonction Edge correspondante avec timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 secondes de timeout
-    
-    try {
-      const { data, error } = await supabase.functions.invoke(`get-${type}-details`, {
-        body: { id }
-      });
-
-      clearTimeout(timeoutId);
-
-      if (error) {
-        console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
-        throw error;
-      }
-      
-      // Mettre en cache les résultats
-      if (data) {
-        detailsCache.put(cacheKey, {
-          data,
-          timestamp: Date.now()
-        });
-      }
-
-      return data;
-    } catch (e: any) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError') {
-        console.warn(`La requête de détails pour ${type}:${id} a expiré`);
-        throw new Error(`La récupération des détails a pris trop de temps. Veuillez réessayer.`);
-      }
-      throw e;
-    }
+    return data;
   } catch (error) {
-    console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
+    console.error("Erreur dans getMediaById:", error);
     throw error;
   }
 }
