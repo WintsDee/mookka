@@ -12,5 +12,8 @@
 /* Import component-specific styles */
 @import './styles/components.css';
 
+/* Import media-specific styles */
+@import './styles/media-types.css';
+
 /* Import animations */
 @import './styles/animations.css';
