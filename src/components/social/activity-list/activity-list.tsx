@@ -4,7 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ActivityCard } from './activity-card';
 import { ActivitySkeleton } from './activity-skeleton';
 import { ActivityEmpty } from './activity-empty';
-import { Media } from '@/types';
+import { Media, MediaType } from '@/types';
 
 interface Activity {
   id: string;
@@ -17,7 +17,7 @@ interface Activity {
   media: {
     id: string;
     title: string;
-    type: string;
+    type: MediaType; // Changed from string to MediaType
   };
   timestamp: string;
 }

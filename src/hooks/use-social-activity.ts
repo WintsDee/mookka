@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Media } from '@/types';
+import { Media, MediaType } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 
 export const useSocialActivity = () => {
@@ -41,7 +41,7 @@ export const useSocialActivity = () => {
           mediaMap[item.id] = {
             id: item.id,
             title: item.title,
-            type: item.type as any,
+            type: item.type as MediaType,
             coverImage: item.cover_image,
             year: item.year,
             rating: item.rating,
@@ -76,7 +76,7 @@ export const useSocialActivity = () => {
           media: {
             id: item.media_id,
             title: mediaMap[item.media_id]?.title || 'Titre inconnu',
-            type: mediaMap[item.media_id]?.type || 'film'
+            type: mediaMap[item.media_id]?.type || 'film' as MediaType
           },
           timestamp: item.added_at
         }));
