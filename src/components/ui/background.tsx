@@ -21,6 +21,7 @@ const Background = ({
         "min-h-screen w-full",
         noScroll ? "" : "overflow-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch will-change-scroll",
         pattern ? "bg-pattern" : "bg-background",
+        "pt-safe pb-safe px-safe",
         className
       )}
       {...props}

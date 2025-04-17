@@ -19,8 +19,10 @@ const Index = () => {
         <div className="absolute inset-0 bg-black/50" />
       </div>
       
-      {/* Contenu principal */}
-      <MainContent />
+      {/* Contenu principal avec gestion des safe areas */}
+      <div className="relative z-10 pt-safe pb-safe px-safe">
+        <MainContent />
+      </div>
     </div>
   );
 };

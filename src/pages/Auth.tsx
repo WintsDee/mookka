@@ -122,7 +122,7 @@ const Auth = () => {
   
   return (
     <Background>
-      <div className="h-full flex flex-col justify-center items-center px-4 pt-safe">
+      <div className="h-full flex flex-col justify-center items-center px-4 py-safe">
         <div className="w-full max-w-md">
           <Button 
             variant="ghost" 
