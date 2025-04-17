@@ -7,6 +7,7 @@
   "display": "standalone",
   "background_color": "#0F1524",
   "theme_color": "#0F1524",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png",
@@ -21,5 +22,23 @@
       "purpose": "any maskable"
     }
   ],
-  "prefer_related_applications": false
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Rechercher",
+      "url": "/recherche",
+      "icons": [{ "src": "/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ma Bibliothèque",
+      "url": "/bibliotheque",
+      "icons": [{ "src": "/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Actualités",
+      "url": "/actualites",
+      "icons": [{ "src": "/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png", "sizes": "192x192" }]
+    }
+  ]
 }

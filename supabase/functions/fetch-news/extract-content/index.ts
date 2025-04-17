@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { corsHeaders } from "../cors.ts";
 import { load } from "https://esm.sh/cheerio@1.0.0-rc.12";
 
@@ -28,11 +27,14 @@ serve(async (req) => {
     console.log(`Extracting content from: ${url}`);
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (compatible; MookkaBot/1.0; +https://mookka.app)",
+        "Accept": "text/html,application/xhtml+xml,application/xml",
+        "Accept-Language": "fr,fr-FR;q=0.9,en-US;q=0.8,en;q=0.7"
       }
     });
 
     if (!response.ok) {
+      console.error(`Failed to fetch article (${response.status}): ${url}`);
       throw new Error(`Failed to fetch article: ${response.status}`);
     }
 
@@ -43,9 +45,10 @@ serve(async (req) => {
     
     // Recherche des conteneurs d'articles les plus courants
     const articleSelectors = [
-      'article', '.article', '.post', '.content', '.entry-content', 
-      '.post-content', '.article-content', '.main-content', 
-      '#article-body', '.article__body', '.story-body', '.news-content'
+      'article', '.article', '.article-content', '.post', '.post-content', '.post-body',
+      '.content', '.entry-content', '.main-content', '.story', '.story-body',
+      '#article-body', '.article__body', '.news-content', '.article__text',
+      '[itemprop="articleBody"]', '[property="content:encoded"]'
     ];
     
     let paragraphs: string[] = [];
@@ -56,13 +59,32 @@ serve(async (req) => {
         const articleElement = $(selector).first();
         if (articleElement.length > 0) {
           paragraphs = extractParagraphsFromElement($, articleElement);
+          console.log(`Found content using selector "${selector}": ${paragraphs.length} paragraphs`);
         }
       }
     }
     
-    // Si aucun contenu n'a été trouvé, essayer de trouver tous les paragraphes de la page
+    // Si aucun contenu n'a été trouvé avec les sélecteurs spécifiques, essayer une approche plus générique
+    if (paragraphs.length === 0) {
+      // Essayer de trouver des sections qui contiennent plusieurs paragraphes
+      $('div, section').each((i, element) => {
+        if (paragraphs.length === 0) {
+          const $element = $(element);
+          const paragraphElements = $element.find('p');
+          
+          if (paragraphElements.length >= 3) {
+            // Si une section contient au moins 3 paragraphes, c'est probablement le contenu principal
+            paragraphs = extractParagraphsFromElement($, $element);
+            console.log(`Found content using generic section search: ${paragraphs.length} paragraphs`);
+          }
+        }
+      });
+    }
+    
+    // Si toujours rien, essayer de chercher tous les paragraphes de la page
     if (paragraphs.length === 0) {
       paragraphs = extractParagraphsFromElement($, $('body'));
+      console.log(`Found content using body: ${paragraphs.length} paragraphs`);
     }
     
     // Filtrer le contenu non pertinent
@@ -75,16 +97,31 @@ serve(async (req) => {
         // Éliminer les paragraphes qui contiennent des mots-clés de navigation ou de publicité
         const lowerText = cleanText.toLowerCase();
         const unwantedTerms = ['accepter', 'cookies', 'newsletter', 'inscription', 'cliquez', 
-                              'rejoignez', 'privacy', 'confidentialité', 'publicité', 'copyright'];
+                              'rejoignez', 'privacy', 'confidentialité', 'publicité', 'copyright',
+                              'fermer', 'close', 'acceptez', 'partager sur'];
         return !unwantedTerms.some(term => lowerText.includes(term));
       })
       .slice(0, 30); // Limiter à 30 paragraphes pour les contenus très longs
     
+    // Si on ne trouve toujours rien, essayer une approche plus primitive avec regex
     if (paragraphs.length === 0) {
-      console.log("No suitable paragraphs found");
-      // Essayer avec une approche plus simple
+      console.log("No suitable paragraphs found with DOM parsing, trying regex approach");
       paragraphs = extractBasicParagraphs(htmlContent);
     }
+    
+    // Si on a des paragraphes, mais qu'ils sont trop courts en moyenne, c'est probablement pas bon
+    if (paragraphs.length > 0) {
+      const avgLength = paragraphs.reduce((sum, p) => sum + p.length, 0) / paragraphs.length;
+      if (avgLength < 60 && paragraphs.length < 3) {
+        console.log(`Average paragraph length (${avgLength}) is too short, trying alternative approach`);
+        const altParagraphs = extractBasicParagraphs(htmlContent);
+        if (altParagraphs.length > 0) {
+          paragraphs = altParagraphs;
+        }
+      }
+    }
+    
+    console.log(`Final extracted paragraphs: ${paragraphs.length}`);
     
     return new Response(
       JSON.stringify({ 
@@ -137,10 +174,12 @@ function extractBasicParagraphs(html: string): string[] {
     .filter(text => {
       // Filtrer les paragraphes vides, trop courts ou qui sont probablement de la navigation
       text = text.trim();
-      if (text.length < 40) return false;
+      if (text.length < 60) return false;
       
       const lowerText = text.toLowerCase();
-      return !['accepter', 'cookies', 'newsletter', 'cliquez'].some(term => lowerText.includes(term));
+      const unwantedTerms = ['accepter', 'cookies', 'newsletter', 'cliquez', 'rejoignez', 
+                           'privacy', 'confidentialité', 'publicité', 'copyright', 'fermer'];
+      return !unwantedTerms.some(term => lowerText.includes(term));
     })
     .slice(0, 20); // Limiter à 20 paragraphes
   

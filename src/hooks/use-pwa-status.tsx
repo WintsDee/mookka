@@ -13,10 +13,20 @@ export function usePWAStatus() {
       || document.referrer.includes('android-app://')
     
     setIsPWA(isStandalone)
+    
+    // Also add an event listener for changes in display mode
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsPWA(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [])
 
-  // Only show install prompt on mobile
+  // Only show install prompt on mobile when not already in PWA mode
   return {
+    isPWA,
     shouldShowInstallPrompt: isMobile && !isPWA
   }
 }

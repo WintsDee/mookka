@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
+import { Download, X } from "lucide-react"
 import { usePWAStatus } from "@/hooks/use-pwa-status"
 
 export function PWAInstallPrompt() {
@@ -42,12 +42,18 @@ export function PWAInstallPrompt() {
               Accédez à Mookka directement depuis votre écran d'accueil
             </span>
           </div>
+          <div className="mt-2">
+            <p className="text-sm text-muted-foreground">
+              Pour installer l'application :
+            </p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground mt-1 ml-2">
+              <li>Sur iOS : Appuyez sur "Partager" puis "Sur l'écran d'accueil"</li>
+              <li>Sur Android : Appuyez sur les 3 points ⋮ puis "Ajouter à l'écran d'accueil"</li>
+            </ul>
+          </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Plus tard
-            </Button>
-            <Button onClick={() => setIsOpen(false)}>
-              Installer
             </Button>
           </div>
         </div>
