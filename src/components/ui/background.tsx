@@ -18,7 +18,7 @@ const Background = ({
   return (
     <div
       className={cn(
-        "min-h-screen w-full",
+        "min-h-screen w-full mobile-content-container",
         noScroll ? "" : "overflow-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch will-change-scroll",
         pattern ? "bg-pattern" : "bg-background",
         className

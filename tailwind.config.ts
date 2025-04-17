@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -109,6 +110,7 @@ export default {
       },
       padding: {
         'safe': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
       }
     }
   },
