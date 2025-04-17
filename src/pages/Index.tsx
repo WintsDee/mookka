@@ -6,13 +6,14 @@ const Index = () => {
   return (
     <div className="relative min-h-screen w-full overflow-auto">
       <div className="absolute inset-0 z-0">
-        {/* Précharger l'image directement via un élément img pour affichage immédiat */}
+        {/* Précharger l'image en utilisant des attributs d'optimisation modernes */}
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
-          loading="eager" // Assure un chargement prioritaire
-          fetchPriority="high" // Attribut HTML moderne pour donner priorité élevée
+          loading="eager" 
+          fetchpriority="high" 
+          decoding="async"
         />
         {/* Réduire l'opacité du fond sombre */}
         <div className="absolute inset-0 bg-black/50" />
