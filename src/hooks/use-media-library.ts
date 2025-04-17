@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { addMediaToLibrary, removeMediaFromLibrary, isMediaInLibrary } from "@/services/media";
 import { useAuth } from "@/providers/auth-provider";
-import { MediaType } from "@/types";
+import { MediaType, MediaStatus } from "@/types";
 
 /**
  * Custom hook for managing media library operations
@@ -56,10 +56,27 @@ export function useMediaLibrary(mediaId: string, mediaType: MediaType, mediaTitl
     setIsAdding(true);
     
     try {
+      // Determine default status based on media type
+      let defaultStatus: MediaStatus;
+      switch(mediaType) {
+        case 'film':
+        case 'serie':
+          defaultStatus = 'to-watch';
+          break;
+        case 'book':
+          defaultStatus = 'to-read';
+          break;
+        case 'game':
+          defaultStatus = 'to-play';
+          break;
+        default:
+          defaultStatus = 'to-watch';
+      }
+      
       await addMediaToLibrary({
         mediaId,
         mediaType,
-        status: "to_consume" // Status par défaut
+        status: defaultStatus // Use proper MediaStatus type value
       }, mediaType, mediaTitle);
       
       setIsInLibrary(true);
