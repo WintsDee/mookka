@@ -1,3 +1,4 @@
+
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Share2, Plus, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,13 +44,19 @@ const MediaDetailActions = memo(({
         setIsInLibrary(inLibrary);
       } catch (error) {
         console.error("Erreur lors de la vérification de la bibliothèque:", error);
+        // Ensure toast is called with all required arguments
+        toast({
+          title: "Erreur",
+          description: "Impossible de vérifier la bibliothèque",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
     };
     
     checkLibraryStatus();
-  }, [mediaId, user]);
+  }, [mediaId, user, toast]);
 
   // Add to library handler with useCallback for memoization
   const handleAddToLibrary = useCallback(async () => {
