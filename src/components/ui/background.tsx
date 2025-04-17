@@ -28,6 +28,7 @@ const Background = ({
         paddingBottom: 'calc(env(safe-area-inset-bottom) + 70px)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
+        minHeight: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))'
       }}
       {...props}
     >
