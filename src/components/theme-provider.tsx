@@ -51,35 +51,6 @@ export function ThemeProvider({
     root.classList.add(theme);
   }, [theme]);
 
-  // Add native-like transition styles to the document
-  useEffect(() => {
-    // This adds smooth page transitions to make the app feel more native
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .page-transition-enter {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      .page-transition-enter-active {
-        opacity: 1;
-        transform: translateY(0);
-        transition: opacity 200ms, transform 200ms;
-      }
-      .page-transition-exit {
-        opacity: 1;
-      }
-      .page-transition-exit-active {
-        opacity: 0;
-        transition: opacity 150ms;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   const value = {
     theme,
     setTheme: (theme: Theme) => {
