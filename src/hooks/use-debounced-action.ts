@@ -27,7 +27,7 @@ export function useDebouncedAction<T extends (...args: any[]) => Promise<any>>(
     };
   }, []);
   
-  // Fonction enrobée avec debounce
+  // Fonction enrobée avec debounce - avec correction du typage
   const debouncedAction = ((...args: Parameters<T>) => {
     // Annuler le timer précédent si existant
     if (timerRef.current) {
@@ -48,8 +48,8 @@ export function useDebouncedAction<T extends (...args: any[]) => Promise<any>>(
           reject(error);
         }
       }, delay);
-    }) as ReturnType<T>;
-  }) as T;
+    });
+  }) as unknown as T; // Fix: use explicit unknown cast first, then cast to T
   
   return [isLoading, debouncedAction];
 }
