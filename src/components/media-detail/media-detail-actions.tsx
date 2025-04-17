@@ -1,6 +1,6 @@
 
-import React, { memo, useCallback } from "react";
-import { Share2, Heart, Plus, Check, X, Bookmark, BookmarkCheck, AlertCircle } from "lucide-react";
+import React, { memo, useCallback, useEffect, useState } from "react";
+import { Share2, Plus, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { addMediaToLibrary, removeMediaFromLibrary, isMediaInLibrary } from "@/services/media";
@@ -13,6 +13,7 @@ interface MediaDetailActionsProps {
   mediaType: MediaType;
   mediaTitle: string;
   className?: string;
+  onLibraryChange?: () => void;
 }
 
 // Memoizing the component for better performance
@@ -20,17 +21,18 @@ const MediaDetailActions = memo(({
   mediaId,
   mediaType,
   mediaTitle,
-  className
+  className,
+  onLibraryChange
 }: MediaDetailActionsProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isInLibrary, setIsInLibrary] = React.useState<boolean>(false);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [isAdding, setIsAdding] = React.useState<boolean>(false);
-  const [isRemoving, setIsRemoving] = React.useState<boolean>(false);
+  const [isInLibrary, setIsInLibrary] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
 
   // Fetch the initial status when the component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     const checkLibraryStatus = async () => {
       if (!user) {
         setIsLoading(false);
@@ -75,6 +77,7 @@ const MediaDetailActions = memo(({
         title: "Ajouté à la bibliothèque",
         description: `${mediaTitle} a été ajouté à votre bibliothèque`
       });
+      if (onLibraryChange) onLibraryChange();
     } catch (error) {
       console.error("Erreur lors de l'ajout à la bibliothèque:", error);
       toast({
@@ -85,7 +88,7 @@ const MediaDetailActions = memo(({
     } finally {
       setIsAdding(false);
     }
-  }, [mediaId, mediaType, mediaTitle, toast, user]);
+  }, [mediaId, mediaType, mediaTitle, toast, user, onLibraryChange]);
 
   // Remove from library handler with useCallback for memoization
   const handleRemoveFromLibrary = useCallback(async () => {
@@ -101,6 +104,7 @@ const MediaDetailActions = memo(({
         title: "Supprimé de la bibliothèque",
         description: `${mediaTitle} a été supprimé de votre bibliothèque`
       });
+      if (onLibraryChange) onLibraryChange();
     } catch (error) {
       console.error("Erreur lors de la suppression de la bibliothèque:", error);
       toast({
@@ -111,7 +115,7 @@ const MediaDetailActions = memo(({
     } finally {
       setIsRemoving(false);
     }
-  }, [mediaId, mediaTitle, toast, user]);
+  }, [mediaId, mediaTitle, toast, user, onLibraryChange]);
 
   // Optimized action button with TypeScript fixes
   const ActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 

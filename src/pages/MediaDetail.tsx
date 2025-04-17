@@ -112,8 +112,6 @@ const MediaDetail = () => {
   };
 
   const handleLibraryStatusChange = () => {
-    // Inverser l'état actuel pour une réponse instantanée à l'utilisateur
-    setIsInLibrary(prev => !prev);
     // Réactualiser depuis la base de données pour s'assurer que tout est à jour
     checkIfInLibrary();
   };
@@ -165,10 +163,9 @@ const MediaDetail = () => {
         </div>
         
         <MediaDetailActions 
-          media={media} 
-          type={type as MediaType} 
-          onAddToCollection={() => setAddToCollectionOpen(true)}
-          isInLibrary={isInLibrary}
+          mediaId={id!}
+          mediaType={type as MediaType}
+          mediaTitle={formattedMedia.title || ""}
           onLibraryChange={handleLibraryStatusChange}
         />
       </div>
