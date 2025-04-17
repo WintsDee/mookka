@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
@@ -14,7 +13,7 @@ import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-d
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
-import { useAuth } from "@/providers/auth-provider";
+import { useAuth } from "@/hooks/use-auth";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
@@ -29,11 +28,9 @@ const MediaDetail = () => {
   const { addMediaToCollection, isAddingToCollection } = useCollections();
   const { user } = useAuth();
 
-  // Store the previous path and search parameters to navigate back correctly
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
 
-  // Vérifier si le média est dans la bibliothèque de l'utilisateur
   const checkIfInLibrary = async () => {
     if (!user || !id) {
       setIsCheckingLibrary(false);
@@ -59,15 +56,13 @@ const MediaDetail = () => {
         try {
           const mediaData = await getMediaById(type as MediaType, id);
           
-          // Convertir les <br> en saut de ligne pour le détail du média
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
           }
           
-          // Vérifier si la description est en anglais et tenter de trouver une version française
           if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
             mediaData.locale_descriptions = {
-              'fr': mediaData.description_raw // Utiliser la description brute comme fallback
+              'fr': mediaData.description_raw
             };
           }
           
@@ -100,7 +95,6 @@ const MediaDetail = () => {
   };
 
   const handleGoBack = () => {
-    // Navigate back to the previous page preserving state and search params
     if (previousPath === "/recherche" && searchParams) {
       navigate({
         pathname: previousPath,
@@ -112,7 +106,6 @@ const MediaDetail = () => {
   };
 
   const handleLibraryStatusChange = () => {
-    // Réactualiser depuis la base de données pour s'assurer que tout est à jour
     checkIfInLibrary();
   };
 

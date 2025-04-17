@@ -4,7 +4,7 @@ import { Share2, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MediaType } from "@/types";
 import { ActionButton } from "./action-button";
-import { useMediaLibrary } from "@/hooks/use-media-library";
+import { useMediaLibraryManagement } from "@/hooks/media/use-media-library-management";
 import {
   Tooltip,
   TooltipContent,
@@ -34,7 +34,7 @@ const MediaDetailActions = memo(({
     isRemoving,
     addToLibrary,
     removeFromLibrary
-  } = useMediaLibrary(mediaId, mediaType, mediaTitle);
+  } = useMediaLibraryManagement(mediaId, mediaType, mediaTitle);
 
   const handleAddToLibrary = useCallback(async () => {
     await addToLibrary();
