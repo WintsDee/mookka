@@ -123,13 +123,13 @@ const MediaDetailActions = memo(({
   }> = ({ onClick, disabled, children, variant, className }) => (
     <Button
       onClick={onClick}
-      disabled={disabled || isLoading}
+      disabled={disabled}
       variant={variant || "outline"}
       size="sm"
       className={cn("text-xs", className)}
     >
       {isLoading ? (
-        <AlertCircle className="mr-1 h-3 w-3 animate-pulse" />
+        <AlertCircle className="mr-1 h-3 w-3" />
       ) : (
         children
       )}
