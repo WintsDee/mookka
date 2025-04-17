@@ -15,49 +15,45 @@ interface NewsWebViewProps {
 }
 
 export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose }) => {
-  const [loading, setLoading] = useState(true);
+  // Par défaut, on n'est pas en mode texte (false)
   const [textOnly, setTextOnly] = useLocalStorage("news-text-only", false);
+  const [loading, setLoading] = useState(true);
   const [articleContent, setArticleContent] = useState<string>("");
   const [isFirefox, setIsFirefox] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isContentLoading, setIsContentLoading] = useState(false);
   const [extractionError, setExtractionError] = useState(false);
+  const [contentFetched, setContentFetched] = useState(false);
   
   useEffect(() => {
     // Detect browser and device type
     const userAgent = window.navigator.userAgent.toLowerCase();
     setIsFirefox(userAgent.includes('firefox'));
     setIsMobile(/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent));
-    
-    // Auto-enable text mode on mobile devices or problematic browsers
-    const shouldUseTextMode = isMobile || isFirefox || 
-      /safari/i.test(userAgent) && !/chrome/i.test(userAgent);
-    
-    if (shouldUseTextMode && !textOnly) {
-      setTextOnly(true);
-    }
-    
-    if (textOnly) {
+  }, []);
+  
+  useEffect(() => {
+    // Si on passe en mode texte et qu'on n'a pas encore récupéré le contenu
+    if (textOnly && !contentFetched) {
       fetchTextContent(url);
-    } else {
-      setArticleContent("");
-      setExtractionError(false);
     }
-  }, [url, textOnly, isMobile, isFirefox]);
+  }, [textOnly, url, contentFetched]);
   
   const handleToggleTextMode = (checked: boolean) => {
     setTextOnly(checked);
-    if (checked && !articleContent) {
+    
+    // Si on active le mode texte et qu'on n'a pas encore récupéré le contenu
+    if (checked && !contentFetched) {
       fetchTextContent(url);
     }
   };
   
   const fetchTextContent = async (articleUrl: string) => {
-    setLoading(true);
     setIsContentLoading(true);
     setExtractionError(false);
     
     try {
+      console.log("Fetching text content for:", articleUrl);
       const { data, error } = await supabase.functions.invoke('fetch-news/extract-content', {
         body: { url: articleUrl }
       });
@@ -90,6 +86,9 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
         `);
         setExtractionError(true);
       }
+      
+      // Marquer que le contenu a été récupéré
+      setContentFetched(true);
     } catch (error) {
       console.error("Error extracting article content:", error);
       setArticleContent(`
@@ -101,7 +100,6 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       setExtractionError(true);
       toast.error("Erreur lors de l'extraction du contenu");
     } finally {
-      setLoading(false);
       setIsContentLoading(false);
     }
   };
@@ -142,7 +140,13 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       </header>
 
       <div className="relative flex-1 overflow-hidden">
-        {(loading || isContentLoading) && (
+        {loading && !textOnly && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+        
+        {isContentLoading && textOnly && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
@@ -181,7 +185,7 @@ export const NewsWebView: React.FC<NewsWebViewProps> = ({ url, title, onClose })
       
       {(isFirefox || isMobile) && !textOnly && (
         <div className="bg-amber-500/10 p-2 text-center text-xs text-amber-800 dark:text-amber-300">
-          <p>Le contenu peut ne pas s'afficher correctement. Utilisez le mode texte ou ouvrez l'article dans votre navigateur.</p>
+          <p>Le contenu peut ne pas s'afficher correctement. Passez en mode texte ou ouvrez l'article dans votre navigateur.</p>
         </div>
       )}
     </div>
