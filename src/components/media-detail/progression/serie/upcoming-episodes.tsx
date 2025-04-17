@@ -27,6 +27,7 @@ export function UpcomingEpisodes({
 }: UpcomingEpisodesProps) {
   const { toast } = useToast();
   
+  // Exit early if there are no episodes to display
   if (!episodes || episodes.length === 0) {
     return null;
   }

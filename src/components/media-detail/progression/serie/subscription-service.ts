@@ -24,12 +24,13 @@ export function useSubscription({ mediaId, mediaType }: UseSubscriptionProps) {
           return;
         }
         
+        // Use raw query to avoid type issues with new tables not in the types file yet
         const { data, error } = await supabase
           .from('media_subscriptions')
           .select('id')
           .eq('media_id', mediaId)
           .eq('user_id', user.user.id)
-          .maybeSingle();
+          .maybeSingle() as any;
           
         if (error) {
           console.error('Erreur lors de la vérification de l\'abonnement:', error);
@@ -63,12 +64,12 @@ export function useSubscription({ mediaId, mediaType }: UseSubscriptionProps) {
       }
       
       if (isSubscribed) {
-        // Unsubscribe
+        // Unsubscribe - use raw query to avoid type issues with new tables
         const { error } = await supabase
           .from('media_subscriptions')
           .delete()
           .eq('media_id', mediaId)
-          .eq('user_id', user.user.id);
+          .eq('user_id', user.user.id) as any;
           
         if (error) throw error;
         
@@ -78,7 +79,7 @@ export function useSubscription({ mediaId, mediaType }: UseSubscriptionProps) {
           description: "Vous ne serez plus notifié des nouveaux épisodes."
         });
       } else {
-        // Subscribe
+        // Subscribe - use raw query to avoid type issues with new tables
         const { error } = await supabase
           .from('media_subscriptions')
           .insert({
@@ -86,7 +87,7 @@ export function useSubscription({ mediaId, mediaType }: UseSubscriptionProps) {
             user_id: user.user.id,
             media_type: mediaType,
             created_at: new Date().toISOString()
-          });
+          }) as any;
           
         if (error) throw error;
         

@@ -59,7 +59,8 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
     totalEpisodes,
     watchedEpisodes,
     status,
-    progression
+    progression,
+    upcomingEpisodes
   });
 
   return (
@@ -82,11 +83,13 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
         onToggleSeason={handleToggleSeason} 
       />
       
-      <UpcomingEpisodes 
-        episodes={upcomingEpisodes} 
-        isSubscribed={isSubscribed}
-        onToggleSubscription={toggleSubscription}
-      />
+      {upcomingEpisodes && upcomingEpisodes.length > 0 && (
+        <UpcomingEpisodes 
+          episodes={upcomingEpisodes} 
+          isSubscribed={isSubscribed}
+          onToggleSubscription={toggleSubscription}
+        />
+      )}
     </div>
   );
 }

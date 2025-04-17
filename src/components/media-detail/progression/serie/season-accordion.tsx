@@ -118,7 +118,7 @@ export function SeasonAccordion({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      className="h-8 text-xs"
+                      className={`h-8 text-xs ${isAllWatched ? 'bg-primary/10 text-primary' : ''}`}
                       onClick={(e) => handleToggleAll(seasonNumber, episodeCount, e)}
                     >
                       {toggleButtonText}

@@ -57,12 +57,15 @@ export function EpisodeList({
         const episodeNumber = episode.number;
         const isWatched = validWatchedEpisodes.includes(episodeNumber);
         
-        // Ensure airDate is properly formatted
-        let airDate = null;
+        // Parse air date properly
+        let airDate: Date | null = null;
         if (episode.airDate) {
-          if (typeof episode.airDate === 'string') {
+          try {
             airDate = new Date(episode.airDate);
-          } else if (episode.airDate instanceof Object && episode.airDate._type === 'undefined') {
+            if (isNaN(airDate.getTime())) {
+              airDate = null;
+            }
+          } catch (error) {
             airDate = null;
           }
         }
@@ -90,7 +93,7 @@ export function EpisodeList({
               
               {episode.airDate && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  {formatAirDate(typeof episode.airDate === 'string' ? episode.airDate : null)}
+                  {formatAirDate(episode.airDate)}
                 </div>
               )}
             </div>
