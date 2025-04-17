@@ -24,7 +24,7 @@ const Background = ({
         className
       )}
       style={{
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 65px)'
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)'
       }}
       {...props}
     >

@@ -23,7 +23,10 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   return (
     <div 
       className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50" 
-      style={{paddingTop: 'max(1rem, env(safe-area-inset-top))'}}
+      style={{
+        top: 0,
+        paddingTop: 'env(safe-area-inset-top)'
+      }}
     >
       {title && <h1 className="text-lg font-semibold">{title}</h1>}
       

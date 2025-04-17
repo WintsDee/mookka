@@ -26,7 +26,13 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
+    <nav 
+      className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50" 
+      style={{
+        bottom: 0,
+        paddingBottom: 'env(safe-area-inset-bottom)'
+      }}
+    >
       <div className="grid grid-cols-5 gap-2 py-3 px-4">
         {navItems.map((item) => (
           <Link 
