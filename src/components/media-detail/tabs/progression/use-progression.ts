@@ -2,10 +2,14 @@
 import { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/providers/auth-provider";
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [progression, setProgression] = useState<any>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   // Create a default progression based on media type
   const createDefaultProgression = (type: MediaType) => {
@@ -13,14 +17,15 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       case 'film':
         return {
           status: 'to-watch',
-          watched_time: 0
+          watched_time: 0,
+          total_time: mediaDetails?.runtime || 0
         };
       case 'serie':
         return {
           status: 'to-watch',
           watched_episodes: {},
           watched_count: 0,
-          total_episodes: 0
+          total_episodes: mediaDetails?.number_of_episodes || 0
         };
       case 'book':
         return {
@@ -42,31 +47,35 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
   const fetchProgression = async () => {
     try {
       setIsLoading(true);
-      const { data: user } = await supabase.auth.getUser();
       
-      // Create a default progression regardless of user status
+      // Create a default progression
       const defaultProgression = createDefaultProgression(mediaType);
       
-      if (user.user) {
-        const { data, error } = await supabase
-          .from('media_progressions')
-          .select('progression_data')
-          .eq('media_id', mediaId)
-          .eq('user_id', user.user.id)
-          .maybeSingle();
-        
-        if (error && error.code !== 'PGRST116') {
-          console.error('Erreur lors de la récupération de la progression:', error);
-        }
-        
-        // If progression data exists, use it; otherwise use default
-        if (data && data.progression_data) {
-          setProgression(data.progression_data);
-        } else {
-          setProgression(defaultProgression);
-        }
+      if (!user) {
+        setProgression(defaultProgression);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('media_progressions')
+        .select('progression_data')
+        .eq('media_id', mediaId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erreur lors de la récupération de la progression:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer votre progression",
+          variant: "destructive"
+        });
+      }
+      
+      // If progression data exists, use it; otherwise use default
+      if (data && data.progression_data) {
+        setProgression(data.progression_data);
       } else {
-        // Use default progression if no user
         setProgression(defaultProgression);
       }
     } catch (error) {
@@ -81,21 +90,28 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
   
   useEffect(() => {
     fetchProgression();
-  }, [mediaId, mediaType]);
+  }, [mediaId, mediaType, user]);
 
   const handleProgressionUpdate = async (progressionData: any) => {
     try {
-      const { data: user } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Connexion requise",
+          description: "Vous devez être connecté pour enregistrer votre progression",
+          variant: "destructive"
+        });
+        return;
+      }
       
-      if (!user.user) return;
-      
+      // Vérifier si il y a un enregistrement existant
       const { data: existingProgression } = await supabase
         .from('media_progressions')
         .select('id')
         .eq('media_id', mediaId)
-        .eq('user_id', user.user.id)
+        .eq('user_id', user.id)
         .maybeSingle();
       
+      // Mise à jour ou création de la progression
       if (existingProgression) {
         await supabase
           .from('media_progressions')
@@ -109,14 +125,33 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           .from('media_progressions')
           .insert({
             media_id: mediaId,
-            user_id: user.user.id,
+            user_id: user.id,
             progression_data: progressionData
           });
       }
       
+      // Mettre à jour le statut dans user_media si approprié
+      if (progressionData.status) {
+        await supabase
+          .from('user_media')
+          .update({ status: progressionData.status })
+          .eq('media_id', mediaId)
+          .eq('user_id', user.id);
+      }
+      
       setProgression(progressionData);
+      
+      toast({
+        title: "Progression enregistrée",
+        description: "Votre progression a été mise à jour"
+      });
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la progression:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre progression",
+        variant: "destructive"
+      });
     }
   };
 

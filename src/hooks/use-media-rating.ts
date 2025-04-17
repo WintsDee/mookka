@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/use-profile";
 import { MediaType } from "@/types";
+import { updateMediaRating, getMediaRating } from "@/services/media";
 
 export interface MediaRatingData {
   rating: number;
@@ -21,36 +22,18 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
   useEffect(() => {
     const fetchRating = async () => {
       // Only fetch if we have a mediaId
-      if (!mediaId) {
+      if (!mediaId || !isAuthenticated) {
         setIsLoading(false);
         return;
       }
       
       try {
         setIsLoading(true);
-        const { data: user } = await supabase.auth.getUser();
+        const ratingData = await getMediaRating(mediaId);
         
-        if (!user.user) {
-          setIsLoading(false);
-          return;
-        }
-        
-        const { data, error } = await supabase
-          .from('user_media')
-          .select('user_rating, notes')
-          .eq('media_id', mediaId)
-          .eq('user_id', user.user.id)
-          .maybeSingle();
-          
-        if (error && error.code !== 'PGRST116') {
-          console.error("Erreur lors de la récupération de la note:", error);
-          return;
-        }
-        
-        if (data) {
-          const rating = data.user_rating || 0;
-          setUserRating(rating);
-          setUserReview(data.notes || '');
+        if (ratingData) {
+          setUserRating(ratingData.rating);
+          setUserReview(ratingData.review);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération de la note:", error);
@@ -60,61 +43,29 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     };
     
     fetchRating();
-  }, [mediaId]);
+  }, [mediaId, isAuthenticated]);
 
   const saveRating = async (values: MediaRatingData) => {
-    // Always assume the user is authenticated for now
+    if (!isAuthenticated) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour noter un média",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) {
-        throw new Error("Utilisateur non connecté");
-      }
-      
-      // Check if the media already exists in the user's library
-      const { data: existingMedia } = await supabase
-        .from('user_media')
-        .select('id')
-        .eq('media_id', mediaId)
-        .eq('user_id', user.user.id)
-        .maybeSingle();
-      
-      if (existingMedia) {
-        // Update existing rating
-        const { error } = await supabase
-          .from('user_media')
-          .update({
-            user_rating: values.rating,
-            notes: values.review,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingMedia.id);
-          
-        if (error) throw error;
-      } else {
-        // Create a new entry
-        const { error } = await supabase
-          .from('user_media')
-          .insert({
-            user_id: user.user.id,
-            media_id: mediaId,
-            media_type: mediaType || 'film', // Ensure we always have a media type
-            user_rating: values.rating,
-            notes: values.review,
-            status: 'rated'
-          });
-          
-        if (error) throw error;
-      }
+      await updateMediaRating(mediaId, values.rating, values.review);
       
       setUserRating(values.rating);
       setUserReview(values.review);
       
       toast({
         title: "Critique enregistrée",
-        description: `Votre critique a été enregistrée`,
+        description: "Votre critique a été enregistrée",
       });
     } catch (error: any) {
       console.error("Erreur lors de l'enregistrement de la note:", error);
