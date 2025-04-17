@@ -1,4 +1,3 @@
-
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Share2, Plus, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ interface MediaDetailActionsProps {
   onLibraryChange?: () => void;
 }
 
-// Memoizing the component for better performance
 const MediaDetailActions = memo(({
   mediaId,
   mediaType,
@@ -31,7 +29,6 @@ const MediaDetailActions = memo(({
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
 
-  // Fetch the initial status when the component mounts
   useEffect(() => {
     const checkLibraryStatus = async () => {
       if (!user) {
@@ -44,7 +41,6 @@ const MediaDetailActions = memo(({
         setIsInLibrary(inLibrary);
       } catch (error) {
         console.error("Erreur lors de la vérification de la bibliothèque:", error);
-        // Ensure toast is called with all required arguments
         toast({
           title: "Erreur",
           description: "Impossible de vérifier la bibliothèque",
@@ -58,7 +54,6 @@ const MediaDetailActions = memo(({
     checkLibraryStatus();
   }, [mediaId, user, toast]);
 
-  // Add to library handler with useCallback for memoization
   const handleAddToLibrary = useCallback(async () => {
     if (!user) {
       toast({
@@ -96,7 +91,6 @@ const MediaDetailActions = memo(({
     }
   }, [mediaId, mediaType, mediaTitle, toast, user, onLibraryChange]);
 
-  // Remove from library handler with useCallback for memoization
   const handleRemoveFromLibrary = useCallback(async () => {
     if (!user) return;
     
@@ -123,7 +117,6 @@ const MediaDetailActions = memo(({
     }
   }, [mediaId, mediaTitle, toast, user, onLibraryChange]);
 
-  // Optimized action button with TypeScript fixes
   const ActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
     variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined 
   }> = ({ onClick, disabled, children, variant, className }) => (
