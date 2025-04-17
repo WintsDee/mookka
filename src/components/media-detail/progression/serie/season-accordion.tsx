@@ -67,6 +67,8 @@ export function SeasonAccordion({
     setExpandedItems(value);
   };
 
+  console.log("SeasonAccordion rendering with progression:", progression);
+
   return (
     <Accordion 
       type="multiple" 
@@ -79,7 +81,13 @@ export function SeasonAccordion({
         const episodeCount = season.episode_count;
         const seasonName = season.name || `Saison ${seasonNumber}`;
         const seasonDate = formatSeasonDate(season.air_date);
-        const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
+        
+        // Ensure watched_episodes is properly accessed or default to empty array
+        const watchedEpisodesObj = progression?.watched_episodes || {};
+        const watchedEpisodesForSeason = watchedEpisodesObj[seasonNumber] || [];
+        
+        console.log(`Season ${seasonNumber} watched episodes:`, watchedEpisodesForSeason);
+        
         const seasonProgress = episodeCount > 0 ? (watchedEpisodesForSeason.length / episodeCount) * 100 : 0;
         
         // Ensure we have correct episode data for this season

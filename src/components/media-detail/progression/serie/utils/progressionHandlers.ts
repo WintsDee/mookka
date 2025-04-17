@@ -10,6 +10,8 @@ export function handleToggleEpisode(
   episodeNumber: number
 ): SerieProgression | undefined {
   try {
+    console.log("handleToggleEpisode input:", { progression, seasonNumber, episodeNumber });
+    
     // Create a copy of the current progression to modify
     const updatedProgression: SerieProgression = {
       ...progression,
@@ -30,9 +32,11 @@ export function handleToggleEpisode(
     if (episodeIndex === -1) {
       // If not watched, add it to the watched list
       watchedEpisodes.push(episodeNumber);
+      console.log(`Added episode ${episodeNumber} to watched list`);
     } else {
       // If already watched, remove it from the watched list
       watchedEpisodes.splice(episodeIndex, 1);
+      console.log(`Removed episode ${episodeNumber} from watched list`);
     }
     
     // Sort episode numbers for consistency
@@ -48,6 +52,8 @@ export function handleToggleEpisode(
     );
     
     updatedProgression.watched_count = totalWatchedCount;
+    
+    console.log("handleToggleEpisode output:", updatedProgression);
     
     return updatedProgression;
   } catch (error) {
@@ -65,6 +71,8 @@ export function handleToggleSeason(
   episodeCount: number
 ): SerieProgression | undefined {
   try {
+    console.log("handleToggleSeason input:", { progression, seasonNumber, episodeCount });
+    
     // Create a copy of the current progression to modify
     const updatedProgression: SerieProgression = {
       ...progression,
@@ -78,12 +86,14 @@ export function handleToggleSeason(
     if (allEpisodesWatched) {
       // If all episodes are watched, mark all as unwatched
       updatedProgression.watched_episodes![seasonNumber] = [];
+      console.log(`Unmarked all episodes for season ${seasonNumber}`);
     } else {
       // Mark all episodes as watched
       updatedProgression.watched_episodes![seasonNumber] = Array.from(
         { length: episodeCount }, 
         (_, i) => i + 1
       );
+      console.log(`Marked all episodes for season ${seasonNumber} as watched`);
     }
     
     // Update the watched count
@@ -93,6 +103,8 @@ export function handleToggleSeason(
     );
     
     updatedProgression.watched_count = totalWatchedCount;
+    
+    console.log("handleToggleSeason output:", updatedProgression);
     
     return updatedProgression;
   } catch (error) {
@@ -109,10 +121,16 @@ export function handleUpdateStatus(
   newStatus: string
 ): SerieProgression | undefined {
   try {
-    return {
+    console.log("handleUpdateStatus input:", { progression, newStatus });
+    
+    const updatedProgression = {
       ...progression,
       status: newStatus
     };
+    
+    console.log("handleUpdateStatus output:", updatedProgression);
+    
+    return updatedProgression;
   } catch (error) {
     console.error('Error updating status:', error);
     return undefined;
