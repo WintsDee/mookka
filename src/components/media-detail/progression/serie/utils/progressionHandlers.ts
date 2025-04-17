@@ -1,122 +1,120 @@
-import { SerieProgression } from '../types';
+
+import { SerieProgression } from "../types";
 
 /**
- * Toggles an episode's watched status and updates progression data
+ * Toggles the watched status of an episode
  */
-export function toggleEpisode(
+export function handleToggleEpisode(
   progression: SerieProgression,
-  seasonNumber: number, 
-  episodeNumber: number,
-  totalEpisodes: number
-): SerieProgression {
-  const newWatchedEpisodes = { ...(progression.watched_episodes || {}) };
-  
-  if (!newWatchedEpisodes[seasonNumber]) {
-    newWatchedEpisodes[seasonNumber] = [];
-  }
-  
-  const episodeIndex = newWatchedEpisodes[seasonNumber].indexOf(episodeNumber);
-  
-  if (episodeIndex === -1) {
-    // Add the episode to the watched list
-    newWatchedEpisodes[seasonNumber].push(episodeNumber);
-    // Sort the list for better readability
-    newWatchedEpisodes[seasonNumber].sort((a, b) => a - b);
-  } else {
-    // Remove the episode from the watched list
-    newWatchedEpisodes[seasonNumber].splice(episodeIndex, 1);
-  }
-  
-  // Calculate the new number of watched episodes
-  const newWatchedCount = Object.values(newWatchedEpisodes).flat().length;
-  
-  // Update status automatically based on progress
-  let newStatus = progression.status || 'to-watch';
-  if (newWatchedCount === 0) {
-    newStatus = 'to-watch';
-  } else if (newWatchedCount === totalEpisodes) {
-    newStatus = 'completed';
-  } else {
-    newStatus = 'watching';
-  }
-  
-  return {
-    ...progression,
-    watched_episodes: newWatchedEpisodes,
-    watched_count: newWatchedCount,
-    total_episodes: totalEpisodes,
-    status: newStatus
-  };
-}
-
-/**
- * Toggles all episodes in a season and updates progression data
- */
-export function toggleSeason(
-  progression: SerieProgression,
-  seasonNumber: number, 
-  episodeCount: number,
-  totalEpisodes: number
-): SerieProgression {
-  const newWatchedEpisodes = { ...(progression.watched_episodes || {}) };
-  const seasonEpisodes = newWatchedEpisodes[seasonNumber] || [];
-  const allWatched = seasonEpisodes.length === episodeCount;
-  
-  if (allWatched) {
-    // If all are watched, remove them all
-    newWatchedEpisodes[seasonNumber] = [];
-  } else {
-    // Otherwise, mark all episodes as watched
-    // Create an array with all episode numbers from 1 to episodeCount
-    newWatchedEpisodes[seasonNumber] = Array.from(
-      { length: episodeCount }, 
-      (_, i) => i + 1
+  seasonNumber: number,
+  episodeNumber: number
+): SerieProgression | undefined {
+  try {
+    // Create a copy of the current progression to modify
+    const updatedProgression: SerieProgression = {
+      ...progression,
+      watched_episodes: { ...(progression.watched_episodes || {}) }
+    };
+    
+    // Initialize the season's watched episodes array if it doesn't exist
+    if (!updatedProgression.watched_episodes![seasonNumber]) {
+      updatedProgression.watched_episodes![seasonNumber] = [];
+    }
+    
+    // Get the current list of watched episodes for this season
+    const watchedEpisodes = [...updatedProgression.watched_episodes![seasonNumber]];
+    
+    // Find if the episode is already marked as watched
+    const episodeIndex = watchedEpisodes.indexOf(episodeNumber);
+    
+    if (episodeIndex === -1) {
+      // If not watched, add it to the watched list
+      watchedEpisodes.push(episodeNumber);
+    } else {
+      // If already watched, remove it from the watched list
+      watchedEpisodes.splice(episodeIndex, 1);
+    }
+    
+    // Sort episode numbers for consistency
+    watchedEpisodes.sort((a, b) => a - b);
+    
+    // Update the progression with the new watched episodes
+    updatedProgression.watched_episodes![seasonNumber] = watchedEpisodes;
+    
+    // Update the watched count
+    const totalWatchedCount = Object.values(updatedProgression.watched_episodes!).reduce(
+      (acc, episodes) => acc + episodes.length, 
+      0
     );
+    
+    updatedProgression.watched_count = totalWatchedCount;
+    
+    return updatedProgression;
+  } catch (error) {
+    console.error('Error toggling episode:', error);
+    return undefined;
   }
-  
-  // Calculate the new number of watched episodes
-  const newWatchedCount = Object.values(newWatchedEpisodes).flat().length;
-  
-  // Update status automatically based on progress
-  let newStatus = progression.status || 'to-watch';
-  if (newWatchedCount === 0) {
-    newStatus = 'to-watch';
-  } else if (newWatchedCount === totalEpisodes) {
-    newStatus = 'completed';
-  } else {
-    newStatus = 'watching';
+}
+
+/**
+ * Toggles all episodes in a season as watched or unwatched
+ */
+export function handleToggleSeason(
+  progression: SerieProgression,
+  seasonNumber: number,
+  episodeCount: number
+): SerieProgression | undefined {
+  try {
+    // Create a copy of the current progression to modify
+    const updatedProgression: SerieProgression = {
+      ...progression,
+      watched_episodes: { ...(progression.watched_episodes || {}) }
+    };
+    
+    // Check if all episodes of the season are already watched
+    const currentWatchedEpisodes = updatedProgression.watched_episodes![seasonNumber] || [];
+    const allEpisodesWatched = currentWatchedEpisodes.length === episodeCount;
+    
+    if (allEpisodesWatched) {
+      // If all episodes are watched, mark all as unwatched
+      updatedProgression.watched_episodes![seasonNumber] = [];
+    } else {
+      // Mark all episodes as watched
+      updatedProgression.watched_episodes![seasonNumber] = Array.from(
+        { length: episodeCount }, 
+        (_, i) => i + 1
+      );
+    }
+    
+    // Update the watched count
+    const totalWatchedCount = Object.values(updatedProgression.watched_episodes!).reduce(
+      (acc, episodes) => acc + episodes.length, 
+      0
+    );
+    
+    updatedProgression.watched_count = totalWatchedCount;
+    
+    return updatedProgression;
+  } catch (error) {
+    console.error('Error toggling season:', error);
+    return undefined;
   }
-  
-  return {
-    ...progression,
-    watched_episodes: newWatchedEpisodes,
-    watched_count: newWatchedCount,
-    total_episodes: totalEpisodes,
-    status: newStatus
-  };
 }
 
 /**
- * Updates the status in the progression data
+ * Updates the watching status of the serie
  */
-export function updateStatus(progression: SerieProgression, newStatus: string): SerieProgression {
-  return {
-    ...progression,
-    status: newStatus
-  };
-}
-
-/**
- * Calculates the total number of episodes across all seasons
- */
-export function calculateTotalEpisodes(seasons: any[]): number {
-  return seasons.reduce((acc, season) => 
-    acc + (season.episode_count || 0), 0);
-}
-
-/**
- * Calculates the number of watched episodes from progression data
- */
-export function calculateWatchedEpisodes(progression: SerieProgression): number {
-  return Object.values(progression?.watched_episodes || {}).flat().length;
+export function handleUpdateStatus(
+  progression: SerieProgression,
+  newStatus: string
+): SerieProgression | undefined {
+  try {
+    return {
+      ...progression,
+      status: newStatus
+    };
+  } catch (error) {
+    console.error('Error updating status:', error);
+    return undefined;
+  }
 }
