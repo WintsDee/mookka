@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -31,12 +30,10 @@ export function EpisodeList({
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
       
-      // Si la date est dans le futur, on affiche "dans X jours/mois"
       if (isAfter(date, new Date())) {
         return formatDistanceToNow(date, { addSuffix: true, locale: fr });
       }
       
-      // Sinon on affiche la date au format DD/MM/YYYY
       return format(date, 'dd/MM/yyyy', { locale: fr });
     } catch (error) {
       console.error("Erreur lors du formatage de la date:", error);
@@ -44,10 +41,8 @@ export function EpisodeList({
     }
   };
   
-  // Make sure we have a valid watchedEpisodes array
   const validWatchedEpisodes = Array.isArray(watchedEpisodes) ? watchedEpisodes : [];
   
-  // Déterminer les épisodes récents (sortis dans les 14 derniers jours)
   const twoWeeksAgo = addDays(new Date(), -14);
   const today = new Date();
   
@@ -65,9 +60,7 @@ export function EpisodeList({
             <Checkbox 
               id={`s${seasonNumber}e${episodeNumber}`}
               checked={isWatched}
-              onCheckedChange={() => {
-                onToggleEpisode(seasonNumber, episodeNumber);
-              }}
+              onCheckedChange={() => onToggleEpisode(seasonNumber, episodeNumber)}
               className="mr-3 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
             />
             <div className="flex-1">
@@ -85,14 +78,12 @@ export function EpisodeList({
               )}
             </div>
             
-            {/* Badge pour les épisodes sortis récemment (moins de 14 jours) */}
             {isRecent && (
               <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-500 border-purple-500/20">
                 Nouveau
               </Badge>
             )}
             
-            {/* Badge pour les épisodes à venir */}
             {isUpcoming && (
               <Badge variant="outline" className="ml-2 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
                 À venir
