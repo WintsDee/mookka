@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { HelpFeedback } from "@/components/profile/help-feedback";
+import { DEFAULT_AVATAR } from "@/hooks/use-profile";
 
 interface MobileHeaderProps {
   title?: string;
