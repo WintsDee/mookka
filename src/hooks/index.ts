@@ -3,7 +3,6 @@ export * from './use-auth';
 export * from './auth';
 
 // Profile hooks
-export * from './use-profile';
 export * from './profile';
 
 // Media hooks
