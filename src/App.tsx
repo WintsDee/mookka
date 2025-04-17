@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PwaInstallPrompt } from "@/components/pwa/install-prompt";
+import React from "react";  // Ensure React is imported
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
@@ -22,9 +23,11 @@ import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 
-const queryClient = new QueryClient();
-
+// Create a new QueryClient instance within the component to ensure it's created after React initialization
 const App = () => {
+  // Initialize the QueryClient inside the component
+  const queryClient = React.useMemo(() => new QueryClient(), []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
