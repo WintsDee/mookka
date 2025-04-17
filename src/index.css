@@ -101,6 +101,33 @@
   }
 }
 
+/* Safe area inset padding utilities */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+
+.px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.py-safe {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Styles pour le fond avec motif subtil */
 .bg-pattern {
   background-color: #0F172A;
@@ -155,11 +182,6 @@
 
 .bg-media-game\/10 {
   @apply bg-amber-600/10;
-}
-
-/* Styles pour la barre de navigation mobile */
-.mobile-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
 }
 
 /* Styles pour les cartes de médias */

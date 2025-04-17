@@ -15,6 +15,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
+import { parseMediaStatus } from "@/services/media";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -45,7 +46,7 @@ const Bibliotheque = () => {
         coverImage: item.media?.cover_image || '',
         year: item.media?.year,
         rating: item.media?.rating,
-        status: item.status,
+        status: parseMediaStatus(item.status, item.media?.type as MediaType),
         genres: item.media?.genres,
         description: item.media?.description,
       }));

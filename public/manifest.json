@@ -5,6 +5,7 @@
   "description": "Votre bibliothèque numérique multimédia",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0F1524",
   "theme_color": "#0F1524",
   "icons": [

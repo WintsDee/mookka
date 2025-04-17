@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { HelpFeedback } from "@/components/profile/help-feedback";
-import { DEFAULT_AVATAR } from "@/hooks/use-profile";
 
 interface MobileHeaderProps {
   title?: string;
@@ -22,7 +21,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const { profile } = useProfile();
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 pt-[max(1rem,env(safe-area-inset-top))] z-50">
       {title && <h1 className="text-lg font-semibold">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0">
