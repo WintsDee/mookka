@@ -17,6 +17,7 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
+import { PWAInstallPrompt } from "./components/pwa/install-prompt";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <TooltipProvider>
+          <PWAInstallPrompt />
           <Toaster />
           <Sonner />
           <Routes>
