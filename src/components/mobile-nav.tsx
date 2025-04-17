@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, 
@@ -27,10 +27,12 @@ export function MobileNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50" 
+      className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50 pb-safe" 
       style={{
+        position: 'fixed',
         bottom: 0,
-        paddingBottom: 'env(safe-area-inset-bottom)'
+        left: 0,
+        right: 0
       }}
     >
       <div className="grid grid-cols-5 gap-2 py-3 px-4">
