@@ -25,9 +25,10 @@ export function usePWAStatus() {
       // Apply overscroll behavior
       document.body.style.overscrollBehavior = 'none';
       
-      // Disable pull-to-refresh on mobile
-      document.body.style.overflow = 'hidden';
+      // Enable scrolling in PWA mode but prevent pull-to-refresh
+      document.body.style.overflow = 'auto';
       document.body.style.height = '100%';
+      document.body.style.position = 'relative';
     }
     
     setIsLoaded(true);

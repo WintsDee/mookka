@@ -8,14 +8,19 @@ import {
   Bookmark,
   Library
 } from 'lucide-react';
+import { usePWAStatus } from '@/hooks/use-pwa-status';
 
 export function MobileNav() {
   const location = useLocation();
+  const { isPWA } = usePWAStatus();
   
   // Hide navigation on media detail pages
   if (location.pathname.startsWith('/media/')) {
     return null;
   }
+
+  // Get padding class based on whether this is PWA or not
+  const paddingClass = isPWA ? 'pb-6' : 'pb-safe';
 
   const navItems = [
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
@@ -26,7 +31,7 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
+    <nav className={`fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t ${paddingClass} z-50`}>
       <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4">
         {navItems.map((item) => (
           <Link 
