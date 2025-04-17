@@ -1,195 +1,163 @@
 
-import React, { useState, useEffect, memo, useCallback } from "react";
+import React, { memo, useCallback } from "react";
+import { Share2, Heart, Plus, Check, X, Bookmark, BookmarkCheck, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Heart, BookmarkPlus, FolderPlus, Share, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { MediaType } from "@/types";
 import { addMediaToLibrary, removeMediaFromLibrary, isMediaInLibrary } from "@/services/media";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/auth-provider";
+import { MediaType } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface MediaDetailActionsProps {
-  media: any;
-  type: MediaType;
-  onAddToCollection: () => void;
-  isInLibrary?: boolean;
-  onLibraryChange?: () => void;
+  mediaId: string;
+  mediaType: MediaType;
+  mediaTitle: string;
+  className?: string;
 }
 
-const MediaDetailActions = memo(({ 
-  media, 
-  type, 
-  onAddToCollection, 
-  isInLibrary = false,
-  onLibraryChange
+// Memoizing the component for better performance
+const MediaDetailActions = memo(({
+  mediaId,
+  mediaType,
+  mediaTitle,
+  className
 }: MediaDetailActionsProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
-  const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
-  const [inLibrary, setInLibrary] = useState(isInLibrary);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const { user } = useAuth();
+  const [isInLibrary, setIsInLibrary] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+  const [isAdding, setIsAdding] = React.useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = React.useState<boolean>(false);
 
-  // Vérifier si le média est dans la bibliothèque au chargement du composant avec mémorisation
-  const checkLibraryStatus = useCallback(async () => {
-    if (media && user) {
+  // Fetch the initial status when the component mounts
+  React.useEffect(() => {
+    const checkLibraryStatus = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
-        const inUserLibrary = await isMediaInLibrary(media.id);
-        setInLibrary(inUserLibrary);
+        const inLibrary = await isMediaInLibrary(mediaId);
+        setIsInLibrary(inLibrary);
       } catch (error) {
         console.error("Erreur lors de la vérification de la bibliothèque:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [media, user]);
-
-  useEffect(() => {
+    };
+    
     checkLibraryStatus();
-  }, [checkLibraryStatus]);
+  }, [mediaId, user]);
 
-  // Mettre à jour l'état lorsque la prop isInLibrary change
-  useEffect(() => {
-    setInLibrary(isInLibrary);
-  }, [isInLibrary]);
-
+  // Add to library handler with useCallback for memoization
   const handleAddToLibrary = useCallback(async () => {
-    if (!media || !user) {
-      if (!user) {
-        toast({
-          title: "Connexion requise",
-          description: "Vous devez être connecté pour ajouter un média à votre bibliothèque",
-          variant: "destructive",
-        });
-      }
+    if (!user) {
+      toast({
+        title: "Action requise",
+        description: "Vous devez être connecté pour ajouter des médias à votre bibliothèque",
+        variant: "destructive"
+      });
       return;
     }
-
-    setIsAddingToLibrary(true);
+    
+    setIsAdding(true);
+    
     try {
-      await addMediaToLibrary(media, type);
+      await addMediaToLibrary({
+        mediaId,
+        mediaType,
+        status: "to_consume" // Status par défaut
+      });
       
-      setInLibrary(true);
-      if (onLibraryChange) onLibraryChange();
-      
+      setIsInLibrary(true);
       toast({
-        title: "Succès",
-        description: `${type === 'film' ? 'Le film' : type === 'serie' ? 'La série' : type === 'book' ? 'Le livre' : 'Le jeu'} a été ajouté à votre bibliothèque`,
+        title: "Ajouté à la bibliothèque",
+        description: `${mediaTitle} a été ajouté à votre bibliothèque`
       });
     } catch (error) {
       console.error("Erreur lors de l'ajout à la bibliothèque:", error);
       toast({
         title: "Erreur",
         description: "Impossible d'ajouter ce média à votre bibliothèque",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
-      setIsAddingToLibrary(false);
+      setIsAdding(false);
     }
-  }, [media, user, type, toast, onLibraryChange]);
+  }, [mediaId, mediaType, mediaTitle, toast, user]);
 
+  // Remove from library handler with useCallback for memoization
   const handleRemoveFromLibrary = useCallback(async () => {
-    if (!media || !user || !media.id) return;
-
-    setIsRemovingFromLibrary(true);
+    if (!user) return;
+    
+    setIsRemoving(true);
+    
     try {
-      await removeMediaFromLibrary(media.id);
+      await removeMediaFromLibrary(mediaId);
       
-      setInLibrary(false);
-      if (onLibraryChange) onLibraryChange();
-      
+      setIsInLibrary(false);
       toast({
-        title: "Succès",
-        description: `${type === 'film' ? 'Le film' : type === 'serie' ? 'La série' : type === 'book' ? 'Le livre' : 'Le jeu'} a été retiré de votre bibliothèque`,
+        title: "Supprimé de la bibliothèque",
+        description: `${mediaTitle} a été supprimé de votre bibliothèque`
       });
     } catch (error) {
       console.error("Erreur lors de la suppression de la bibliothèque:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de retirer ce média de votre bibliothèque",
-        variant: "destructive",
+        description: "Impossible de supprimer ce média de votre bibliothèque",
+        variant: "destructive"
       });
     } finally {
-      setIsRemovingFromLibrary(false);
+      setIsRemoving(false);
     }
-  }, [media, user, toast, type, onLibraryChange]);
+  }, [mediaId, mediaTitle, toast, user]);
 
-  // Mémoriser ces composants pour éviter les re-rendus inutiles
-  const ActionButton = memo(({ onClick, disabled, children, variant = "ghost", className = "" }) => (
-    <Button 
-      variant={variant} 
-      size="sm" 
-      className={`flex items-center gap-1.5 h-auto py-1.5 px-2 ${className}`}
+  // Optimized action button with TypeScript fixes
+  const ActionButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined 
+  }> = ({ onClick, disabled, children, variant, className }) => (
+    <Button
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
+      variant={variant || "outline"}
+      size="sm"
+      className={cn("text-xs", className)}
     >
-      {children}
+      {isLoading ? (
+        <AlertCircle className="mr-1 h-3 w-3 animate-pulse" />
+      ) : (
+        children
+      )}
     </Button>
-  ));
-  
-  ActionButton.displayName = 'ActionButton';
-
-  // Éviter les re-rendus inutiles pour les boutons d'action
-  const renderActionButtons = useCallback(() => {
-    return (
-      <>
-        <ActionButton onClick={() => setIsLiked(!isLiked)}>
-          <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-          <span className="text-xs">J'aime</span>
-        </ActionButton>
-        
-        {inLibrary ? (
-          <ActionButton 
-            onClick={handleRemoveFromLibrary}
-            disabled={isRemovingFromLibrary || !user}
-            className="text-destructive"
-          >
-            {isRemovingFromLibrary ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-            <span className="text-xs">Retirer</span>
-          </ActionButton>
-        ) : (
-          <ActionButton 
-            onClick={handleAddToLibrary}
-            disabled={isAddingToLibrary || !user}
-          >
-            {isAddingToLibrary ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <BookmarkPlus className="h-4 w-4" />
-            )}
-            <span className="text-xs">Ajouter</span>
-          </ActionButton>
-        )}
-        
-        <ActionButton 
-          onClick={onAddToCollection}
-          disabled={!user}
-        >
-          <FolderPlus className="h-4 w-4" />
-          <span className="text-xs">Collection</span>
-        </ActionButton>
-        
-        <ActionButton>
-          <Share className="h-4 w-4" />
-          <span className="text-xs">Partager</span>
-        </ActionButton>
-      </>
-    );
-  }, [isLiked, inLibrary, isRemovingFromLibrary, user, handleRemoveFromLibrary, isAddingToLibrary, handleAddToLibrary, onAddToCollection]);
+  );
 
   return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 mb-6 mx-3 rounded-xl",
-      "bg-background/40 backdrop-blur-md",
-      "pb-safe-area", // Ajout de padding au bas de l'écran
-      "py-4", // Augmentation du padding vertical
-      "border border-border/20 shadow-lg" // Ajout d'une bordure subtile
-    )}>
-      {renderActionButtons()}
+    <div className={cn("flex items-center gap-2", className)}>
+      <ActionButton onClick={() => {}}>
+        <Share2 className="mr-1 h-3 w-3" />
+        Partager
+      </ActionButton>
+      
+      {isInLibrary ? (
+        <ActionButton 
+          onClick={handleRemoveFromLibrary}
+          disabled={isRemoving}
+          className="text-destructive border-destructive/20 hover:bg-destructive/10"
+        >
+          <X className="mr-1 h-3 w-3" />
+          Retirer
+        </ActionButton>
+      ) : (
+        <ActionButton
+          onClick={handleAddToLibrary}
+          disabled={isAdding}
+          className={`text-media-${mediaType} border-media-${mediaType}/30 hover:bg-media-${mediaType}/10`}
+        >
+          <Plus className="mr-1 h-3 w-3" />
+          Ajouter
+        </ActionButton>
+      )}
     </div>
   );
 });

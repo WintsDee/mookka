@@ -17,7 +17,6 @@ import {
   formatSearchResults 
 } from "@/components/search/search-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -66,7 +65,7 @@ const Recherche = () => {
     if (debouncedSearchTerm || !searchQuery) {
       fetchSearchResults(debouncedSearchTerm, selectedType);
     }
-  }, [debouncedSearchTerm, selectedType, fetchSearchResults]);
+  }, [debouncedSearchTerm, selectedType, fetchSearchResults, searchQuery]);
   
   // Gestionnaire de changement de type mémoïsé
   const handleTypeChange = useCallback((type: MediaType | string) => {
@@ -76,6 +75,9 @@ const Recherche = () => {
       fetchSearchResults(searchQuery, type as MediaType);
     }
   }, [searchQuery, fetchSearchResults]);
+
+  // Create a key for animation transitions
+  const contentKey = `${selectedType}-${debouncedSearchTerm}`;
 
   return (
     <Background>
@@ -100,24 +102,18 @@ const Recherche = () => {
         
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full px-6">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={`${selectedType}-${debouncedSearchTerm}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="pb-24"
-              >
-                <SearchResults 
-                  results={searchResults}
-                  isLoading={isLoading}
-                  searchQuery={searchQuery}
-                  selectedType={selectedType}
-                  from={location.pathname}
-                />
-              </motion.div>
-            </AnimatePresence>
+            <div 
+              key={contentKey}
+              className="animate-fade-in pb-24"
+            >
+              <SearchResults 
+                results={searchResults}
+                isLoading={isLoading}
+                searchQuery={searchQuery}
+                selectedType={selectedType}
+                from={location.pathname}
+              />
+            </div>
           </ScrollArea>
         </div>
       </div>

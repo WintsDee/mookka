@@ -49,6 +49,11 @@ class LRUCache<T> {
   clear(): void {
     this.cache.clear();
   }
+  
+  // Make keys accessible to allow iteration
+  keys(): IterableIterator<string> {
+    return this.cache.keys();
+  }
 }
 
 // Cache pour stocker les résultats de recherche avec meilleure gestion de la mémoire
@@ -67,7 +72,7 @@ function getCacheKey(type: MediaType, query: string, page: number): string {
  */
 function cleanupCache(): void {
   const now = Date.now();
-  for (const key of Array.from(searchCache.cache?.keys() || [])) {
+  for (const key of Array.from(searchCache.keys() || [])) {
     const entry = searchCache.get(key);
     if (entry && now - entry.timestamp > CACHE_DURATION) {
       searchCache.delete(key);
@@ -117,8 +122,7 @@ export async function searchMedia(type: MediaType, query: string, page: number =
     
     try {
       const { data, error } = await supabase.functions.invoke(`search-${type}`, {
-        body: { query, page },
-        signal: controller.signal
+        body: { query, page }
       });
 
       clearTimeout(timeoutId);
@@ -160,7 +164,7 @@ export async function searchMedia(type: MediaType, query: string, page: number =
           totalResults
         });
       }
-    } catch (e) {
+    } catch (e: any) {
       clearTimeout(timeoutId);
       if (e.name === 'AbortError') {
         console.warn(`La requête de recherche pour ${type} a expiré`);
@@ -219,8 +223,7 @@ export async function getMediaById(type: MediaType, id: string) {
     
     try {
       const { data, error } = await supabase.functions.invoke(`get-${type}-details`, {
-        body: { id },
-        signal: controller.signal
+        body: { id }
       });
 
       clearTimeout(timeoutId);
@@ -239,7 +242,7 @@ export async function getMediaById(type: MediaType, id: string) {
       }
 
       return data;
-    } catch (e) {
+    } catch (e: any) {
       clearTimeout(timeoutId);
       if (e.name === 'AbortError') {
         console.warn(`La requête de détails pour ${type}:${id} a expiré`);
