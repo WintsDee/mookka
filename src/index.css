@@ -3,17 +3,223 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import base styles with CSS variables */
-@import './styles/base.css';
+@layer base {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-/* Import utility classes */
-@import './styles/utilities.css';
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
 
-/* Import component-specific styles */
-@import './styles/components.css';
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-/* Import media-specific styles */
-@import './styles/media-types.css';
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 98%;
 
-/* Import animations */
-@import './styles/animations.css';
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 1rem;
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html, body, #root {
+    @apply h-full w-full overflow-hidden;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
+  
+  /* Masquer les barres de défilement mais garder la fonctionnalité */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Optimisation du scroll pour mobile */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+
+  .-webkit-overflow-scrolling-touch {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Styles pour le fond avec motif subtil */
+.bg-pattern {
+  background-color: #0F172A;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%231E293B' fill-opacity='0.4'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Styles pour les types de médias - Version améliorée pour un contraste plus fort */
+.media-film {
+  @apply bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-md shadow-blue-500/30;
+}
+
+.media-serie {
+  @apply bg-gradient-to-br from-purple-600 to-purple-800 text-white shadow-md shadow-purple-500/30;
+}
+
+.media-book {
+  @apply bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-md shadow-emerald-500/30;
+}
+
+.media-game {
+  @apply bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-md shadow-amber-500/30;
+}
+
+/* Couleurs de fond avec opacité pour les zones de sélection */
+.bg-media-film {
+  @apply bg-blue-600;
+}
+
+.bg-media-film\/10 {
+  @apply bg-blue-600/10;
+}
+
+.bg-media-serie {
+  @apply bg-purple-600;
+}
+
+.bg-media-serie\/10 {
+  @apply bg-purple-600/10;
+}
+
+.bg-media-book {
+  @apply bg-emerald-600;
+}
+
+.bg-media-book\/10 {
+  @apply bg-emerald-600/10;
+}
+
+.bg-media-game {
+  @apply bg-amber-600;
+}
+
+.bg-media-game\/10 {
+  @apply bg-amber-600/10;
+}
+
+/* Styles pour la barre de navigation mobile */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
+}
+
+/* Styles pour les cartes de médias */
+.media-card {
+  @apply relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-300 hover:shadow-lg hover:scale-[1.02];
+}
+
+/* Animation de pulsation spécifique pour les types de médias */
+.animate-pulse-film {
+  animation: pulse-film 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-serie {
+  animation: pulse-serie 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-book {
+  animation: pulse-book 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-game {
+  animation: pulse-game 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-film {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 0.5rem rgba(59, 130, 246, 0.5));
+  }
+}
+
+@keyframes pulse-serie {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 0.5rem rgba(147, 51, 234, 0.5));
+  }
+}
+
+@keyframes pulse-book {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 0.5rem rgba(16, 185, 129, 0.5));
+  }
+}
+
+@keyframes pulse-game {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+    filter: drop-shadow(0 0 0.5rem rgba(245, 158, 11, 0.5));
+  }
+}

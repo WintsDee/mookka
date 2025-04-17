@@ -1,4 +1,0 @@
-
-.mobile-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
-}

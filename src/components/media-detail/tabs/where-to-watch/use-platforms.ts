@@ -1,12 +1,12 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MediaType } from "@/types";
 import { Platform, PlatformHookResult } from "./types";
 import { generatePlatformData } from "./platform-data";
 import { useToast } from "@/components/ui/use-toast";
 
-// Timeout duration in milliseconds - reduce to improve perceived performance
-const FETCH_TIMEOUT = 3000;
+// Timeout duration in milliseconds
+const FETCH_TIMEOUT = 5000;
 
 // Cache pour améliorer les performances
 const platformsCache = new Map<string, { data: Platform[], timestamp: number }>();
@@ -38,12 +38,12 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     });
     
     try {
-      // Simulate API call with timeout protection - reduced to 200ms
+      // Simulate API call with timeout protection
       const dataPromise = new Promise<Platform[]>((resolve) => {
         setTimeout(() => {
           const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
           resolve(mockPlatforms);
-        }, 200); 
+        }, 300); // Réduction du délai pour meilleure réactivité
       });
       
       // Race between the data fetch and the timeout
@@ -55,6 +55,8 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
         timestamp: Date.now()
       });
       
+      // Filter available platforms if needed
+      // const availablePlatforms = data.filter(platform => platform.isAvailable === true);
       setPlatforms(data);
       setIsLoading(false);
     } catch (error) {
@@ -84,11 +86,8 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     fetchPlatforms();
   }, [fetchPlatforms]);
 
-  // Mémoriser les plateformes disponibles avec useMemo pour éviter les recalculs
-  const availablePlatforms = useMemo(() => {
-    return platforms.filter(platform => platform.isAvailable === true);
-  }, [platforms]);
-  
+  // Mémoriser les plateformes disponibles pour éviter les recalculs
+  const availablePlatforms = platforms.filter(platform => platform.isAvailable === true);
   const hasAvailablePlatforms = availablePlatforms.length > 0;
 
   // Return enhanced result object
