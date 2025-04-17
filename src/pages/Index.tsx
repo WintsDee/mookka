@@ -13,7 +13,6 @@ const Index = () => {
           className="w-full h-full object-cover fixed"
           loading="eager" 
           style={{
-            height: '100vh',
             height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))'
           }}
         />
