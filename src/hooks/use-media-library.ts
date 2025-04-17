@@ -60,7 +60,7 @@ export function useMediaLibrary(mediaId: string, mediaType: MediaType, mediaTitl
         mediaId,
         mediaType,
         status: "to_consume" // Status par défaut
-      }, mediaType);
+      }, mediaType, mediaTitle);
       
       setIsInLibrary(true);
       toast({

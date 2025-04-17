@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,10 +15,15 @@ interface MobileHeaderProps {
 
 const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isProfileActive = location.pathname === "/profil";
   const isNotificationsActive = location.pathname === "/notifications";
   
   const { profile } = useProfile();
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
   
   return (
     <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 pt-safe pb-4 h-auto min-h-16 z-50">
@@ -41,19 +46,22 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
           <HelpFeedback data-help-feedback-trigger />
         </div>
         
-        <Link to="/notifications" className={cn(
-          "relative",
-          isNotificationsActive ? "text-primary" : "text-muted-foreground"
-        )}>
+        <div 
+          onClick={() => handleNavigation("/notifications")}
+          className={cn(
+            "relative cursor-pointer",
+            isNotificationsActive ? "text-primary" : "text-muted-foreground"
+          )}
+        >
           <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
           {/* Notification indicator */}
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
-        </Link>
+        </div>
         
-        <Link
-          to="/profil"
+        <div
+          onClick={() => handleNavigation("/profil")}
           className={cn(
-            "flex items-center justify-center",
+            "flex items-center justify-center cursor-pointer",
             isProfileActive 
               ? "text-primary" 
               : "text-muted-foreground hover:text-foreground"
@@ -77,7 +85,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
               </AvatarFallback>
             </Avatar>
           )}
-        </Link>
+        </div>
       </div>
     </div>
   );

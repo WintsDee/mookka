@@ -20,7 +20,7 @@ const Index = () => {
   return (
     <div className="relative min-h-screen w-full overflow-auto">
       <div className="absolute inset-0 z-0">
-        {/* Background image - invisble as it's preloaded in CSS */}
+        {/* Background image - invisible as it's preloaded in CSS */}
         <div 
           className={`w-full h-full fixed ${bgLoaded ? 'opacity-100' : 'opacity-0'}`}
           style={{

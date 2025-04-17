@@ -1,22 +1,27 @@
 
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Home, BookOpen, Search, Activity, Bell } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 
 export function MobileNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isLoading, user } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
   
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/40 pt-2 pb-safe z-40">
       <div className="mx-auto px-4">
         <div className="flex items-center justify-around">
-          <Link
-            to="/"
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+          <div
+            onClick={() => handleNavigation("/")}
+            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/") 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -24,11 +29,11 @@ export function MobileNav() {
           >
             <Home className="h-5 w-5 mb-1" />
             <span>Accueil</span>
-          </Link>
+          </div>
           
-          <Link
-            to="/bibliotheque"
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+          <div
+            onClick={() => handleNavigation("/bibliotheque")}
+            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/bibliotheque") 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -36,11 +41,11 @@ export function MobileNav() {
           >
             <BookOpen className="h-5 w-5 mb-1" />
             <span>Bibliothèque</span>
-          </Link>
+          </div>
           
-          <Link
-            to="/recherche"
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+          <div
+            onClick={() => handleNavigation("/recherche")}
+            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/recherche") 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -48,11 +53,11 @@ export function MobileNav() {
           >
             <Search className="h-5 w-5 mb-1" />
             <span>Recherche</span>
-          </Link>
+          </div>
           
-          <Link
-            to="/social"
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+          <div
+            onClick={() => handleNavigation("/social")}
+            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/social") 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -60,11 +65,11 @@ export function MobileNav() {
           >
             <Activity className="h-5 w-5 mb-1" />
             <span>Social</span>
-          </Link>
+          </div>
           
-          <Link
-            to={user ? "/profil" : "/auth"}
-            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs ${
+          <div
+            onClick={() => handleNavigation(user ? "/profil" : "/auth")}
+            className={`flex flex-col items-center justify-center min-w-[60px] pt-1 pb-1 text-xs cursor-pointer ${
               isActive("/profil") || isActive("/auth")
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
@@ -82,7 +87,7 @@ export function MobileNav() {
               </div>
             )}
             <span>{user ? 'Profil' : 'Connexion'}</span>
-          </Link>
+          </div>
         </div>
       </div>
     </div>
