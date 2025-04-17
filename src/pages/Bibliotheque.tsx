@@ -9,6 +9,7 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -82,9 +83,11 @@ const Bibliotheque = () => {
             <p className="text-muted-foreground mb-4 text-center">
               Votre bibliothèque est vide
             </p>
-            <Button variant="outline" onClick={() => setFilter("all")}>
-              Commencez à ajouter du contenu
-            </Button>
+            <Link to="/recherche"> {/* Wrap the Button with Link */}
+              <Button variant="outline">
+                Commencez à ajouter du contenu
+              </Button>
+            </Link>
           </div>
         </ScrollArea>
       </div>
@@ -95,3 +98,4 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
+
