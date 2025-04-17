@@ -47,7 +47,16 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
     };
   }
 
-  return data.social_share_settings as SocialShareSettings;
+  // Utiliser une conversion explicite avec une vérification de type pour éviter les erreurs
+  const settings = data.social_share_settings as Record<string, boolean>;
+  
+  return {
+    shareRatings: settings.shareRatings ?? true,
+    shareReviews: settings.shareReviews ?? true,
+    shareCollections: settings.shareCollections ?? true,
+    shareProgress: settings.shareProgress ?? true,
+    shareLibraryAdditions: settings.shareLibraryAdditions ?? true
+  };
 }
 
 /**
@@ -72,8 +81,26 @@ export async function updateSocialShareSettings(settings: Partial<SocialShareSet
   }
 
   // Fusionner les paramètres actuels avec les nouveaux
-  const currentSettings = (currentData?.social_share_settings || {}) as SocialShareSettings;
-  const updatedSettings = { ...currentSettings, ...settings };
+  // Utiliser une conversion explicite et des valeurs par défaut pour éviter les erreurs
+  const currentSettings = currentData?.social_share_settings as Record<string, boolean> || {};
+  
+  const defaultSettings: SocialShareSettings = {
+    shareRatings: true,
+    shareReviews: true,
+    shareCollections: true,
+    shareProgress: true,
+    shareLibraryAdditions: true
+  };
+  
+  // Combiner les paramètres par défaut, les paramètres actuels et les nouveaux paramètres
+  const updatedSettings = { 
+    ...defaultSettings, 
+    ...Object.fromEntries(
+      Object.entries(currentSettings)
+        .filter(([key]) => key in defaultSettings)
+    ), 
+    ...settings 
+  };
 
   // Mettre à jour les paramètres
   const { error: updateError } = await supabase

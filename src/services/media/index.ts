@@ -7,7 +7,8 @@ export {
   updateMediaStatus,
   removeMediaFromLibrary,
   updateMediaRating,
-  getMediaRating
+  getMediaRating,
+  isMediaInLibrary
 } from './library-service';
 export { filterAdultContent } from './filters';
 export { 
