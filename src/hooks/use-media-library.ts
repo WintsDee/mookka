@@ -56,11 +56,13 @@ export function useMediaLibrary(mediaId: string, mediaType: MediaType, mediaTitl
     setIsAdding(true);
     
     try {
+      // Fixed: Passing the required parameters to addMediaToLibrary
       await addMediaToLibrary({
         mediaId,
         mediaType,
+        title: mediaTitle,
         status: "to_consume" // Status par défaut
-      });
+      }, mediaType);
       
       setIsInLibrary(true);
       toast({
