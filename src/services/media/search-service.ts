@@ -4,8 +4,55 @@ import { MediaType } from "@/types";
 import { formatBookSearchResult, formatFilmSearchResult, formatSerieSearchResult, formatGameSearchResult } from "./formatters";
 import { filterAdultContent } from "./filters";
 
-// Cache pour stocker les résultats de recherche
-const searchCache = new Map<string, { results: any[], timestamp: number, totalPages: number, totalResults: number }>();
+// Amélioration du cache avec LRU (Least Recently Used) pour optimiser la mémoire
+class LRUCache<T> {
+  private capacity: number;
+  private cache: Map<string, T>;
+  
+  constructor(capacity: number) {
+    this.capacity = capacity;
+    this.cache = new Map<string, T>();
+  }
+
+  get(key: string): T | undefined {
+    if (!this.cache.has(key)) return undefined;
+    
+    // Refresh the key's position in the map by deleting and re-adding it
+    const value = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, value!);
+    
+    return value;
+  }
+
+  put(key: string, value: T): void {
+    // If key exists, remove it first to refresh position
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    } 
+    // If at capacity, remove the oldest entry
+    else if (this.cache.size >= this.capacity) {
+      this.cache.delete(this.cache.keys().next().value);
+    }
+    
+    this.cache.set(key, value);
+  }
+
+  has(key: string): boolean {
+    return this.cache.has(key);
+  }
+  
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+  
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+// Cache pour stocker les résultats de recherche avec meilleure gestion de la mémoire
+const searchCache = new LRUCache<{ results: any[], timestamp: number, totalPages: number, totalResults: number }>(50); // Limiter à 50 requêtes en cache
 const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
 
 /**
@@ -20,15 +67,22 @@ function getCacheKey(type: MediaType, query: string, page: number): string {
  */
 function cleanupCache(): void {
   const now = Date.now();
-  searchCache.forEach((value, key) => {
-    if (now - value.timestamp > CACHE_DURATION) {
+  for (const key of Array.from(searchCache.cache?.keys() || [])) {
+    const entry = searchCache.get(key);
+    if (entry && now - entry.timestamp > CACHE_DURATION) {
       searchCache.delete(key);
     }
-  });
+  }
+}
+
+// Exécuter la purge de cache périodiquement pour éviter la consommation excessive de mémoire
+let cleanupInterval: NodeJS.Timeout | null = null;
+if (typeof window !== 'undefined' && !cleanupInterval) {
+  cleanupInterval = setInterval(cleanupCache, CACHE_DURATION);
 }
 
 /**
- * Recherche de médias par type et terme de recherche
+ * Recherche de médias par type et terme de recherche avec optimisations de performance
  */
 export async function searchMedia(type: MediaType, query: string, page: number = 1, adultContentAllowed: boolean = false) {
   if (!query) {
@@ -57,47 +111,62 @@ export async function searchMedia(type: MediaType, query: string, page: number =
     let totalPages = 0;
     let totalResults = 0;
 
-    // Appeler la fonction Edge de recherche appropriée selon le type
-    const { data, error } = await supabase.functions.invoke(`search-${type}`, {
-      body: { query, page }
-    });
+    // Appeler la fonction Edge de recherche appropriée selon le type avec un timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes de timeout
+    
+    try {
+      const { data, error } = await supabase.functions.invoke(`search-${type}`, {
+        body: { query, page },
+        signal: controller.signal
+      });
 
-    if (error) {
-      console.error(`Erreur lors de la recherche de ${type}:`, error);
-      throw error;
-    }
+      clearTimeout(timeoutId);
 
-    if (data) {
-      results = data.results || [];
-      totalPages = data.total_pages || 0;
-      totalResults = data.total_results || 0;
-
-      // Filtrer le contenu pour adultes si nécessaire
-      results = filterAdultContent(results, adultContentAllowed);
-
-      // Formater les résultats selon le type
-      switch (type) {
-        case 'film':
-          results = results.map(formatFilmSearchResult);
-          break;
-        case 'serie':
-          results = results.map(formatSerieSearchResult);
-          break;
-        case 'book':
-          results = results.map(formatBookSearchResult);
-          break;
-        case 'game':
-          results = results.map(formatGameSearchResult);
-          break;
+      if (error) {
+        console.error(`Erreur lors de la recherche de ${type}:`, error);
+        throw error;
       }
 
-      // Mettre en cache les résultats
-      searchCache.set(cacheKey, {
-        results: [...results], // Copie pour éviter les modifications par référence
-        timestamp: Date.now(),
-        totalPages,
-        totalResults
-      });
+      if (data) {
+        results = data.results || [];
+        totalPages = data.total_pages || 0;
+        totalResults = data.total_results || 0;
+
+        // Filtrer le contenu pour adultes si nécessaire
+        results = filterAdultContent(results, adultContentAllowed);
+
+        // Formater les résultats selon le type
+        switch (type) {
+          case 'film':
+            results = results.map(formatFilmSearchResult);
+            break;
+          case 'serie':
+            results = results.map(formatSerieSearchResult);
+            break;
+          case 'book':
+            results = results.map(formatBookSearchResult);
+            break;
+          case 'game':
+            results = results.map(formatGameSearchResult);
+            break;
+        }
+
+        // Mettre en cache les résultats
+        searchCache.put(cacheKey, {
+          results: [...results], // Copie pour éviter les modifications par référence
+          timestamp: Date.now(),
+          totalPages,
+          totalResults
+        });
+      }
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        console.warn(`La requête de recherche pour ${type} a expiré`);
+        throw new Error(`La recherche a pris trop de temps. Veuillez réessayer.`);
+      }
+      throw e;
     }
 
     return {
@@ -111,11 +180,11 @@ export async function searchMedia(type: MediaType, query: string, page: number =
   }
 }
 
-// Cache pour les détails des médias
-const detailsCache = new Map<string, { data: any, timestamp: number }>();
+// Cache pour les détails des médias avec LRU pour limiter l'utilisation mémoire
+const detailsCache = new LRUCache<{ data: any, timestamp: number }>(100);
 
 /**
- * Récupère les détails d'un média par son ID
+ * Récupère les détails d'un média par son ID avec gestion optimisée du cache
  */
 export async function getMediaById(type: MediaType, id: string) {
   try {
@@ -137,32 +206,47 @@ export async function getMediaById(type: MediaType, id: string) {
 
     if (existingMedia) {
       // Mettre en cache et retourner
-      detailsCache.set(cacheKey, {
+      detailsCache.put(cacheKey, {
         data: existingMedia,
         timestamp: Date.now()
       });
       return existingMedia;
     }
 
-    // Sinon, appeler l'API externe via la fonction Edge correspondante
-    const { data, error } = await supabase.functions.invoke(`get-${type}-details`, {
-      body: { id }
-    });
-
-    if (error) {
-      console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
-      throw error;
-    }
+    // Sinon, appeler l'API externe via la fonction Edge correspondante avec timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 secondes de timeout
     
-    // Mettre en cache les résultats
-    if (data) {
-      detailsCache.set(cacheKey, {
-        data,
-        timestamp: Date.now()
+    try {
+      const { data, error } = await supabase.functions.invoke(`get-${type}-details`, {
+        body: { id },
+        signal: controller.signal
       });
-    }
 
-    return data;
+      clearTimeout(timeoutId);
+
+      if (error) {
+        console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
+        throw error;
+      }
+      
+      // Mettre en cache les résultats
+      if (data) {
+        detailsCache.put(cacheKey, {
+          data,
+          timestamp: Date.now()
+        });
+      }
+
+      return data;
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        console.warn(`La requête de détails pour ${type}:${id} a expiré`);
+        throw new Error(`La récupération des détails a pris trop de temps. Veuillez réessayer.`);
+      }
+      throw e;
+    }
   } catch (error) {
     console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
     throw error;

@@ -1,10 +1,14 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/auth-provider";
 import { updateMediaStatus } from "@/services/media";
+
+// Cache client pour réduire les appels API
+const progressionCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,8 +16,8 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Create a default progression based on media type
-  const createDefaultProgression = (type: MediaType) => {
+  // Create a default progression based on media type - memoized with useCallback
+  const createDefaultProgression = useCallback((type: MediaType) => {
     switch (type) {
       case 'film':
         return {
@@ -43,9 +47,9 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       default:
         return {};
     }
-  };
+  }, [mediaDetails]);
   
-  const fetchProgression = async () => {
+  const fetchProgression = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -54,9 +58,21 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       
       if (!user) {
         setProgression(defaultProgression);
+        setIsLoading(false);
         return;
       }
       
+      // Vérifier le cache
+      const cacheKey = `progression-${user.id}-${mediaId}`;
+      const cachedData = progressionCache.get(cacheKey);
+      
+      if (cachedData && (Date.now() - cachedData.timestamp < CACHE_DURATION)) {
+        setProgression(cachedData.data);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Si pas dans le cache, rechercher dans la BDD
       const { data, error } = await supabase
         .from('media_progressions')
         .select('progression_data')
@@ -74,11 +90,20 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       }
       
       // If progression data exists, use it; otherwise use default
+      let progressionData;
       if (data && data.progression_data) {
-        setProgression(data.progression_data);
+        progressionData = data.progression_data;
       } else {
-        setProgression(defaultProgression);
+        progressionData = defaultProgression;
       }
+      
+      // Mettre en cache
+      progressionCache.set(cacheKey, {
+        data: progressionData,
+        timestamp: Date.now()
+      });
+      
+      setProgression(progressionData);
     } catch (error) {
       console.error('Erreur lors de la récupération de la progression:', error);
       // In case of error, use default progression
@@ -87,13 +112,13 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [mediaId, mediaType, user, createDefaultProgression, toast]);
   
   useEffect(() => {
     fetchProgression();
-  }, [mediaId, mediaType, user]);
+  }, [fetchProgression]);
 
-  const handleProgressionUpdate = async (progressionData: any) => {
+  const handleProgressionUpdate = useCallback(async (progressionData: any) => {
     try {
       if (!user) {
         toast({
@@ -103,6 +128,16 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
         });
         return;
       }
+      
+      // Mettre à jour le cache immédiatement pour une réactivité optimale
+      const cacheKey = `progression-${user.id}-${mediaId}`;
+      progressionCache.set(cacheKey, {
+        data: progressionData,
+        timestamp: Date.now()
+      });
+      
+      // Mettre à jour l'interface immédiatement
+      setProgression(progressionData);
       
       // Vérifier si il y a un enregistrement existant
       const { data: existingProgression } = await supabase
@@ -136,8 +171,6 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
         await updateMediaStatus(mediaId, progressionData.status);
       }
       
-      setProgression(progressionData);
-      
       toast({
         title: "Progression enregistrée",
         description: "Votre progression a été mise à jour"
@@ -150,7 +183,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
         variant: "destructive"
       });
     }
-  };
+  }, [mediaId, user, toast]);
 
   return {
     isLoading,

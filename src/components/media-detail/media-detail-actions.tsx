@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, useEffect, memo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, BookmarkPlus, FolderPlus, Share, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,28 +32,28 @@ const MediaDetailActions = memo(({
   const isMobile = useIsMobile();
   const { user } = useAuth();
 
-  // Vérifier si le média est dans la bibliothèque au chargement du composant
-  useEffect(() => {
-    const checkLibraryStatus = async () => {
-      if (media && user) {
-        try {
-          const inUserLibrary = await isMediaInLibrary(media.id);
-          setInLibrary(inUserLibrary);
-        } catch (error) {
-          console.error("Erreur lors de la vérification de la bibliothèque:", error);
-        }
+  // Vérifier si le média est dans la bibliothèque au chargement du composant avec mémorisation
+  const checkLibraryStatus = useCallback(async () => {
+    if (media && user) {
+      try {
+        const inUserLibrary = await isMediaInLibrary(media.id);
+        setInLibrary(inUserLibrary);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de la bibliothèque:", error);
       }
-    };
-
-    checkLibraryStatus();
+    }
   }, [media, user]);
+
+  useEffect(() => {
+    checkLibraryStatus();
+  }, [checkLibraryStatus]);
 
   // Mettre à jour l'état lorsque la prop isInLibrary change
   useEffect(() => {
     setInLibrary(isInLibrary);
   }, [isInLibrary]);
 
-  const handleAddToLibrary = async () => {
+  const handleAddToLibrary = useCallback(async () => {
     if (!media || !user) {
       if (!user) {
         toast({
@@ -86,9 +86,9 @@ const MediaDetailActions = memo(({
     } finally {
       setIsAddingToLibrary(false);
     }
-  };
+  }, [media, user, type, toast, onLibraryChange]);
 
-  const handleRemoveFromLibrary = async () => {
+  const handleRemoveFromLibrary = useCallback(async () => {
     if (!media || !user || !media.id) return;
 
     setIsRemovingFromLibrary(true);
@@ -112,29 +112,37 @@ const MediaDetailActions = memo(({
     } finally {
       setIsRemovingFromLibrary(false);
     }
-  };
+  }, [media, user, toast, type, onLibraryChange]);
+
+  // Mémoriser ces composants pour éviter les re-rendus inutiles
+  const ActionButton = memo(({ onClick, disabled, children, variant = "ghost", className = "" }) => (
+    <Button 
+      variant={variant} 
+      size="sm" 
+      className={`flex items-center gap-1.5 h-auto py-1.5 px-2 ${className}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </Button>
+  ));
+  
+  ActionButton.displayName = 'ActionButton';
 
   // Éviter les re-rendus inutiles pour les boutons d'action
-  const renderActionButtons = () => {
+  const renderActionButtons = useCallback(() => {
     return (
       <>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-          onClick={() => setIsLiked(!isLiked)}
-        >
+        <ActionButton onClick={() => setIsLiked(!isLiked)}>
           <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
           <span className="text-xs">J'aime</span>
-        </Button>
+        </ActionButton>
         
         {inLibrary ? (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1.5 h-auto py-1.5 px-2 text-destructive"
+          <ActionButton 
             onClick={handleRemoveFromLibrary}
             disabled={isRemovingFromLibrary || !user}
+            className="text-destructive"
           >
             {isRemovingFromLibrary ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -142,12 +150,9 @@ const MediaDetailActions = memo(({
               <Trash2 className="h-4 w-4" />
             )}
             <span className="text-xs">Retirer</span>
-          </Button>
+          </ActionButton>
         ) : (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+          <ActionButton 
             onClick={handleAddToLibrary}
             disabled={isAddingToLibrary || !user}
           >
@@ -157,31 +162,24 @@ const MediaDetailActions = memo(({
               <BookmarkPlus className="h-4 w-4" />
             )}
             <span className="text-xs">Ajouter</span>
-          </Button>
+          </ActionButton>
         )}
         
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+        <ActionButton 
           onClick={onAddToCollection}
           disabled={!user}
         >
           <FolderPlus className="h-4 w-4" />
           <span className="text-xs">Collection</span>
-        </Button>
+        </ActionButton>
         
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-        >
+        <ActionButton>
           <Share className="h-4 w-4" />
           <span className="text-xs">Partager</span>
-        </Button>
+        </ActionButton>
       </>
     );
-  };
+  }, [isLiked, inLibrary, isRemovingFromLibrary, user, handleRemoveFromLibrary, isAddingToLibrary, handleAddToLibrary, onAddToCollection]);
 
   return (
     <div className={cn(

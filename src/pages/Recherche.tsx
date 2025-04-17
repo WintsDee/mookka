@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaTypeSelector } from "@/components/media-type-selector";
@@ -17,6 +17,7 @@ import {
   formatSearchResults 
 } from "@/components/search/search-utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Recherche = () => {
   const [selectedType, setSelectedType] = useState<MediaType | "">("film");
@@ -27,37 +28,54 @@ const Recherche = () => {
   const { toast } = useToast();
   const location = useLocation();
   
-  useEffect(() => {
-    const fetchSearchResults = async () => {
-      if (debouncedSearchTerm && selectedType) {
-        setIsLoading(true);
-        try {
-          const result = await searchMedia(selectedType, debouncedSearchTerm);
-          
-          if (result.results && result.results.length > 0) {
-            const formattedResults = formatSearchResults(result.results, selectedType);
-            setSearchResults(formattedResults);
-          } else {
-            setSearchResults([]);
-          }
-        } catch (error) {
-          console.error("Erreur de recherche:", error);
-          toast({
-            title: "Erreur de recherche",
-            description: "Impossible de récupérer les résultats",
-            variant: "destructive",
-          });
+  // Mémoïser les props statiques pour éviter les re-rendus
+  const selectedTypeColor = useMemo(() => getSelectedTypeColor(selectedType), [selectedType]);
+  const searchPlaceholder = useMemo(() => getSearchPlaceholder(selectedType), [selectedType]);
+  
+  // Fonction fetch mémoïsée pour éviter les recréations à chaque rendu
+  const fetchSearchResults = useCallback(async (term: string, type: MediaType | "") => {
+    if (term && type) {
+      setIsLoading(true);
+      try {
+        const result = await searchMedia(type as MediaType, term);
+        
+        if (result.results && result.results.length > 0) {
+          const formattedResults = formatSearchResults(result.results, type as MediaType);
+          setSearchResults(formattedResults);
+        } else {
           setSearchResults([]);
-        } finally {
-          setIsLoading(false);
         }
-      } else {
+      } catch (error) {
+        console.error("Erreur de recherche:", error);
+        toast({
+          title: "Erreur de recherche",
+          description: "Impossible de récupérer les résultats",
+          variant: "destructive",
+        });
         setSearchResults([]);
+      } finally {
+        setIsLoading(false);
       }
-    };
-
-    fetchSearchResults();
-  }, [debouncedSearchTerm, selectedType, toast]);
+    } else {
+      setSearchResults([]);
+    }
+  }, [toast]);
+  
+  // Effet pour déclencher la recherche
+  useEffect(() => {
+    if (debouncedSearchTerm || !searchQuery) {
+      fetchSearchResults(debouncedSearchTerm, selectedType);
+    }
+  }, [debouncedSearchTerm, selectedType, fetchSearchResults]);
+  
+  // Gestionnaire de changement de type mémoïsé
+  const handleTypeChange = useCallback((type: MediaType | string) => {
+    setSelectedType(type as MediaType);
+    // Si une recherche est déjà en cours, effectuer immédiatement la recherche avec le nouveau type
+    if (searchQuery.trim().length > 0) {
+      fetchSearchResults(searchQuery, type as MediaType);
+    }
+  }, [searchQuery, fetchSearchResults]);
 
   return (
     <Background>
@@ -66,31 +84,40 @@ const Recherche = () => {
         <header className="px-6 mb-4">
           <MediaTypeSelector 
             selectedType={selectedType}
-            onSelectType={(type) => setSelectedType(type as MediaType)}
+            onSelectType={handleTypeChange}
             className="mt-6"
           />
           
           <SearchBar 
-            placeholder={getSearchPlaceholder(selectedType)}
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             isLoading={isLoading}
             isDisabled={!selectedType}
-            selectedTypeColor={getSelectedTypeColor(selectedType)}
+            selectedTypeColor={selectedTypeColor}
           />
         </header>
         
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full px-6">
-            <div className="pb-24">
-              <SearchResults 
-                results={searchResults}
-                isLoading={isLoading}
-                searchQuery={searchQuery}
-                selectedType={selectedType}
-                from={location.pathname}
-              />
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={`${selectedType}-${debouncedSearchTerm}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="pb-24"
+              >
+                <SearchResults 
+                  results={searchResults}
+                  isLoading={isLoading}
+                  searchQuery={searchQuery}
+                  selectedType={selectedType}
+                  from={location.pathname}
+                />
+              </motion.div>
+            </AnimatePresence>
           </ScrollArea>
         </div>
       </div>

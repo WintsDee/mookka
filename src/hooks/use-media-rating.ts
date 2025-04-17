@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/auth-provider";
 import { MediaType } from "@/types";
@@ -19,31 +19,32 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchRating = async () => {
-      // Only fetch if we have a mediaId and user is authenticated
-      if (!mediaId || !user) {
-        setIsLoading(false);
-        return;
-      }
-      
-      try {
-        setIsLoading(true);
-        const ratingData = await getMediaRating(mediaId);
-        
-        if (ratingData) {
-          setUserRating(ratingData.rating);
-          setUserReview(ratingData.review);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération de la note:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Récupération des notes memoïzée
+  const fetchRating = useCallback(async () => {
+    // Only fetch if we have a mediaId and user is authenticated
+    if (!mediaId || !user) {
+      setIsLoading(false);
+      return;
+    }
     
-    fetchRating();
+    try {
+      setIsLoading(true);
+      const ratingData = await getMediaRating(mediaId);
+      
+      if (ratingData) {
+        setUserRating(ratingData.rating);
+        setUserReview(ratingData.review);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la note:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [mediaId, user]);
+
+  useEffect(() => {
+    fetchRating();
+  }, [fetchRating]);
   
   // Utiliser un débounce pour l'enregistrement des critiques
   const [isDebounceSaving, debouncedUpdateRating] = useDebouncedAction(async (
@@ -59,7 +60,8 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     return { rating, review };
   }, 800);
 
-  const saveRating = async (values: MediaRatingData) => {
+  // Mémoïser la fonction saveRating pour éviter les recréations inutiles
+  const saveRating = useCallback(async (values: MediaRatingData) => {
     if (!user) {
       toast({
         title: "Erreur",
@@ -91,7 +93,7 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [mediaId, user, toast, debouncedUpdateRating]);
 
   return {
     isLoading,

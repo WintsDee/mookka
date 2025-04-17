@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Hook pour débouncer une action (une fonction) afin de limiter 
@@ -27,8 +27,8 @@ export function useDebouncedAction<T extends (...args: any[]) => Promise<any>>(
     };
   }, []);
   
-  // Fonction enrobée avec debounce - avec correction du typage
-  const debouncedAction = ((...args: Parameters<T>) => {
+  // Fonction enrobée avec debounce - avec mémorisation pour éviter les re-rendus
+  const debouncedAction = useCallback((...args: Parameters<T>) => {
     // Annuler le timer précédent si existant
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -49,7 +49,7 @@ export function useDebouncedAction<T extends (...args: any[]) => Promise<any>>(
         }
       }, delay);
     });
-  }) as unknown as T; // Fix: use explicit unknown cast first, then cast to T
+  }, [delay]) as unknown as T; // Fix: use explicit unknown cast first, then cast to T
   
   return [isLoading, debouncedAction];
 }
