@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useActivityFetch } from './use-activity-fetch';
 import { useMediaDetails } from './use-media-details';
-import { Media } from '@/types';
+import { Media, MediaType } from '@/types';
 
 interface Activity {
   id: string;
@@ -15,7 +15,7 @@ interface Activity {
   media: {
     id: string;
     title: string;
-    type: Media['type'];
+    type: MediaType;
   };
   timestamp: string;
 }
@@ -40,7 +40,7 @@ export const useSocialActivity = () => {
         media: {
           id: item.media_id,
           title: mediaMap[item.media_id]?.title || 'Titre inconnu',
-          type: mediaMap[item.media_id]?.type || 'film'
+          type: (mediaMap[item.media_id]?.type || 'film') as MediaType
         },
         timestamp: item.added_at
       }));
