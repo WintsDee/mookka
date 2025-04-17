@@ -20,14 +20,13 @@ export type Profile = {
 export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 export const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 
-export function useProfile() {
+export function useMediaLibrary() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<{ user: User } | null>(null);
   const { toast } = useToast();
   
   useEffect(() => {
-    // Vérifier s'il y a une session existante
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session?.user) {
@@ -37,7 +36,6 @@ export function useProfile() {
       }
     });
     
-    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -109,7 +107,6 @@ export function useProfile() {
         description: "Vos informations ont été mises à jour avec succès."
       });
       
-      // Rafraîchir les données du profil
       fetchProfile(session.user.id);
     } catch (error: any) {
       toast({
@@ -145,7 +142,6 @@ export function useProfile() {
         description: "Vous suivez maintenant cet utilisateur."
       });
       
-      // Rafraîchir le profil pour mettre à jour les compteurs
       fetchProfile(session.user.id);
     } catch (error: any) {
       toast({
@@ -179,7 +175,6 @@ export function useProfile() {
         description: "Vous ne suivez plus cet utilisateur."
       });
       
-      // Rafraîchir le profil pour mettre à jour les compteurs
       fetchProfile(session.user.id);
     } catch (error: any) {
       toast({
@@ -198,4 +193,8 @@ export function useProfile() {
     followUser,
     unfollowUser
   };
+}
+
+export function useProfile() {
+  return useMediaLibrary();
 }
