@@ -22,12 +22,18 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   
   return (
     <div 
-      className="mobile-header fixed left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50 pt-safe" 
+      className="mobile-header fixed left-0 right-0 flex justify-between items-center bg-background px-6 z-50"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0
+        right: 0,
+        paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)',
+        paddingBottom: '0.5rem',
+        paddingLeft: 'calc(env(safe-area-inset-left) + 1.5rem)',
+        paddingRight: 'calc(env(safe-area-inset-right) + 1.5rem)',
+        height: 'auto',
+        minHeight: '3.5rem'
       }}
     >
       {title && <h1 className="text-lg font-semibold">{title}</h1>}

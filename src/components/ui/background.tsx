@@ -18,14 +18,16 @@ const Background = ({
   return (
     <div
       className={cn(
-        "min-h-screen w-full pt-16",
+        "min-h-screen w-full",
         noScroll ? "" : "overflow-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch will-change-scroll",
         pattern ? "bg-pattern" : "bg-background",
         className
       )}
       style={{
-        paddingBottom: 'calc(env(safe-area-inset-bottom) + 65px)',
-        paddingTop: 'calc(env(safe-area-inset-top) + 64px)'
+        paddingTop: 'calc(env(safe-area-inset-top) + 60px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 70px)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
       }}
       {...props}
     >

@@ -12,6 +12,10 @@ const Index = () => {
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
           loading="eager" 
+          style={{
+            height: '100vh',
+            height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))'
+          }}
         />
         {/* Réduire l'opacité du fond sombre */}
         <div className="absolute inset-0 bg-black/50" />
