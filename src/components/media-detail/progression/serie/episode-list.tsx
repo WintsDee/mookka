@@ -56,7 +56,17 @@ export function EpisodeList({
       {episodes.map(episode => {
         const episodeNumber = episode.number;
         const isWatched = validWatchedEpisodes.includes(episodeNumber);
-        const airDate = episode.airDate ? new Date(episode.airDate) : null;
+        
+        // Ensure airDate is properly formatted
+        let airDate = null;
+        if (episode.airDate) {
+          if (typeof episode.airDate === 'string') {
+            airDate = new Date(episode.airDate);
+          } else if (episode.airDate instanceof Object && episode.airDate._type === 'undefined') {
+            airDate = null;
+          }
+        }
+        
         const isRecent = airDate && isAfter(airDate, twoWeeksAgo) && isBefore(airDate, today);
         const isUpcoming = airDate && isAfter(airDate, today);
         
@@ -80,7 +90,7 @@ export function EpisodeList({
               
               {episode.airDate && (
                 <div className="text-xs text-muted-foreground mt-1">
-                  {formatAirDate(episode.airDate)}
+                  {formatAirDate(typeof episode.airDate === 'string' ? episode.airDate : null)}
                 </div>
               )}
             </div>

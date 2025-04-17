@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Accordion, 
   AccordionContent, 
@@ -9,6 +9,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { EpisodeList } from "./episode-list";
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 interface Season {
   season_number: number;
@@ -35,6 +37,8 @@ export function SeasonAccordion({
   onToggleEpisode, 
   onToggleSeason 
 }: SeasonAccordionProps) {
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
   if (!seasons || seasons.length === 0) {
     return null;
   }
@@ -52,9 +56,24 @@ export function SeasonAccordion({
       return '';
     }
   };
+  
+  const handleToggleAll = (seasonNumber: number, episodeCount: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log(`Toggling entire season ${seasonNumber} with ${episodeCount} episodes`);
+    onToggleSeason(seasonNumber, episodeCount);
+  };
+
+  const handleAccordionValueChange = (value: string[]) => {
+    setExpandedItems(value);
+  };
 
   return (
-    <Accordion type="multiple" className="w-full space-y-4">
+    <Accordion 
+      type="multiple" 
+      className="w-full space-y-4"
+      value={expandedItems}
+      onValueChange={handleAccordionValueChange}
+    >
       {seasons.map((season) => {
         const seasonNumber = season.season_number;
         const episodeCount = season.episode_count;
@@ -100,10 +119,7 @@ export function SeasonAccordion({
                       size="sm" 
                       variant="outline"
                       className="h-8 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSeason(seasonNumber, episodeCount);
-                      }}
+                      onClick={(e) => handleToggleAll(seasonNumber, episodeCount, e)}
                     >
                       {toggleButtonText}
                     </Button>

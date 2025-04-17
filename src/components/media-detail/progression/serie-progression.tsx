@@ -5,6 +5,7 @@ import { StatusSelector } from "./serie/status-selector";
 import { ProgressHeader } from "./serie/progress-header";
 import { SeasonAccordion } from "./serie/season-accordion";
 import { UpcomingEpisodes } from "./serie/upcoming-episodes";
+import { useSubscription } from "./serie/subscription-service";
 
 interface SerieProgressionProps {
   mediaDetails: any;
@@ -23,6 +24,11 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
     toggleSeason,
     updateStatus
   } = useSerieProgression(mediaDetails, progression);
+
+  const { isSubscribed, toggleSubscription } = useSubscription({
+    mediaId: mediaDetails?.id || '',
+    mediaType: 'serie'
+  });
 
   const handleToggleEpisode = (seasonNumber: number, episodeNumber: number) => {
     console.log(`Toggling episode ${episodeNumber} of season ${seasonNumber}`);
@@ -76,7 +82,11 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
         onToggleSeason={handleToggleSeason} 
       />
       
-      <UpcomingEpisodes episodes={upcomingEpisodes} />
+      <UpcomingEpisodes 
+        episodes={upcomingEpisodes} 
+        isSubscribed={isSubscribed}
+        onToggleSubscription={toggleSubscription}
+      />
     </div>
   );
 }
