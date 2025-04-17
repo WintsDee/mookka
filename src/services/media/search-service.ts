@@ -4,12 +4,52 @@ import { MediaType } from "@/types";
 import { formatBookSearchResult, formatFilmSearchResult, formatSerieSearchResult, formatGameSearchResult } from "./formatters";
 import { filterAdultContent } from "./filters";
 
+// Cache pour stocker les résultats de recherche
+const searchCache = new Map<string, { results: any[], timestamp: number, totalPages: number, totalResults: number }>();
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
+
+/**
+ * Génère une clé de cache pour la recherche
+ */
+function getCacheKey(type: MediaType, query: string, page: number): string {
+  return `${type}:${query}:${page}`;
+}
+
+/**
+ * Nettoie les entrées de cache expirées
+ */
+function cleanupCache(): void {
+  const now = Date.now();
+  searchCache.forEach((value, key) => {
+    if (now - value.timestamp > CACHE_DURATION) {
+      searchCache.delete(key);
+    }
+  });
+}
+
 /**
  * Recherche de médias par type et terme de recherche
  */
 export async function searchMedia(type: MediaType, query: string, page: number = 1, adultContentAllowed: boolean = false) {
   if (!query) {
     return { results: [], total_pages: 0, total_results: 0 };
+  }
+
+  // Nettoyer périodiquement le cache
+  cleanupCache();
+
+  const cacheKey = getCacheKey(type, query, page);
+  const cachedResult = searchCache.get(cacheKey);
+
+  // Si résultat en cache et non expiré, l'utiliser
+  if (cachedResult) {
+    // Filtrer le contenu pour adultes si nécessaire (au cas où les préférences ont changé)
+    const filteredResults = filterAdultContent(cachedResult.results, adultContentAllowed);
+    return {
+      results: filteredResults,
+      total_pages: cachedResult.totalPages,
+      total_results: cachedResult.totalResults
+    };
   }
 
   try {
@@ -50,6 +90,14 @@ export async function searchMedia(type: MediaType, query: string, page: number =
           results = results.map(formatGameSearchResult);
           break;
       }
+
+      // Mettre en cache les résultats
+      searchCache.set(cacheKey, {
+        results: [...results], // Copie pour éviter les modifications par référence
+        timestamp: Date.now(),
+        totalPages,
+        totalResults
+      });
     }
 
     return {
@@ -63,11 +111,22 @@ export async function searchMedia(type: MediaType, query: string, page: number =
   }
 }
 
+// Cache pour les détails des médias
+const detailsCache = new Map<string, { data: any, timestamp: number }>();
+
 /**
  * Récupère les détails d'un média par son ID
  */
 export async function getMediaById(type: MediaType, id: string) {
   try {
+    const cacheKey = `${type}:${id}`;
+    const cachedDetails = detailsCache.get(cacheKey);
+    
+    // Si données en cache et non expirées, les utiliser
+    if (cachedDetails && (Date.now() - cachedDetails.timestamp < CACHE_DURATION)) {
+      return cachedDetails.data;
+    }
+    
     // Vérifier si le média existe déjà dans notre base de données
     const { data: existingMedia } = await supabase
       .from('media')
@@ -77,7 +136,11 @@ export async function getMediaById(type: MediaType, id: string) {
       .maybeSingle();
 
     if (existingMedia) {
-      // Si oui, utiliser ces données
+      // Mettre en cache et retourner
+      detailsCache.set(cacheKey, {
+        data: existingMedia,
+        timestamp: Date.now()
+      });
       return existingMedia;
     }
 
@@ -89,6 +152,14 @@ export async function getMediaById(type: MediaType, id: string) {
     if (error) {
       console.error(`Erreur lors de la récupération des détails de ${type}:`, error);
       throw error;
+    }
+    
+    // Mettre en cache les résultats
+    if (data) {
+      detailsCache.set(cacheKey, {
+        data,
+        timestamp: Date.now()
+      });
     }
 
     return data;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, BookmarkPlus, FolderPlus, Share, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,13 +17,13 @@ interface MediaDetailActionsProps {
   onLibraryChange?: () => void;
 }
 
-export function MediaDetailActions({ 
+const MediaDetailActions = memo(({ 
   media, 
   type, 
   onAddToCollection, 
   isInLibrary = false,
   onLibraryChange
-}: MediaDetailActionsProps) {
+}: MediaDetailActionsProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
   const [isRemovingFromLibrary, setIsRemovingFromLibrary] = useState(false);
@@ -114,6 +114,75 @@ export function MediaDetailActions({
     }
   };
 
+  // Éviter les re-rendus inutiles pour les boutons d'action
+  const renderActionButtons = () => {
+    return (
+      <>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+          onClick={() => setIsLiked(!isLiked)}
+        >
+          <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+          <span className="text-xs">J'aime</span>
+        </Button>
+        
+        {inLibrary ? (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-1.5 h-auto py-1.5 px-2 text-destructive"
+            onClick={handleRemoveFromLibrary}
+            disabled={isRemovingFromLibrary || !user}
+          >
+            {isRemovingFromLibrary ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+            <span className="text-xs">Retirer</span>
+          </Button>
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+            onClick={handleAddToLibrary}
+            disabled={isAddingToLibrary || !user}
+          >
+            {isAddingToLibrary ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <BookmarkPlus className="h-4 w-4" />
+            )}
+            <span className="text-xs">Ajouter</span>
+          </Button>
+        )}
+        
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+          onClick={onAddToCollection}
+          disabled={!user}
+        >
+          <FolderPlus className="h-4 w-4" />
+          <span className="text-xs">Collection</span>
+        </Button>
+        
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+        >
+          <Share className="h-4 w-4" />
+          <span className="text-xs">Partager</span>
+        </Button>
+      </>
+    );
+  };
+
   return (
     <div className={cn(
       "fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-2 mb-6 mx-3 rounded-xl",
@@ -122,67 +191,11 @@ export function MediaDetailActions({
       "py-4", // Augmentation du padding vertical
       "border border-border/20 shadow-lg" // Ajout d'une bordure subtile
     )}>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-        onClick={() => setIsLiked(!isLiked)}
-      >
-        <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-        <span className="text-xs">J'aime</span>
-      </Button>
-      
-      {inLibrary ? (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 h-auto py-1.5 px-2 text-destructive"
-          onClick={handleRemoveFromLibrary}
-          disabled={isRemovingFromLibrary || !user}
-        >
-          {isRemovingFromLibrary ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="h-4 w-4" />
-          )}
-          <span className="text-xs">Retirer</span>
-        </Button>
-      ) : (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-          onClick={handleAddToLibrary}
-          disabled={isAddingToLibrary || !user}
-        >
-          {isAddingToLibrary ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <BookmarkPlus className="h-4 w-4" />
-          )}
-          <span className="text-xs">Ajouter</span>
-        </Button>
-      )}
-      
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-        onClick={onAddToCollection}
-        disabled={!user}
-      >
-        <FolderPlus className="h-4 w-4" />
-        <span className="text-xs">Collection</span>
-      </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-      >
-        <Share className="h-4 w-4" />
-        <span className="text-xs">Partager</span>
-      </Button>
+      {renderActionButtons()}
     </div>
   );
-}
+});
+
+MediaDetailActions.displayName = "MediaDetailActions";
+
+export { MediaDetailActions };

@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/providers/auth-provider";
 import { MediaType } from "@/types";
 import { updateMediaRating, getMediaRating } from "@/services/media";
+import { useDebouncedAction } from "@/hooks/use-debounced-action";
 
 export interface MediaRatingData {
   rating: number;
@@ -43,6 +44,20 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     
     fetchRating();
   }, [mediaId, user]);
+  
+  // Utiliser un débounce pour l'enregistrement des critiques
+  const [isDebounceSaving, debouncedUpdateRating] = useDebouncedAction(async (
+    mediaId: string, 
+    rating: number, 
+    review: string
+  ) => {
+    if (!user) {
+      throw new Error("Vous devez être connecté pour noter un média");
+    }
+    
+    await updateMediaRating(mediaId, rating, review);
+    return { rating, review };
+  }, 800);
 
   const saveRating = async (values: MediaRatingData) => {
     if (!user) {
@@ -57,7 +72,7 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
     setIsSubmitting(true);
     
     try {
-      await updateMediaRating(mediaId, values.rating, values.review);
+      await debouncedUpdateRating(mediaId, values.rating, values.review);
       
       setUserRating(values.rating);
       setUserReview(values.review);
@@ -80,7 +95,7 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
 
   return {
     isLoading,
-    isSubmitting,
+    isSubmitting: isSubmitting || isDebounceSaving,
     userRating,
     userReview,
     saveRating,
