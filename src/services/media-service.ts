@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType } from "@/types";
+import { Media, MediaType, MediaStatus } from "@/types";
 
 /**
  * Add media to user's library
@@ -132,7 +132,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         rating: formattedMedia.rating,
         genres: formattedMedia.genres,
         description: formattedMedia.description,
-        status: 'to-watch' as const,
+        status: 'to-watch' as MediaStatus,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
@@ -166,7 +166,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       rating: formattedMedia.rating,
       genres: formattedMedia.genres,
       description: formattedMedia.description,
-      status: userMedia.status as 'to-watch' | 'watching' | 'completed',
+      status: userMedia.status as MediaStatus,
       duration: formattedMedia.duration,
       director: formattedMedia.director,
       author: formattedMedia.author,
@@ -231,13 +231,13 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
       return {
         id: media.id,
         title: media.title,
-        type: media.type,
+        type: media.type as MediaType,  // Properly assert MediaType here
         coverImage: media.cover_image,
         year: media.year,
         rating: media.rating,
         genres: media.genres,
         description: media.description,
-        status: item.status,
+        status: item.status as MediaStatus,  // Properly assert MediaStatus here
         duration: media.duration,
         director: media.director,
         author: media.author,
@@ -254,7 +254,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
 /**
  * Mettre à jour le statut d'un média dans la bibliothèque
  */
-export async function updateMediaStatus(mediaId: string, status: string): Promise<void> {
+export async function updateMediaStatus(mediaId: string, status: MediaStatus): Promise<void> {
   try {
     const { data: user } = await supabase.auth.getUser();
     
