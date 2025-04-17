@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/providers/auth-provider";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
@@ -17,33 +19,61 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/bibliotheque" element={<Bibliotheque />} />
-            <Route path="/recherche" element={<Recherche />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/actualites" element={<Actualites />} />
-            <Route path="/profil" element={<Profil />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/media/:type/:id" element={<MediaDetail />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:id" element={<CollectionDetail />} />
-            <Route path="/soutenir" element={<Soutenir />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/bibliotheque" element={
+                <ProtectedRoute>
+                  <Bibliotheque />
+                </ProtectedRoute>
+              } />
+              <Route path="/recherche" element={<Recherche />} />
+              <Route path="/social" element={
+                <ProtectedRoute>
+                  <Social />
+                </ProtectedRoute>
+              } />
+              <Route path="/actualites" element={<Actualites />} />
+              <Route path="/profil" element={
+                <ProtectedRoute>
+                  <Profil />
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              } />
+              <Route path="/media/:type/:id" element={<MediaDetail />} />
+              <Route path="/collections" element={
+                <ProtectedRoute>
+                  <Collections />
+                </ProtectedRoute>
+              } />
+              <Route path="/collections/:id" element={<CollectionDetail />} />
+              <Route path="/soutenir" element={<Soutenir />} />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

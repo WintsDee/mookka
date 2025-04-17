@@ -1,27 +1,20 @@
 
 /**
- * Filter out adult content from media results
+ * Filtre le contenu adulte des résultats de recherche
  */
-export function filterAdultContent(mediaList: any[]): any[] {
-  // Expanded keyword list to better filter adult content
-  const adultContentKeywords = [
-    'xxx', 'porn', 'porno', 'pornographique', 'bdsm', 'kamasutra', 'explicit',
-    'sexe', 'érotique', 'adult', 'adulte', 'nympho', 'nymphomane', 'nude', 'nu',
-    'sensual', 'sensuel', 'mature', 'x-rated', 'classé x', 'uncensored', 'non censuré',
-    'journal d\'une nymphomane', 'journal d une nymphomane', 'journal nymphomane',
-    'emmanuelle', 'playboy', 'sexy', 'sex', 'érotisme', 'erotisme', 'lingerie'
-  ];
-  
-  return mediaList.filter(media => {
-    const title = (media.title || '').toLowerCase();
-    const description = (media.description || '').toLowerCase();
-    const genres = Array.isArray(media.genres) 
-      ? media.genres.map((g: string) => g.toLowerCase()).join(' ') 
-      : '';
+export function filterAdultContent(media: any[]): any[] {
+  return media.filter(item => {
+    // Pour les films/séries (TMDB)
+    if (item.hasOwnProperty('adult')) {
+      return !item.adult;
+    }
     
-    const contentText = `${title} ${description} ${genres}`;
+    // Pour les jeux (RAWG)
+    if (item.hasOwnProperty('esrb_rating')) {
+      return !item.esrb_rating || item.esrb_rating.slug !== 'adults-only';
+    }
     
-    // Filter out explicit adult content
-    return !adultContentKeywords.some(keyword => contentText.includes(keyword.toLowerCase()));
+    // Par défaut, laisser passer le contenu
+    return true;
   });
 }

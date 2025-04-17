@@ -11,19 +11,22 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { getUserMediaLibrary } from "@/services/media/library-service";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/providers/auth-provider";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
+  const { user } = useAuth();
   
   // Fetch user's media library
   const { data: userLibrary, isLoading, error } = useQuery({
-    queryKey: ['userLibrary'],
-    queryFn: getUserMediaLibrary
+    queryKey: ['userLibrary', user?.id],
+    queryFn: getUserMediaLibrary,
+    enabled: !!user
   });
   
   // Filtrer les médias en fonction du type sélectionné et du terme de recherche
@@ -177,14 +180,15 @@ const Bibliotheque = () => {
                       Réinitialiser les filtres
                     </Button>
                   ) : (
-                    <Button 
-                      variant="default" 
-                      onClick={() => window.location.href = "/recherche"}
-                      className="flex items-center gap-2"
-                    >
-                      <PlusCircle size={16} />
-                      <span>Rechercher des médias</span>
-                    </Button>
+                    <Link to="/recherche">
+                      <Button 
+                        variant="default" 
+                        className="flex items-center gap-2"
+                      >
+                        <PlusCircle size={16} />
+                        <span>Rechercher des médias</span>
+                      </Button>
+                    </Link>
                   )}
                 </div>
               )}
