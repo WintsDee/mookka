@@ -43,9 +43,12 @@ export async function getSocialShareSettings(): Promise<SocialShareSettings> {
       return defaultSettings;
     }
     
+    // Type assertion to ensure proper object handling
+    const socialSettings = data.social_share_settings as Partial<SocialShareSettings>;
+    
     return {
       ...defaultSettings,
-      ...data.social_share_settings
+      ...socialSettings
     };
   } catch (error) {
     console.error("Erreur dans getSocialShareSettings:", error);
@@ -76,7 +79,8 @@ export async function updateSocialShareSettings(settings: Partial<SocialShareSet
       throw selectError;
     }
     
-    const currentSettings = currentData.social_share_settings || {};
+    // Type assertion to ensure proper object handling
+    const currentSettings = (currentData?.social_share_settings || {}) as Partial<SocialShareSettings>;
     
     // Mettre à jour les paramètres
     const updatedSettings = {

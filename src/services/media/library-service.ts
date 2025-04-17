@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType, MediaStatus } from "@/types";
-import { formatLibraryMedia } from './formatters';
 
 /**
  * Add media to user's library
@@ -133,7 +132,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         rating: formattedMedia.rating,
         genres: formattedMedia.genres,
         description: formattedMedia.description,
-        status: 'to-watch' as const,
+        status: 'to-watch' as MediaStatus,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
@@ -167,7 +166,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       rating: formattedMedia.rating,
       genres: formattedMedia.genres,
       description: formattedMedia.description,
-      status: userMedia.status as 'to-watch' | 'watching' | 'completed',
+      status: userMedia.status as MediaStatus,
       duration: formattedMedia.duration,
       director: formattedMedia.director,
       author: formattedMedia.author,
@@ -227,7 +226,25 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
       return [];
     }
     
-    return data.map(formatLibraryMedia);
+    return data.map((item) => {
+      const media = item.media;
+      return {
+        id: media.id,
+        title: media.title,
+        type: media.type as MediaType,
+        coverImage: media.cover_image,
+        year: media.year,
+        rating: media.rating,
+        genres: media.genres,
+        description: media.description,
+        status: item.status as MediaStatus,
+        duration: media.duration,
+        director: media.director,
+        author: media.author,
+        publisher: media.publisher,
+        platform: media.platform
+      };
+    });
   } catch (error) {
     console.error("Erreur dans getUserMediaLibrary:", error);
     throw error;
