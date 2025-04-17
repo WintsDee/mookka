@@ -323,30 +323,6 @@ export type Database = {
         }
         Relationships: []
       }
-      media_subscriptions: {
-        Row: {
-          created_at: string | null
-          id: string
-          media_id: string
-          media_type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          media_id: string
-          media_type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          media_id?: string
-          media_type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       media_suggestions: {
         Row: {
           admin_notes: string | null

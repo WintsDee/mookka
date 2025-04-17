@@ -51,27 +51,12 @@ export function EpisodeList({
   const twoWeeksAgo = addDays(new Date(), -14);
   const today = new Date();
   
-  console.log('EpisodeList rendering:', { seasonNumber, episodes, watchedEpisodes: validWatchedEpisodes });
-  
   return (
     <div className="divide-y divide-border/20">
       {episodes.map(episode => {
         const episodeNumber = episode.number;
         const isWatched = validWatchedEpisodes.includes(episodeNumber);
-        
-        // Parse air date properly
-        let airDate: Date | null = null;
-        if (episode.airDate) {
-          try {
-            airDate = new Date(episode.airDate);
-            if (isNaN(airDate.getTime())) {
-              airDate = null;
-            }
-          } catch (error) {
-            airDate = null;
-          }
-        }
-        
+        const airDate = episode.airDate ? new Date(episode.airDate) : null;
         const isRecent = airDate && isAfter(airDate, twoWeeksAgo) && isBefore(airDate, today);
         const isUpcoming = airDate && isAfter(airDate, today);
         
@@ -81,7 +66,6 @@ export function EpisodeList({
               id={`s${seasonNumber}e${episodeNumber}`}
               checked={isWatched}
               onCheckedChange={() => {
-                console.log(`Toggle episode ${episodeNumber} of season ${seasonNumber}, current state: ${isWatched}`);
                 onToggleEpisode(seasonNumber, episodeNumber);
               }}
               className="mr-3 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"

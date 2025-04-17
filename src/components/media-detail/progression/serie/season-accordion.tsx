@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { 
   Accordion, 
   AccordionContent, 
@@ -9,8 +9,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { EpisodeList } from "./episode-list";
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 
 interface Season {
   season_number: number;
@@ -37,8 +35,6 @@ export function SeasonAccordion({
   onToggleEpisode, 
   onToggleSeason 
 }: SeasonAccordionProps) {
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
-
   if (!seasons || seasons.length === 0) {
     return null;
   }
@@ -56,38 +52,15 @@ export function SeasonAccordion({
       return '';
     }
   };
-  
-  const handleToggleAll = (seasonNumber: number, episodeCount: number, event: React.MouseEvent) => {
-    event.stopPropagation();
-    console.log(`Toggling entire season ${seasonNumber} with ${episodeCount} episodes`);
-    onToggleSeason(seasonNumber, episodeCount);
-  };
-
-  const handleAccordionValueChange = (value: string[]) => {
-    setExpandedItems(value);
-  };
-
-  console.log("SeasonAccordion rendering with progression:", progression);
 
   return (
-    <Accordion 
-      type="multiple" 
-      className="w-full space-y-4"
-      value={expandedItems}
-      onValueChange={handleAccordionValueChange}
-    >
+    <Accordion type="multiple" className="w-full space-y-4">
       {seasons.map((season) => {
         const seasonNumber = season.season_number;
         const episodeCount = season.episode_count;
         const seasonName = season.name || `Saison ${seasonNumber}`;
         const seasonDate = formatSeasonDate(season.air_date);
-        
-        // Ensure watched_episodes is properly accessed or default to empty array
-        const watchedEpisodesObj = progression?.watched_episodes || {};
-        const watchedEpisodesForSeason = watchedEpisodesObj[seasonNumber] || [];
-        
-        console.log(`Season ${seasonNumber} watched episodes:`, watchedEpisodesForSeason);
-        
+        const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
         const seasonProgress = episodeCount > 0 ? (watchedEpisodesForSeason.length / episodeCount) * 100 : 0;
         
         // Ensure we have correct episode data for this season
@@ -126,8 +99,11 @@ export function SeasonAccordion({
                     <Button 
                       size="sm" 
                       variant="outline"
-                      className={`h-8 text-xs ${isAllWatched ? 'bg-primary/10 text-primary' : ''}`}
-                      onClick={(e) => handleToggleAll(seasonNumber, episodeCount, e)}
+                      className="h-8 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSeason(seasonNumber, episodeCount);
+                      }}
                     >
                       {toggleButtonText}
                     </Button>
