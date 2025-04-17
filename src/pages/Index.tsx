@@ -11,10 +11,8 @@ const Index = () => {
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
-          loading="eager" 
-          style={{
-            height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))'
-          }}
+          loading="eager" // Assure un chargement prioritaire
+          fetchPriority="high" // Attribut HTML moderne pour donner priorité élevée
         />
         {/* Réduire l'opacité du fond sombre */}
         <div className="absolute inset-0 bg-black/50" />

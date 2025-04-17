@@ -5,11 +5,8 @@
   "description": "Votre bibliothèque numérique multimédia",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0F1524",
   "theme_color": "#0F1524",
-  "scope": "/",
-  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png",

@@ -4,58 +4,23 @@ import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
 import { MediaRecommendations } from "@/components/media-recommendations";
+import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FilterIcon, Search, Library, Plus } from "lucide-react";
+import { PlusCircle, FilterIcon, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { useLocation, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useProfile } from "@/hooks/use-profile";
-import { parseMediaStatus } from "@/services/media";
+import { useLocation } from "react-router-dom";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
-  const { profile } = useProfile();
-  
-  // Récupérer la bibliothèque de l'utilisateur
-  const { data: userMedia = [], isLoading } = useQuery({
-    queryKey: ['user-library', profile?.id],
-    queryFn: async () => {
-      if (!profile?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('user_media')
-        .select('*, media(*)')
-        .eq('user_id', profile.id);
-        
-      if (error) {
-        console.error('Erreur lors de la récupération de la bibliothèque:', error);
-        return [];
-      }
-      
-      return data.map(item => ({
-        id: item.media?.id || '',
-        title: item.media?.title || 'Sans titre',
-        type: item.media?.type as MediaType,
-        coverImage: item.media?.cover_image || '',
-        year: item.media?.year,
-        rating: item.media?.rating,
-        status: parseMediaStatus(item.status, item.media?.type as MediaType),
-        genres: item.media?.genres,
-        description: item.media?.description,
-      }));
-    },
-    enabled: !!profile?.id
-  });
   
   // Filtrer les médias en fonction du type sélectionné et du terme de recherche
-  const filteredMedia = userMedia
+  const filteredMedia = mockMedia
     .filter(media => filter === "all" || media.type === filter)
     .filter(media => 
       searchTerm === "" || 
@@ -67,12 +32,8 @@ const Bibliotheque = () => {
   
   // Grouper les médias par statut
   const mediaByStatus = {
-    current: filteredMedia.filter(m => 
-      m.status === "watching" || m.status === "reading" || m.status === "playing"
-    ),
-    pending: filteredMedia.filter(m => 
-      m.status === "to-watch" || m.status === "to-read" || m.status === "to-play"
-    ),
+    current: filteredMedia.filter(m => m.status === "watching"),
+    pending: filteredMedia.filter(m => m.status === "to-watch"),
     completed: filteredMedia.filter(m => m.status === "completed")
   };
 
@@ -140,80 +101,55 @@ const Bibliotheque = () => {
         </header>
         
         <ScrollArea className="h-[calc(100vh-220px)] px-6">
-          {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center">
-              <p className="text-muted-foreground animate-pulse">Chargement de votre bibliothèque...</p>
-            </div>
-          ) : (
-            <div className="space-y-8 pb-24">
-              {/* En cours de visionnage/lecture/jeu */}
-              {mediaByStatus.current.length > 0 && (
-                <MediaRecommendations 
-                  title="En cours" 
-                  medias={mediaByStatus.current}
-                  onSeeMore={() => console.log("Voir plus - En cours")}
-                  from={location.pathname}
-                />
-              )}
-              
-              {/* À voir/lire/jouer */}
-              {mediaByStatus.pending.length > 0 && (
-                <MediaRecommendations 
-                  title="À découvrir" 
-                  medias={mediaByStatus.pending}
-                  onSeeMore={() => console.log("Voir plus - À découvrir")}
-                  from={location.pathname}
-                />
-              )}
-              
-              {/* Terminés */}
-              {mediaByStatus.completed.length > 0 && (
-                <MediaRecommendations 
-                  title="Terminés" 
-                  medias={mediaByStatus.completed}
-                  onSeeMore={() => console.log("Voir plus - Terminés")}
-                  from={location.pathname}
-                />
-              )}
-              
-              {/* Si aucun résultat avec les filtres */}
-              {filteredMedia.length === 0 && userMedia.length > 0 && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-muted-foreground mb-4 text-center">
-                    Aucun média trouvé pour cette recherche.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setSearchTerm("");
-                      setFilter("all");
-                    }}
-                  >
-                    Réinitialiser les filtres
-                  </Button>
-                </div>
-              )}
-              
-              {/* Si bibliothèque vide */}
-              {userMedia.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                    <Library className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Votre bibliothèque est vide</h3>
-                  <p className="text-muted-foreground mb-6 text-center max-w-xs">
-                    Recherchez et ajoutez des films, séries, livres et jeux pour commencer à construire votre bibliothèque.
-                  </p>
-                  <Link to="/recherche">
-                    <Button className="gap-2">
-                      <Plus size={16} />
-                      Ajouter des médias
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="space-y-8 pb-24">
+            {/* En cours de visionnage/lecture/jeu */}
+            {mediaByStatus.current.length > 0 && (
+              <MediaRecommendations 
+                title="En cours" 
+                medias={mediaByStatus.current}
+                onSeeMore={() => console.log("Voir plus - En cours")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* À voir/lire/jouer */}
+            {mediaByStatus.pending.length > 0 && (
+              <MediaRecommendations 
+                title="À découvrir" 
+                medias={mediaByStatus.pending}
+                onSeeMore={() => console.log("Voir plus - À découvrir")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* Terminés */}
+            {mediaByStatus.completed.length > 0 && (
+              <MediaRecommendations 
+                title="Terminés" 
+                medias={mediaByStatus.completed}
+                onSeeMore={() => console.log("Voir plus - Terminés")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* Si aucun résultat */}
+            {filteredMedia.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4 text-center">
+                  Aucun média trouvé pour cette recherche.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilter("all");
+                  }}
+                >
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            )}
+          </div>
         </ScrollArea>
       </div>
       
