@@ -34,12 +34,17 @@ export function MobileNav() {
             to={item.path} 
             className={`flex flex-col items-center justify-center ${
               item.special 
-                ? 'bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] text-white rounded-full shadow-lg transform -translate-y-4 scale-110 hover:scale-115 transition-all duration-300' 
+                ? 'bg-gradient-to-br from-purple-500/90 to-purple-700/90 backdrop-blur-lg text-white rounded-2xl shadow-xl shadow-purple-500/20 transform -translate-y-6 scale-110 hover:scale-115 hover:shadow-purple-500/30 transition-all duration-300 animate-pulse-slow' 
                 : (location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground')
-            } ${item.special ? 'w-14 h-14 justify-center' : ''}`}
+            } ${item.special ? 'w-16 h-16 justify-center' : ''}`}
           >
-            <item.icon size={item.special ? 28 : 22} />
-            <span className={`text-xs mt-1.5 ${item.special ? 'text-white' : ''}`}>
+            <item.icon 
+              size={item.special ? 28 : 22} 
+              className={item.special ? 'filter drop-shadow-lg' : ''}
+            />
+            <span className={`text-xs mt-1.5 ${
+              item.special ? 'text-white font-medium tracking-wide' : ''
+            }`}>
               {item.label}
             </span>
           </Link>
@@ -48,3 +53,4 @@ export function MobileNav() {
     </nav>
   );
 }
+
