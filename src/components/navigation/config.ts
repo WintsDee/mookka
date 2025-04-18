@@ -1,32 +1,17 @@
 
-import { Compass, Home, Library, Search, Share2 } from 'lucide-react';
+import { 
+  Search, 
+  MessagesSquare, 
+  Globe,
+  Bookmark,
+  Library  
+} from 'lucide-react';
 import { NavigationItem } from './types';
 
 export const navigationItems: NavigationItem[] = [
-  {
-    path: '/',
-    icon: Home,
-    label: 'Accueil'
-  },
-  {
-    path: '/bibliotheque',
-    icon: Library,
-    label: 'Bibliothèque'
-  },
-  {
-    path: '/recherche',
-    icon: Search,
-    label: 'Recherche',
-    special: true
-  },
-  {
-    path: '/decouverte',
-    icon: Compass,
-    label: 'Découverte'
-  },
-  {
-    path: '/social',
-    icon: Share2,
-    label: 'Social'
-  }
+  { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
+  { path: '/collections', icon: Bookmark, label: 'Collections' },
+  { path: '/recherche', icon: Search, label: 'Recherche', special: true },
+  { path: '/social', icon: MessagesSquare, label: 'Social' },
+  { path: '/actualites', icon: Globe, label: 'Actualités' },
 ];

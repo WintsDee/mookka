@@ -17,7 +17,6 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
-import Decouverte from "./pages/Decouverte";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +31,6 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/bibliotheque" element={<Bibliotheque />} />
             <Route path="/recherche" element={<Recherche />} />
-            <Route path="/decouverte" element={<Decouverte />} />
             <Route path="/social" element={<Social />} />
             <Route path="/actualites" element={<Actualites />} />
             <Route path="/profil" element={<Profil />} />
