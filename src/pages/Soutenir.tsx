@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -25,12 +24,14 @@ const Soutenir = () => {
 
   return (
     <Background>
-      <MobileHeader title="Soutenir Mookka" />
+      <MobileHeader 
+        title="Soutenir Mookka" 
+        showBackButton={true}
+      />
       
       <div className="pt-safe pb-24 mt-16 px-6 relative h-[calc(100vh-6rem)]">
         <ScrollArea className="w-full h-full scrollable-content" onScroll={handleScroll}>
           <div className="max-w-3xl mx-auto pb-16">
-            {/* Support button at the top */}
             <div className="sticky top-0 z-10 py-4 bg-background/80 backdrop-blur-sm mb-6">
               <a 
                 href="https://buymeacoffee.com/mookka"
@@ -50,7 +51,6 @@ const Soutenir = () => {
             
             <div className="flex flex-col gap-8 bg-secondary/20 rounded-xl p-6 border border-border">
               
-              {/* Header section */}
               <div className="flex flex-col gap-3 text-center">
                 <div className="flex justify-center">
                   <Heart size={36} className="text-primary animate-pulse" />
@@ -63,7 +63,6 @@ const Soutenir = () => {
                 </p>
               </div>
               
-              {/* Why support section */}
               <div className="flex flex-col gap-4 bg-secondary/10 p-5 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Info size={22} className="text-primary shrink-0" />
@@ -93,7 +92,6 @@ const Soutenir = () => {
                 </ul>
               </div>
               
-              {/* What we do with support section */}
               <div className="flex flex-col gap-4 bg-secondary/10 p-5 rounded-lg">
                 <div className="flex items-center gap-2">
                   <Rocket size={22} className="text-primary shrink-0" />
@@ -122,7 +120,6 @@ const Soutenir = () => {
               </div>
             </div>
             
-            {/* Bottom call to action */}
             <div className="mt-8 text-center p-5 bg-secondary/10 rounded-xl border border-border">
               <p className="text-lg mb-4">
                 Tu veux aider ? Tu peux nous offrir un petit café, un gros cookie ou même une pizza 🍕
@@ -154,8 +151,6 @@ const Soutenir = () => {
           </button>
         )}
       </div>
-      
-      <MobileNav />
     </Background>
   );
 };

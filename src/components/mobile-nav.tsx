@@ -6,19 +6,19 @@ import {
   MessagesSquare, 
   Globe,
   Bookmark,
-  Library  // Replace BookStack with Library
+  Library  
 } from 'lucide-react';
 
 export function MobileNav() {
   const location = useLocation();
   
-  // Hide navigation on media detail pages
-  if (location.pathname.startsWith('/media/')) {
+  // Cache la navigation sur les pages de détail de média et sur la page "Soutenir"
+  if (location.pathname.startsWith('/media/') || location.pathname === '/soutenir') {
     return null;
   }
 
   const navItems = [
-    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' }, // Updated icon
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
