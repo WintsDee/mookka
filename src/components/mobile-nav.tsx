@@ -8,11 +8,12 @@ import {
   Bookmark,
   Library  
 } from 'lucide-react';
+import { SearchButton } from './navigation/SearchButton';
+import { NavItem } from './navigation/NavItem';
 
 export function MobileNav() {
   const location = useLocation();
   
-  // Cache la navigation sur les pages de détail de média et sur la page "Soutenir"
   if (location.pathname.startsWith('/media/') || location.pathname === '/soutenir') {
     return null;
   }
@@ -39,17 +40,14 @@ export function MobileNav() {
             }`}
           >
             {item.special ? (
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/50 via-primary/40 to-accent/50 rounded-full opacity-75 blur-sm group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative bg-gradient-to-tr from-primary/80 via-primary/60 to-accent/80 p-4 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-primary/25">
-                  <Search size={24} className="text-white" strokeWidth={2.5} />
-                </div>
-              </div>
+              <SearchButton />
             ) : (
-              <>
-                <item.icon size={22} />
-                <span className="text-xs mt-1.5">{item.label}</span>
-              </>
+              <NavItem 
+                path={item.path}
+                icon={item.icon}
+                label={item.label}
+                isActive={location.pathname === item.path}
+              />
             )}
           </Link>
         ))}
@@ -57,4 +55,3 @@ export function MobileNav() {
     </nav>
   );
 }
-
