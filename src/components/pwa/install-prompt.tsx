@@ -38,7 +38,6 @@ export function PWAInstallPrompt() {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md fixed top-4 left-1/2 transform -translate-x-1/2 translate-y-0 bg-black/80 backdrop-blur-md rounded-xl p-6 border border-white/10 shadow-lg">
         {!showInstructions ? (
-          // First dialog - Install prompt
           <>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">Installez l'app</DialogTitle>
@@ -63,7 +62,6 @@ export function PWAInstallPrompt() {
             </div>
           </>
         ) : (
-          // Second dialog - Installation instructions
           <>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">Comment installer</DialogTitle>

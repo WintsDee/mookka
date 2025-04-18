@@ -32,7 +32,7 @@ function App() {
     // Simulate initial app loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // Réduire le temps de chargement à 1 seconde
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -45,7 +45,7 @@ function App() {
             {isLoading ? (
               <LoadingScreen />
             ) : (
-              <div className="h-full">
+              <>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/recherche" element={<Recherche />} />
@@ -63,7 +63,7 @@ function App() {
                 </Routes>
                 <Toaster position="bottom-center" closeButton />
                 <PWAInstallPrompt />
-              </div>
+              </>
             )}
           </ThemeProvider>
         </TooltipProvider>
