@@ -2,6 +2,8 @@
 import React from "react";
 import { CalendarCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format, parseISO, isValid } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface UpcomingEpisodesProps {
   episodes: any[];
@@ -11,6 +13,17 @@ export function UpcomingEpisodes({ episodes }: UpcomingEpisodesProps) {
   if (!episodes || episodes.length === 0) {
     return null;
   }
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const date = parseISO(dateStr);
+      return isValid(date) 
+        ? format(date, 'dd/MM/yyyy', { locale: fr })
+        : 'Date non confirmée';
+    } catch (error) {
+      return 'Date non confirmée';
+    }
+  };
 
   return (
     <div className="mt-8">
@@ -26,7 +39,7 @@ export function UpcomingEpisodes({ episodes }: UpcomingEpisodesProps) {
                 S{episode.season_number}E{episode.episode_number} - {episode.name || 'Épisode à venir'}
               </span>
               <Badge variant="outline" className="bg-background/50">
-                {episode.air_date ? new Date(episode.air_date).toLocaleDateString('fr-FR') : 'Date non confirmée'}
+                {episode.air_date ? formatDate(episode.air_date) : 'Date non confirmée'}
               </Badge>
             </div>
           </div>

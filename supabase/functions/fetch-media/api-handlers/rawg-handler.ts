@@ -9,5 +9,15 @@ export async function handleRAWGGames(query?: string, id?: string) {
   const response = await fetch(url);
   const data = await response.json();
   
+  if (id) {
+    // Enrich game data with formatted information
+    return {
+      ...data,
+      locale_descriptions: {
+        'fr': data.description_raw || data.description || ""
+      }
+    };
+  }
+  
   return data;
 }
