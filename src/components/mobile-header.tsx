@@ -25,12 +25,12 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
   return (
     <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
       {showBackButton && (
-        <Link to="/" className="absolute left-4 top-1/2 -translate-y-1/2">
+        <Link to="/" className="absolute left-4 top-1/2 -translate-y-1/2 transition-opacity duration-200">
           <ArrowLeft size={24} />
         </Link>
       )}
 
-      {title && <h1 className="text-lg font-semibold w-full text-left">{title}</h1>}
+      {title && <h1 className="text-lg font-semibold w-full text-left transition-opacity duration-200">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0 absolute right-6">
         {!title && !isSoutienPage && (
@@ -50,24 +50,24 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
           </div>
           
           <Link to="/notifications" className={cn(
-            "relative",
+            "relative transition-colors duration-200",
             isNotificationsActive ? "text-primary" : "text-muted-foreground"
           )}>
-            <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : ""} />
+            <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : "transition-transform duration-200"} />
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
           </Link>
           
           <Link
             to="/profil"
             className={cn(
-              "flex items-center justify-center",
+              "flex items-center justify-center transition-colors duration-200",
               isProfileActive 
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20">
+              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
                 <AvatarImage 
                   src={profile.avatar_url} 
                   alt={profile?.username || "Utilisateur"}
@@ -78,7 +78,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <Avatar className="w-8 h-8 border border-border/20">
+              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
                 <AvatarFallback>
                   <User size={20} />
                 </AvatarFallback>
@@ -92,4 +92,3 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
 };
 
 export { MobileHeader };
-

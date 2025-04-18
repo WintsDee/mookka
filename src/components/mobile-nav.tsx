@@ -18,8 +18,8 @@ export function MobileNav() {
         {navigationItems.map((item) => (
           <Link 
             key={item.path} 
-            to={item.path} 
-            className={`flex flex-col items-center justify-center ${
+            to={item.path}
+            className={`flex flex-col items-center justify-center transition-colors duration-200 ${
               item.special ? 'relative -mt-8' : ''
             } ${
               location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'

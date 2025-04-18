@@ -11,8 +11,8 @@ interface NavItemProps {
 export const NavItem = ({ path, icon: Icon, label, isActive }: NavItemProps) => {
   return (
     <>
-      <Icon size={22} />
-      <span className="text-xs mt-1.5">{label}</span>
+      <Icon size={22} className="transition-transform duration-200" />
+      <span className="text-xs mt-1.5 transition-opacity duration-200">{label}</span>
     </>
   );
 };
