@@ -43,18 +43,6 @@ const Recherche = () => {
           } else {
             console.log("Search returned no results");
             setSearchResults([]);
-            
-            // Afficher un message uniquement quand la recherche est vraiment vide
-            if (debouncedSearchTerm.length > 2) {
-              toast({
-                title: "Aucun résultat",
-                description: `Aucun ${selectedType === 'film' ? 'film' : 
-                               selectedType === 'serie' ? 'série' : 
-                               selectedType === 'book' ? 'livre' : 'jeu'} 
-                               trouvé pour "${debouncedSearchTerm}"`,
-                variant: "default",
-              });
-            }
           }
         } catch (error) {
           console.error("Erreur de recherche:", error);
