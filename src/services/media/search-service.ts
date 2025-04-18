@@ -7,7 +7,7 @@ import { formatBookSearchResult, formatFilmSearchResult, formatGameSearchResult,
 /**
  * Recherche fuzzy qui détecte les termes similaires et les fautes de frappe
  */
-function isSimilarText(text: string, query: string, threshold: number = 0.7): boolean {
+function isSimilarText(text: string, query: string, threshold: number = 0.6): boolean {
   if (!text || !query) return false;
   
   // Convertir en minuscules pour la comparaison
@@ -113,8 +113,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
           break;
         case 'game':
           apiResults = apiData.results?.map(formatGameSearchResult) || [];
-          // Tri par pertinence pour RAWG
-          apiResults.sort((a, b) => b.popularity - a.popularity);
+          // Pour les jeux, on garde tous les résultats et on se base sur le tri de l'API
           break;
       }
     }
@@ -122,20 +121,23 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     // 4. Filtrer plus strictement les contenus inappropriés
     apiResults = filterAdultContent(apiResults);
     
-    // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
-    apiResults = apiResults.filter(item => {
-      // Vérifier la pertinence sur le titre
-      const titleMatch = isSimilarText(item.title, query);
-      
-      // Vérifier aussi la pertinence sur les champs auteur/réalisateur
-      const creatorMatch = (
-        isSimilarText(item.author, query) || 
-        isSimilarText(item.director, query)
-      );
-      
-      // Accepter si l'un des deux correspond
-      return titleMatch || creatorMatch;
-    });
+    // 5. Appliquer le filtre de pertinence pour les types autre que 'game'
+    // Pour les jeux, on fait confiance au tri de l'API RAWG
+    if (type !== 'game') {
+      apiResults = apiResults.filter(item => {
+        // Vérifier la pertinence sur le titre
+        const titleMatch = isSimilarText(item.title, query);
+        
+        // Vérifier aussi la pertinence sur les champs auteur/réalisateur
+        const creatorMatch = (
+          isSimilarText(item.author, query) || 
+          isSimilarText(item.director, query)
+        );
+        
+        // Accepter si l'un des deux correspond
+        return titleMatch || creatorMatch;
+      });
+    }
     
     // 6. Fusionner les résultats (base de données + API) en évitant les doublons
     let mergedResults: any[] = [];
@@ -173,8 +175,12 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       if (a.fromDatabase && !b.fromDatabase) return -1;
       if (!a.fromDatabase && b.fromDatabase) return 1;
       
-      // Pour les médias de l'API, calculer un score de pertinence
-      // basé sur la correspondance du titre/auteur avec la requête
+      // Pour les jeux, se fier davantage à la popularité (déjà triée par l'API)
+      if (type === 'game') {
+        return b.popularity - a.popularity;
+      }
+      
+      // Pour les autres médias, calculer un score de pertinence
       const queryLower = query.toLowerCase();
       
       // Calculer le score de pertinence du titre
