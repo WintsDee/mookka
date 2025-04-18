@@ -18,11 +18,11 @@ export function HelpSection() {
   const navigate = useNavigate();
   
   const openFeedbackDialog = (initialTab: 'help' | 'feedback' = 'feedback') => {
-    // Utiliser la fonction globale si elle existe
+    // Use the global function if it exists
     if (typeof window.openHelpFeedbackDialog === 'function') {
       window.openHelpFeedbackDialog(initialTab);
     } else {
-      // Fallback en cherchant un élément dans le DOM
+      // Fallback to finding an element in the DOM
       const element = document.querySelector('[data-tab="' + initialTab + '"]') as HTMLElement;
       if (element) {
         element.click();
@@ -88,10 +88,8 @@ export function HelpSection() {
         </div>
       </div>
       
-      {/* Ajout du composant HelpFeedback caché pour l'activer depuis n'importe où */}
-      <div className="hidden">
-        <HelpFeedback data-help-feedback-trigger />
-      </div>
+      {/* Add the HelpFeedback component with the data-help-feedback-trigger attribute */}
+      <HelpFeedback data-help-feedback-trigger />
     </div>
   );
 }

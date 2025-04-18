@@ -9,6 +9,7 @@ import { NotificationsSection } from "@/components/settings/notifications-sectio
 import { PrivacySection } from "@/components/settings/privacy-section";
 import { HelpSection } from "@/components/settings/help-section";
 import { AboutSection } from "@/components/settings/about-section";
+import { HelpFeedback } from "@/components/profile/help-feedback";
 
 const Settings = () => {
   return (
@@ -38,6 +39,11 @@ const Settings = () => {
             </div>
           </div>
         </ScrollArea>
+      </div>
+      
+      {/* This is the hidden global instance for triggering from other locations */}
+      <div className="hidden">
+        <HelpFeedback data-help-feedback-trigger />
       </div>
       
       <MobileNav />

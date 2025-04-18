@@ -63,14 +63,14 @@ export function HelpFeedback({
 
   // Expose a method to allow other components to open this dialog
   useEffect(() => {
-    // Définir la fonction globale pour ouvrir le dialogue
+    // Define the global function to open the dialog
     window.openHelpFeedbackDialog = (tab: 'help' | 'feedback') => {
       setActiveTab(tab);
       setOpen(true);
     };
     
     return () => {
-      // Nettoyer
+      // Clean up
       delete window.openHelpFeedbackDialog;
     };
   }, []);
@@ -149,7 +149,7 @@ export function HelpFeedback({
   );
 }
 
-// Déclarer une interface globale pour ajouter la méthode openHelpFeedbackDialog
+// Declare a global interface to add the openHelpFeedbackDialog method
 declare global {
   interface Window {
     openHelpFeedbackDialog: (tab: 'help' | 'feedback') => void;
