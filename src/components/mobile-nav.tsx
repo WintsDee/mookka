@@ -20,7 +20,7 @@ export function MobileNav() {
   const navItems = [
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
     { path: '/collections', icon: Bookmark, label: 'Collections' },
-    { path: '/recherche', icon: Search, label: 'Recherche', special: true },
+    { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
     { path: '/actualites', icon: Globe, label: 'Actualités' },
   ];
@@ -33,24 +33,14 @@ export function MobileNav() {
             key={item.path} 
             to={item.path} 
             className={`flex flex-col items-center justify-center ${
-              item.special 
-                ? 'bg-gradient-to-br from-purple-500/90 to-purple-700/90 backdrop-blur-lg text-white rounded-2xl shadow-xl shadow-purple-500/20 transform -translate-y-6 scale-110 hover:scale-115 hover:shadow-purple-500/30 transition-all duration-300 animate-pulse-slow' 
-                : (location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground')
-            } ${item.special ? 'w-16 h-16 justify-center' : ''}`}
+              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
+            }`}
           >
-            <item.icon 
-              size={item.special ? 28 : 22} 
-              className={item.special ? 'filter drop-shadow-lg' : ''}
-            />
-            <span className={`text-xs mt-1.5 ${
-              item.special ? 'text-white font-medium tracking-wide' : ''
-            }`}>
-              {item.label}
-            </span>
+            <item.icon size={22} />
+            <span className="text-xs mt-1.5">{item.label}</span>
           </Link>
         ))}
       </div>
     </nav>
   );
 }
-
