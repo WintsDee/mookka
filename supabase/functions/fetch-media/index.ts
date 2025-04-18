@@ -25,11 +25,100 @@ Deno.serve(async (req) => {
     )
 
     // Get request body
-    const { type, query, id } = await req.json()
+    const { type, query, id, categories } = await req.json()
 
     // Get the appropriate API key based on media type
     let apiKey = ''
     let apiUrl = ''
+    let results = []
+
+    // Handle trending request type - fetch popular items from each category
+    if (type === "trending") {
+      console.log("Processing trending request for categories:", categories);
+      const trendingResults = []
+      
+      // Process each requested category
+      for (const category of categories) {
+        let categoryResults = []
+        console.log(`Fetching trending ${category} items`);
+        
+        switch (category) {
+          case 'film':
+          case 'serie':
+            apiKey = Deno.env.get('TMDB_API_KEY') ?? ''
+            apiUrl = `https://api.themoviedb.org/3/${category === 'film' ? 'movie' : 'tv'}/popular?api_key=${apiKey}&language=fr-FR&page=1`
+            
+            const tmdbResponse = await fetch(apiUrl)
+            const tmdbData = await tmdbResponse.json()
+            
+            categoryResults = tmdbData.results?.slice(0, 8).map((item: any) => ({
+              id: item.id,
+              title: item.title || item.name,
+              type: category,
+              coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+              year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : 
+                    item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
+              rating: item.vote_average,
+              genres: item.genre_ids,
+              popularity: item.popularity
+            }))
+            break
+            
+          case 'book':
+            apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
+            // For books, we'll get recent bestsellers by specific categories
+            apiUrl = `https://www.googleapis.com/books/v1/volumes?q=subject:fiction&orderBy=newest&maxResults=8&key=${apiKey}`
+            
+            const booksResponse = await fetch(apiUrl)
+            const booksData = await booksResponse.json()
+            
+            categoryResults = booksData.items?.map((item: any) => ({
+              id: item.id,
+              title: item.volumeInfo?.title,
+              type: 'book',
+              coverImage: item.volumeInfo?.imageLinks?.thumbnail,
+              year: item.volumeInfo?.publishedDate ? parseInt(item.volumeInfo.publishedDate.substring(0, 4)) : null,
+              author: item.volumeInfo?.authors?.[0],
+              rating: item.volumeInfo?.averageRating ? item.volumeInfo.averageRating * 2 : null, // Convert 5-star to 10-star
+              genres: item.volumeInfo?.categories
+            })) || []
+            break
+            
+          case 'game':
+            apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
+            // Get popular games from the last year
+            const currentYear = new Date().getFullYear()
+            apiUrl = `https://api.rawg.io/api/games?key=${apiKey}&dates=${currentYear-1}-01-01,${currentYear}-12-31&ordering=-added&page_size=8`
+            
+            const gamesResponse = await fetch(apiUrl)
+            const gamesData = await gamesResponse.json()
+            
+            categoryResults = gamesData.results?.map((item: any) => ({
+              id: item.id,
+              title: item.name,
+              type: 'game',
+              coverImage: item.background_image,
+              year: item.released ? parseInt(item.released.substring(0, 4)) : null,
+              rating: item.rating,
+              genres: item.genres?.map((g: any) => g.name)
+            })) || []
+            break
+        }
+        
+        // Add category results to the main trending results
+        trendingResults.push(...categoryResults)
+      }
+      
+      // Shuffle results to mix categories
+      results = trendingResults.sort(() => Math.random() - 0.5);
+      console.log(`Returning ${results.length} trending items`);
+      
+      // Return the combined trending results
+      return new Response(JSON.stringify({ results }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
+    }
 
     switch (type) {
       case 'film':
@@ -206,6 +295,7 @@ Deno.serve(async (req) => {
       status: 200,
     })
   } catch (error) {
+    console.error("Error processing request:", error);
     // Return error with CORS headers
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
