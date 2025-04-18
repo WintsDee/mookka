@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { MediaCard } from "@/components/media-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +12,29 @@ interface TrendingGridProps {
 }
 
 export const TrendingGrid = ({ items, loading, refreshing, onRefresh }: TrendingGridProps) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Setup scroll detection for infinite loading
+  useEffect(() => {
+    if (!scrollRef.current || !onRefresh) return;
+    
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLDivElement;
+      const isNearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 100;
+      
+      if (isNearBottom && !refreshing) {
+        onRefresh();
+      }
+    };
+    
+    const currentRef = scrollRef.current;
+    currentRef.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      currentRef.removeEventListener('scroll', handleScroll);
+    };
+  }, [onRefresh, refreshing]);
+
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4">
@@ -29,7 +52,7 @@ export const TrendingGrid = ({ items, loading, refreshing, onRefresh }: Trending
   return (
     <ScrollArea 
       className="h-[calc(100vh-250px)]"
-      onScrollEndReached={onRefresh}
+      ref={scrollRef}
     >
       <div className="grid grid-cols-2 gap-4 pb-4">
         {items.map((item) => (

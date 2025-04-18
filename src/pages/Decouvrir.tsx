@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
@@ -12,9 +12,12 @@ import { NewReleasesGrid } from "@/components/new-releases/new-releases-grid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { NewsWebView } from "@/components/news/news-web-view";
+import { NewsItem } from "@/services/news-service";
 
 const Decouvrir = () => {
   const [activeTab, setActiveTab] = useLocalStorage("decouvrir-tab", "nouveautes");
+  const [selectedArticle, setSelectedArticle] = useState<NewsItem | null>(null);
+  
   const { 
     news, 
     loading: newsLoading, 
@@ -48,6 +51,14 @@ const Decouvrir = () => {
         handleNewsRefresh();
         break;
     }
+  };
+  
+  const handleArticleSelect = (article: NewsItem) => {
+    setSelectedArticle(article);
+  };
+  
+  const handleArticleClose = () => {
+    setSelectedArticle(null);
   };
   
   return (
@@ -90,11 +101,21 @@ const Decouvrir = () => {
                 loading={newsLoading}
                 refreshing={newsRefreshing}
                 onRefresh={handleNewsRefresh}
+                onArticleSelect={handleArticleSelect}
               />
             </TabsContent>
           </Tabs>
         </div>
       </div>
+      
+      {selectedArticle && (
+        <NewsWebView
+          url={selectedArticle.link}
+          title={selectedArticle.title}
+          onClose={handleArticleClose}
+        />
+      )}
+      
       <MobileNav />
     </Background>
   );
