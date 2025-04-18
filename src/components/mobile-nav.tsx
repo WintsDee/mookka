@@ -19,10 +19,8 @@ export function MobileNav() {
           <Link 
             key={item.path} 
             to={item.path}
-            className={`flex flex-col items-center justify-center transition-colors duration-200 ${
+            className={`flex flex-col items-center justify-center transition-all duration-200 ${
               item.special ? 'relative -mt-8' : ''
-            } ${
-              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
           >
             {item.special ? (
