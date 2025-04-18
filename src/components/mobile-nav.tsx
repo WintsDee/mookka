@@ -6,7 +6,8 @@ import {
   MessagesSquare, 
   Globe,
   Bookmark,
-  Library  
+  Library,
+  Compass  
 } from 'lucide-react';
 
 export function MobileNav() {
@@ -22,7 +23,7 @@ export function MobileNav() {
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
-    { path: '/actualites', icon: Globe, label: 'Actualités' },
+    { path: '/decouvrir', icon: Compass, label: 'Découvrir' },
   ];
 
   return (

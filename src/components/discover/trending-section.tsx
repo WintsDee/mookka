@@ -1,0 +1,79 @@
+
+import React from "react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { MediaCard } from "@/components/media-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Media, MediaType } from "@/types";
+import { Film, Tv, Book, GamepadIcon } from "lucide-react";
+
+interface TrendingMediaProps {
+  type: MediaType;
+  items: Media[];
+  loading: boolean;
+}
+
+interface TrendingSectionProps {
+  mediaItems: TrendingMediaProps[];
+}
+
+export function TrendingSection({ mediaItems }: TrendingSectionProps) {
+  const getIconByType = (type: MediaType) => {
+    switch (type) {
+      case "film": return <Film className="h-4 w-4" />;
+      case "serie": return <Tv className="h-4 w-4" />;
+      case "book": return <Book className="h-4 w-4" />;
+      case "game": return <GamepadIcon className="h-4 w-4" />;
+    }
+  };
+  
+  const getTypeLabel = (type: MediaType) => {
+    switch (type) {
+      case "film": return "Films";
+      case "serie": return "Séries";
+      case "book": return "Livres";
+      case "game": return "Jeux";
+    }
+  };
+
+  return (
+    <div className="space-y-8 pb-20">
+      {mediaItems.map((mediaItem) => (
+        <section key={mediaItem.type} className="space-y-3">
+          <h3 className="text-lg font-medium flex items-center gap-2 px-4">
+            {getIconByType(mediaItem.type)}
+            <span>{getTypeLabel(mediaItem.type)} tendance</span>
+          </h3>
+          
+          <ScrollArea className="w-full">
+            <div className="flex gap-4 p-4 pt-0 pb-6">
+              {mediaItem.loading ? (
+                Array(6).fill(0).map((_, i) => (
+                  <div key={i} className="min-w-[140px] space-y-2">
+                    <Skeleton className="h-[200px] w-[140px] rounded-lg" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                ))
+              ) : mediaItem.items.length === 0 ? (
+                <div className="flex-1 flex justify-center items-center py-10">
+                  <p className="text-muted-foreground text-sm">Aucun contenu disponible</p>
+                </div>
+              ) : (
+                mediaItem.items.map((media) => (
+                  <MediaCard
+                    key={media.id}
+                    media={media}
+                    size="small"
+                    from="decouvrir"
+                  />
+                ))
+              )}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </section>
+      ))}
+    </div>
+  );
+}
