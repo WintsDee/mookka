@@ -2,64 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
-import { formatBookSearchResult, formatFilmSearchResult, formatGameSearchResult, formatSerieSearchResult } from './formatters';
-
-/**
- * Recherche fuzzy qui détecte les termes similaires et les fautes de frappe
- */
-function isSimilarText(text: string, query: string, threshold: number = 0.7): boolean {
-  if (!text || !query) return false;
-  
-  // Convertir en minuscules pour la comparaison
-  const textLower = text.toLowerCase();
-  const queryLower = query.toLowerCase();
-  
-  // Si le texte contient la requête, c'est un match direct
-  if (textLower.includes(queryLower)) return true;
-  
-  // Diviser la requête en mots et vérifier si l'un d'eux est présent
-  const queryWords = queryLower.split(/\s+/).filter(word => word.length > 2);
-  
-  // Si l'un des mots de la requête est dans le texte, c'est un match
-  if (queryWords.some(word => textLower.includes(word))) return true;
-  
-  // Algorithme simple de distance d'édition (Levenshtein simplifié)
-  // Pour détecter les fautes de frappe légères
-  const distanceMax = Math.floor(queryLower.length * (1 - threshold));
-  
-  // Pour chaque mot dans le texte, vérifier s'il est suffisamment proche d'un mot de la requête
-  const textWords = textLower.split(/\s+/).filter(word => word.length > 2);
-  
-  for (const textWord of textWords) {
-    for (const queryWord of queryWords) {
-      // Si les longueurs sont trop différentes, ce n'est probablement pas similaire
-      if (Math.abs(textWord.length - queryWord.length) > distanceMax) continue;
-      
-      // Compter les caractères communs dans l'ordre
-      let matches = 0;
-      let i = 0, j = 0;
-      
-      while (i < textWord.length && j < queryWord.length) {
-        if (textWord[i] === queryWord[j]) {
-          matches++;
-          i++;
-          j++;
-        } else {
-          // Si pas de correspondance, avancer dans le mot le plus long
-          if (textWord.length > queryWord.length) i++;
-          else j++;
-        }
-      }
-      
-      // Calculer la similarité en fonction des correspondances
-      const similarity = matches / Math.max(textWord.length, queryWord.length);
-      
-      if (similarity >= threshold) return true;
-    }
-  }
-  
-  return false;
-}
+import { mergeSearchResults } from './search/search-merger';
 
 /**
  * Search for media in external APIs and local database
@@ -68,8 +11,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
   console.log(`Searching for "${query}" in media type: ${type}`);
   
   try {
-    // 1. D'abord, rechercher dans la base de données Mookka
-    // Utilisez .or pour chercher dans titre ET dans l'auteur/réalisateur
+    // 1. Search in local database
     const { data: localMedia, error: localError } = await supabase
       .from('media')
       .select('*')
@@ -84,149 +26,26 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
 
     console.log(`Local database search results: ${localMedia?.length || 0} items found`);
     
-    // 2. Ensuite, rechercher via l'API externe
+    // 2. Search via external API
     const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
       body: { type, query }
     });
 
     if (apiError) {
       console.error("Erreur lors de la recherche de médias via API:", apiError);
-      // Ne pas bloquer complètement si l'API est en erreur
-      // On continue avec les résultats locaux
     }
 
     console.log(`API search results:`, apiData);
     
-    // 3. Traiter les résultats de l'API
-    let apiResults: any[] = [];
-    if (apiData) {
-      switch (type) {
-        case 'film':
-          apiResults = apiData.results?.map(formatFilmSearchResult) || [];
-          // Tri par popularité pour TMDB
-          apiResults.sort((a, b) => b.popularity - a.popularity);
-          break;
-        case 'serie':
-          apiResults = apiData.results?.map(formatSerieSearchResult) || [];
-          // Tri par popularité pour TMDB
-          apiResults.sort((a, b) => b.popularity - a.popularity);
-          break;
-        case 'book':
-          // S'assurer que les données de livre sont correctement formatées
-          console.log("Book API results:", apiData.items?.length || 0);
-          
-          // Vérifier si on a un message d'erreur de quota dépassé
-          if (apiData.quotaExceeded) {
-            console.log("Utilisation des données de secours pour les livres (quota dépassé)");
-          }
-          
-          if (apiData.error) {
-            console.log("Utilisation des données de secours pour les livres (erreur API)");
-          }
-          
-          apiResults = apiData.items?.map(formatBookSearchResult) || [];
-          // Filtrer les livres avec un score de pertinence trop bas, sauf pour les données de secours
-          if (!apiData.quotaExceeded && !apiData.error) {
-            apiResults = apiResults.filter(item => item.popularity > -20);
-          }
-          // Tri par score de pertinence pour Google Books
-          apiResults.sort((a, b) => b.popularity - a.popularity);
-          console.log("Formatted book results:", apiResults.length);
-          break;
-        case 'game':
-          apiResults = apiData.results?.map(formatGameSearchResult) || [];
-          // Tri par pertinence pour RAWG
-          apiResults.sort((a, b) => b.popularity - a.popularity);
-          break;
-      }
-    }
-    
+    // 3. Format API results based on media type
+    const apiResults = formatApiResults(apiData, type);
     console.log(`Formatted API results: ${apiResults.length} items`);
     
-    // 4. Filtrer plus strictement les contenus inappropriés
-    apiResults = filterAdultContent(apiResults);
+    // 4. Filter adult content
+    const filteredResults = filterAdultContent(apiResults);
     
-    // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
-    // Désactivé temporairement car peut être trop restrictif - nous gardons tous les résultats pour le moment
-    /*
-    apiResults = apiResults.filter(item => {
-      // Vérifier la pertinence sur le titre
-      const titleMatch = isSimilarText(item.title, query);
-      
-      // Vérifier aussi la pertinence sur les champs auteur/réalisateur
-      const creatorMatch = (
-        isSimilarText(item.author, query) || 
-        isSimilarText(item.director, query)
-      );
-      
-      // Accepter si l'un des deux correspond
-      return titleMatch || creatorMatch;
-    });
-    */
-    
-    // 6. Fusionner les résultats (base de données + API) en évitant les doublons
-    let mergedResults: any[] = [];
-    
-    // D'abord, ajouter les résultats locaux (Mookka)
-    if (localMedia && localMedia.length > 0) {
-      mergedResults = localMedia.map((item) => ({
-        id: item.id,
-        externalId: item.external_id,
-        title: item.title,
-        type: item.type,
-        coverImage: item.cover_image,
-        year: item.year,
-        rating: item.rating,
-        genres: item.genres,
-        description: item.description,
-        author: item.author,
-        director: item.director,
-        fromDatabase: true // Marquer comme venant de la base de données
-      }));
-    }
-    
-    // Ensuite, ajouter les résultats de l'API en évitant les doublons
-    const existingExternalIds = new Set(mergedResults.map(item => item.externalId));
-    
-    for (const apiItem of apiResults) {
-      if (!existingExternalIds.has(apiItem.id)) {
-        mergedResults.push(apiItem);
-      }
-    }
-    
-    // 7. Trier les résultats finaux par pertinence
-    mergedResults.sort((a, b) => {
-      // Donner priorité aux médias de la base de données
-      if (a.fromDatabase && !b.fromDatabase) return -1;
-      if (!a.fromDatabase && b.fromDatabase) return 1;
-      
-      // Pour les médias de l'API, calculer un score de pertinence
-      // basé sur la correspondance du titre/auteur avec la requête
-      const queryLower = query.toLowerCase();
-      
-      // Calculer le score de pertinence du titre
-      const titleScoreA = a.title && a.title.toLowerCase().includes(queryLower) ? 10 : 0;
-      const titleScoreB = b.title && b.title.toLowerCase().includes(queryLower) ? 10 : 0;
-      
-      // Calculer le score de pertinence de l'auteur/réalisateur
-      const authorScoreA = 
-        (a.author && a.author.toLowerCase().includes(queryLower)) || 
-        (a.director && a.director.toLowerCase().includes(queryLower)) ? 8 : 0;
-      
-      const authorScoreB = 
-        (b.author && b.author.toLowerCase().includes(queryLower)) || 
-        (b.director && b.director.toLowerCase().includes(queryLower)) ? 8 : 0;
-      
-      // Ajouter le score de popularité
-      const popularityScoreA = (a.popularity || a.rating || 0) / 2;
-      const popularityScoreB = (b.popularity || b.rating || 0) / 2;
-      
-      // Score total
-      const totalScoreA = titleScoreA + authorScoreA + popularityScoreA;
-      const totalScoreB = titleScoreB + authorScoreB + popularityScoreB;
-      
-      return totalScoreB - totalScoreA;
-    });
+    // 5. Merge and sort results
+    const mergedResults = mergeSearchResults(localMedia || [], filteredResults, query);
     
     console.log(`Final merged results: ${mergedResults.length} items`);
     
@@ -235,6 +54,34 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     console.error("Erreur dans searchMedia:", error);
     throw error;
   }
+}
+
+function formatApiResults(apiData: any, type: MediaType): any[] {
+  if (!apiData) return [];
+  
+  let results: any[] = [];
+  
+  switch (type) {
+    case 'film':
+    case 'serie':
+      results = apiData.results || [];
+      break;
+    case 'book':
+      // Handle book search results including fallback data
+      if (apiData.quotaExceeded || apiData.error) {
+        console.log(apiData.quotaExceeded 
+          ? "Utilisation des données de secours pour les livres (quota dépassé)"
+          : "Utilisation des données de secours pour les livres (erreur API)"
+        );
+      }
+      results = apiData.items || [];
+      break;
+    case 'game':
+      results = apiData.results || [];
+      break;
+  }
+  
+  return results;
 }
 
 /**
