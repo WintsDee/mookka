@@ -11,7 +11,7 @@ export const LoadingScreen = () => {
           alt="Mookka"
           className="w-16 h-16"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
         />
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
