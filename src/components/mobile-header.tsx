@@ -1,107 +1,59 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { User, Bell, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useProfile } from "@/hooks/use-profile";
-import { HelpFeedback } from "@/components/profile/help-feedback";
+import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface MobileHeaderProps {
   title?: string;
-  children?: React.ReactNode;
+  rightElement?: React.ReactNode;
   showBackButton?: boolean;
+  onBackClick?: () => void;
+  className?: string;
+  sticky?: boolean;
 }
 
-const MobileHeader = ({
+export function MobileHeader({
   title,
-  children,
-  showBackButton = false
-}: MobileHeaderProps) => {
-  const location = useLocation();
-  const isProfileActive = location.pathname === "/profil";
-  const isNotificationsActive = location.pathname === "/notifications";
-  const isSoutienPage = location.pathname === "/soutenir";
-  const {
-    profile
-  } = useProfile();
-
+  rightElement,
+  showBackButton = false,
+  onBackClick,
+  className,
+  sticky = true,
+}: MobileHeaderProps) {
+  const navigate = useNavigate();
+  
+  const handleBackClick = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else {
+      navigate(-1);
+    }
+  };
+  
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
-      {showBackButton && (
-        <Link to="/" className="absolute left-4 top-1/2 -translate-y-1/2">
-          <ArrowLeft size={24} />
-        </Link>
+    <div
+      className={cn(
+        "flex items-center justify-between p-4 w-full h-16 bg-background/95 backdrop-blur-sm z-50 pt-safe-top",
+        sticky ? "fixed top-0 left-0" : "",
+        className
       )}
-
-      {title && (
-        <h1 className="text-lg font-semibold text-left w-full pl-0">
-          {title}
-        </h1>
-      )}
-      
-      <div className="w-8 h-8 flex-shrink-0 absolute right-6">
-        {!title && !isSoutienPage && (
-          <img 
-            src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
-            alt="Mookka Logo" 
-            className="w-full h-full object-contain" 
-          />
+    >
+      <div className="flex items-center gap-3">
+        {showBackButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackClick}
+            className="mr-2"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
         )}
+        {title && <h1 className="text-xl font-bold">{title}</h1>}
       </div>
-      
-      {!isSoutienPage && (
-        <div className="flex items-center gap-4">
-          {children}
-          <div className="hidden">
-            <HelpFeedback data-help-feedback-trigger />
-          </div>
-          
-          <Link 
-            to="/notifications" 
-            className={cn(
-              "relative", 
-              isNotificationsActive ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            <Bell 
-              size={24} 
-              className={isNotificationsActive ? "animate-scale-in" : ""} 
-            />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
-          </Link>
-          
-          <Link 
-            to="/profil" 
-            className={cn(
-              "flex items-center justify-center", 
-              isProfileActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20">
-                <AvatarImage 
-                  src={profile.avatar_url} 
-                  alt={profile?.username || "Utilisateur"} 
-                  className="object-cover w-full h-full" 
-                />
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <Avatar className="w-8 h-8 border border-border/20">
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              </Avatar>
-            )}
-          </Link>
-        </div>
-      )}
+      {rightElement && <div>{rightElement}</div>}
     </div>
   );
-};
-
-export { MobileHeader };
+}

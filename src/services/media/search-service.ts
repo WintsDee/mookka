@@ -149,30 +149,45 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
  */
 export async function getMediaById(type: MediaType, id: string): Promise<any> {
   try {
-    console.log(`Fetching details for ${type}/${id}`);
+    // Nettoyer l'ID si nécessaire
+    let cleanId = id;
+    if (id && id.includes('/')) {
+      cleanId = id.split('/')[0];
+    }
     
-    const { data, error } = await supabase.functions.invoke('fetch-media-details', {
-      body: { type, id }
-    }).catch(e => {
-      console.error("Error invoking fetch-media-details function:", e);
-      // Fallback to regular fetch-media function
-      return supabase.functions.invoke('fetch-media', {
-        body: { type, id }
+    console.log(`Fetching details for ${type}/${cleanId}`);
+    
+    try {
+      // D'abord essayer d'utiliser fetch-media-details pour des informations détaillées
+      const { data, error } = await supabase.functions.invoke('fetch-media-details', {
+        body: { type, id: cleanId }
       });
-    });
 
-    if (error) {
-      console.error("Erreur lors de la récupération du média:", error);
+      if (!error && data) {
+        console.log(`Received media details for ${type}/${cleanId}`);
+        return data;
+      }
+      
+      // Si ça échoue, essayer avec fetch-media (moins de détails, mais filet de sécurité)
+      console.log("Falling back to fetch-media function");
+      const fallbackResponse = await supabase.functions.invoke('fetch-media', {
+        body: { type, id: cleanId }
+      });
+      
+      if (fallbackResponse.error) {
+        throw fallbackResponse.error;
+      }
+      
+      if (!fallbackResponse.data || !fallbackResponse.data.results || fallbackResponse.data.results.length === 0) {
+        throw new Error("Aucun résultat trouvé");
+      }
+      
+      // Retourner le premier résultat du fallback
+      return fallbackResponse.data.results[0];
+    } catch (error) {
+      console.error("Error with Supabase functions, trying direct API call:", error);
       throw error;
     }
-
-    if (!data) {
-      console.error("Aucune donnée reçue pour le média");
-      return null;
-    }
-
-    console.log(`Received media details for ${type}/${id}`);
-    return data;
   } catch (error) {
     console.error("Erreur dans getMediaById:", error);
     throw error;

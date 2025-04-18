@@ -27,18 +27,26 @@ const MediaDetail = () => {
   const { addMediaToCollection, isAddingToCollection } = useCollections();
 
   // Store the previous path and search parameters to navigate back correctly
+  // Extract path without trailing segment that might cause issues
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
-      if (type && id) {
+      // Vérifier si l'ID contient un segment de route supplémentaire
+      let cleanId = id;
+      if (id && id.includes('/')) {
+        // Extraire l'ID réel sans le segment supplémentaire
+        cleanId = id.split('/')[0];
+      }
+      
+      if (type && cleanId) {
         setIsLoading(true);
         setHasError(false);
         
         try {
-          console.log(`Fetching details for ${type}/${id}`);
-          const mediaData = await getMediaById(type as MediaType, id);
+          console.log(`Fetching details for ${type}/${cleanId}`);
+          const mediaData = await getMediaById(type as MediaType, cleanId);
           
           console.log("Media data received:", mediaData ? "yes" : "no");
           
@@ -85,7 +93,10 @@ const MediaDetail = () => {
   const handleAddToCollection = (collectionId: string) => {
     if (!id) return;
     
-    addMediaToCollection({ collectionId, mediaId: id });
+    // Nettoyer l'ID si nécessaire
+    const cleanId = id.includes('/') ? id.split('/')[0] : id;
+    
+    addMediaToCollection({ collectionId, mediaId: cleanId });
     setAddToCollectionOpen(false);
   };
 
@@ -106,6 +117,7 @@ const MediaDetail = () => {
       <Background>
         <MobileHeader 
           showBackButton={true}
+          onBackClick={handleGoBack}
         />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
@@ -120,6 +132,7 @@ const MediaDetail = () => {
       <Background>
         <MobileHeader 
           showBackButton={true}
+          onBackClick={handleGoBack}
         />
         <div className="flex flex-col items-center justify-center h-screen">
           <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
@@ -179,6 +192,7 @@ const MediaDetail = () => {
       <Background>
         <MobileHeader 
           showBackButton={true}
+          onBackClick={handleGoBack}
         />
         <div className="flex flex-col items-center justify-center h-screen">
           <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
