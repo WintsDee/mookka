@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -40,8 +41,7 @@ const Decouvrir = () => {
       
       <div className="pb-24 pt-safe mt-16">
         <header className="px-4 pb-2 sticky top-16 z-10 bg-background/95 backdrop-blur-sm border-b">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-bold">Découvrir</h1>
+          <div className="flex items-center justify-end mb-2">
             <Button 
               variant="outline" 
               size="sm"
