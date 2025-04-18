@@ -34,39 +34,58 @@ export function useDiscover() {
     }
   }, []);
 
+  // Effet pour charger le contenu initial au montage du composant
   useEffect(() => {
+    // Récupérer l'onglet précédemment sélectionné
     if (storedPreferences?.lastTab) {
       setActiveTab(storedPreferences.lastTab);
     }
     
-    switch (activeTab) {
-      case "trending":
-        if (trendingMedia.some(item => item.items.length === 0)) {
-          loadTrendingMedia();
-        }
-        break;
-      case "nouveautes":
-        if (newReleases.length === 0) {
-          loadNewReleases();
-        }
-        break;
-      case "recommandations":
-        if (recommendations.length === 0) {
-          loadRecommendations();
-        }
-        break;
-      case "actualites":
-        if (news.length === 0) {
-          loadNews();
-        }
-        break;
-    }
-  }, [storedPreferences, loadTrendingMedia, loadNewReleases, loadRecommendations, loadNews, news.length, newReleases.length, recommendations.length, activeTab, trendingMedia]);
+    // Charger le contenu de l'onglet actif
+    const loadActiveTabContent = async () => {
+      switch (activeTab) {
+        case "trending":
+          if (trendingMedia.some(item => item.items.length === 0)) {
+            await loadTrendingMedia();
+          }
+          break;
+        case "nouveautes":
+          if (newReleases.length === 0) {
+            await loadNewReleases();
+          }
+          break;
+        case "recommandations":
+          if (recommendations.length === 0) {
+            await loadRecommendations();
+          }
+          break;
+        case "actualites":
+          if (news.length === 0) {
+            await loadNews();
+          }
+          break;
+      }
+    };
+    
+    loadActiveTabContent();
+  }, [
+    storedPreferences, 
+    activeTab, 
+    loadTrendingMedia, 
+    loadNewReleases, 
+    loadRecommendations, 
+    loadNews, 
+    news.length, 
+    newReleases.length, 
+    recommendations.length, 
+    trendingMedia
+  ]);
 
   const handleTabChange = useCallback((tab: DiscoverTab) => {
     setActiveTab(tab);
     setStoredPreferences(prev => ({ ...prev, lastTab: tab }));
     
+    // Charger le contenu de l'onglet sélectionné si nécessaire
     switch (tab) {
       case "trending":
         if (trendingMedia.some(item => item.items.length === 0)) {
@@ -89,24 +108,39 @@ export function useDiscover() {
         }
         break;
     }
-  }, [loadTrendingMedia, loadNewReleases, loadRecommendations, loadNews, news.length, newReleases.length, recommendations.length, setStoredPreferences, trendingMedia]);
+  }, [
+    loadTrendingMedia, 
+    loadNewReleases, 
+    loadRecommendations, 
+    loadNews, 
+    news.length, 
+    newReleases.length, 
+    recommendations.length, 
+    setStoredPreferences, 
+    trendingMedia
+  ]);
 
   const handleRefresh = useCallback(async () => {
-    switch (activeTab) {
-      case "trending":
-        await loadTrendingMedia();
-        break;
-      case "nouveautes":
-        await loadNewReleases();
-        break;
-      case "recommandations":
-        await loadRecommendations();
-        break;
-      case "actualites":
-        await loadNews();
-        break;
+    try {
+      switch (activeTab) {
+        case "trending":
+          await loadTrendingMedia();
+          break;
+        case "nouveautes":
+          await loadNewReleases();
+          break;
+        case "recommandations":
+          await loadRecommendations();
+          break;
+        case "actualites":
+          await loadNews();
+          break;
+      }
+      toast.success("Contenu mis à jour");
+    } catch (error) {
+      console.error("Erreur lors du rafraîchissement:", error);
+      toast.error("Impossible de mettre à jour le contenu");
     }
-    toast.success("Contenu mis à jour");
   }, [activeTab, loadTrendingMedia, loadNewReleases, loadRecommendations, loadNews]);
 
   return {

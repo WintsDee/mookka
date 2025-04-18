@@ -15,14 +15,23 @@ const NotFound = () => {
       location.pathname
     );
     
-    // Redirection automatique si le chemin contient des segments supplémentaires
+    // Redirection automatique si le chemin contient des segments supplémentaires pour les médias
     const pathSegments = location.pathname.split('/');
-    if (pathSegments.length > 4 && pathSegments[1] === 'media') {
+    if (pathSegments.length > 3 && pathSegments[1] === 'media') {
       const [_, mediaSegment, typeSegment, idSegment] = pathSegments;
-      // Rediriger vers la bonne URL de détail du média
-      navigate(`/${mediaSegment}/${typeSegment}/${idSegment.split('/')[0]}`, { replace: true });
+      
+      if (idSegment) {
+        // Extraire l'ID principal (en cas de segments supplémentaires)
+        const cleanId = idSegment.split('/')[0];
+        // Rediriger vers la bonne URL de détail du média
+        navigate(`/media/${typeSegment}/${cleanId}`, { 
+          replace: true,
+          state: location.state
+        });
+        return;
+      }
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, location.state, navigate]);
 
   const handleReturnHome = () => {
     navigate('/', { replace: true });

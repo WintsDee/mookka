@@ -95,11 +95,13 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
     return type as "film" | "serie" | "book" | "game";
   };
 
+  const currentPath = from || location.pathname;
+
   return (
     <Link 
       to={`/media/${type}/${cleanId}`}
       state={{ 
-        from: from || location.pathname, 
+        from: currentPath, 
         search: location.search
       }} 
       className={cn("block animate-fade-in", className)}
@@ -111,6 +113,10 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
             src={coverImage} 
             alt={title} 
             className="w-full h-full object-cover rounded-lg"
+            onError={(e) => {
+              // Utiliser une image de secours si l'image ne charge pas
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
           
           {/* Status Badge */}
@@ -164,8 +170,8 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
                   )}
                   {genres && genres.length > 0 && (
                     <div className="flex gap-1 mt-1 flex-wrap">
-                      {genres.slice(0, 2).map((genre) => (
-                        <Badge key={genre} variant="outline" className="text-[0.6rem] py-0 border-white/20 text-white/90">
+                      {genres.slice(0, 2).map((genre, idx) => (
+                        <Badge key={`${genre}-${idx}`} variant="outline" className="text-[0.6rem] py-0 border-white/20 text-white/90">
                           {genre}
                         </Badge>
                       ))}
