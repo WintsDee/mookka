@@ -69,7 +69,10 @@ export function TrendingSection({ mediaItems }: TrendingSectionProps) {
                   mediaItem.items.map((media) => (
                     <MediaCard
                       key={media.id}
-                      media={media}
+                      media={{
+                        ...media,
+                        type: mediaItem.type // Ensure the type is correctly set
+                      }}
                       size="small"
                       from="decouvrir"
                       className="flex-shrink-0"

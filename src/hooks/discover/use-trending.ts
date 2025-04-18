@@ -28,9 +28,15 @@ export function useTrending() {
         const { results } = await searchMedia(type, "trending");
         console.log(`Received ${results?.length || 0} ${type} results`);
         
+        // Make sure each item has the correct type set
+        const typedResults = results?.map(item => ({
+          ...item,
+          type: type
+        })) || [];
+        
         setTrendingMedia(prev => 
           prev.map(item => 
-            item.type === type ? { ...item, items: results?.slice(0, 8) || [], loading: false } : item
+            item.type === type ? { ...item, items: typedResults.slice(0, 8), loading: false } : item
           )
         );
       } catch (error) {
