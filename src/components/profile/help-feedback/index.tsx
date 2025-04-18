@@ -1,13 +1,11 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { HelpCircle, MessageSquare } from "lucide-react";
-import { FeedbackForm } from "./feedback-form";
-import { FeedbackSuccess } from "./feedback-success";
-import { HelpItems } from "./help-items";
+import React from "react";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Button, ButtonProps } from "@/components/ui/button";
+import { HelpCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ButtonProps } from "@/components/ui/button";
+import { useHelpFeedbackDialog } from "@/hooks/use-help-feedback-dialog";
+import { HelpFeedbackDialog } from "./help-feedback-dialog";
 
 interface HelpFeedbackProps {
   initialTab?: 'help' | 'feedback';
@@ -24,56 +22,16 @@ export function HelpFeedback({
   buttonIcon = true,
   'data-help-feedback-trigger': isTrigger
 }: HelpFeedbackProps) {
-  const [activeTab, setActiveTab] = useState<'help' | 'feedback'>(initialTab);
-  const [submitted, setSubmitted] = useState(false);
-  const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  
-  function resetForm() {
-    setSubmitted(false);
-  }
-  
-  // Reset the active tab when dialog is opened
-  useEffect(() => {
-    if (open) {
-      setActiveTab(initialTab);
-      setSubmitted(false);
-    }
-  }, [open, initialTab]);
-
-  // Global event handler for remote dialog activation
-  useEffect(() => {
-    const handleGlobalClicks = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const tabButton = target.closest('[data-tab]');
-      
-      if (tabButton) {
-        const tabName = tabButton.getAttribute('data-tab') as 'help' | 'feedback';
-        if (tabName === 'help' || tabName === 'feedback') {
-          setActiveTab(tabName);
-          setOpen(true);
-        }
-      }
-    };
-    
-    document.addEventListener('click', handleGlobalClicks);
-    return () => document.removeEventListener('click', handleGlobalClicks);
-  }, []);
-
-  // Expose a method to allow other components to open this dialog
-  useEffect(() => {
-    // Define the global function to open the dialog
-    window.openHelpFeedbackDialog = (tab: 'help' | 'feedback') => {
-      setActiveTab(tab);
-      setOpen(true);
-    };
-    
-    return () => {
-      // Clean up
-      delete window.openHelpFeedbackDialog;
-    };
-  }, []);
+  const {
+    activeTab,
+    setActiveTab,
+    submitted,
+    open,
+    setOpen,
+    triggerRef,
+    resetForm,
+  } = useHelpFeedbackDialog({ initialTab });
   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -93,58 +51,15 @@ export function HelpFeedback({
           <span>{buttonText}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {activeTab === 'help' ? (
-              <>
-                <HelpCircle size={18} />
-                Besoin d'aide ?
-              </>
-            ) : (
-              <>
-                <MessageSquare size={18} />
-                Envoyez-nous votre feedback
-              </>
-            )}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex space-x-2 mb-4">
-          <Button 
-            variant={activeTab === 'help' ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setActiveTab('help')}
-            className="flex-1"
-            data-tab="help"
-          >
-            <HelpCircle size={16} className="mr-1" />
-            Aide
-          </Button>
-          <Button 
-            variant={activeTab === 'feedback' ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setActiveTab('feedback')}
-            className="flex-1"
-            data-tab="feedback"
-          >
-            <MessageSquare size={16} className="mr-1" />
-            Feedback
-          </Button>
-        </div>
-        
-        {activeTab === 'help' ? (
-          <HelpItems />
-        ) : (
-          <>
-            {submitted ? (
-              <FeedbackSuccess onReset={resetForm} />
-            ) : (
-              <FeedbackForm onSubmitSuccess={() => setSubmitted(true)} />
-            )}
-          </>
-        )}
-      </DialogContent>
+      
+      <HelpFeedbackDialog
+        open={open}
+        onOpenChange={setOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        submitted={submitted}
+        resetForm={resetForm}
+      />
     </Dialog>
   );
 }
