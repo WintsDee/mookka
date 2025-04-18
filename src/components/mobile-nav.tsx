@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Search, 
   MessagesSquare, 
-  Compass,
+  Globe,
   Bookmark,
   Library  
 } from 'lucide-react';
@@ -22,7 +22,7 @@ export function MobileNav() {
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
-    { path: '/decouvrir', icon: Compass, label: 'Découvrir' },
+    { path: '/actualites', icon: Globe, label: 'Actualités' },
   ];
 
   return (
