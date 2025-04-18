@@ -20,7 +20,7 @@ export function MobileNav() {
   const navItems = [
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
     { path: '/collections', icon: Bookmark, label: 'Collections' },
-    { path: '/recherche', icon: Search, label: 'Recherche' },
+    { path: '/recherche', icon: Search, label: 'Recherche', special: true },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
     { path: '/actualites', icon: Globe, label: 'Actualités' },
   ];
@@ -33,11 +33,15 @@ export function MobileNav() {
             key={item.path} 
             to={item.path} 
             className={`flex flex-col items-center justify-center ${
-              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
-            }`}
+              item.special 
+                ? 'bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] text-white rounded-full shadow-lg transform -translate-y-4 scale-110 hover:scale-115 transition-all duration-300' 
+                : (location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground')
+            } ${item.special ? 'w-14 h-14 justify-center' : ''}`}
           >
-            <item.icon size={22} />
-            <span className="text-xs mt-1.5">{item.label}</span>
+            <item.icon size={item.special ? 28 : 22} />
+            <span className={`text-xs mt-1.5 ${item.special ? 'text-white' : ''}`}>
+              {item.label}
+            </span>
           </Link>
         ))}
       </div>
