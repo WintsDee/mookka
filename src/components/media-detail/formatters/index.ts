@@ -5,6 +5,7 @@ import { formatSerieDetails, getSerieAdditionalInfo } from './serie-formatter';
 import { formatBookDetails, getBookAdditionalInfo } from './book-formatter';
 import { formatGameDetails, getGameAdditionalInfo } from './game-formatter';
 import { normalizeRating, formatDate } from './utils';
+import { MediaType } from '@/types';
 
 // Export all formatters and utils to make them available elsewhere
 export { 
@@ -21,7 +22,7 @@ export {
 };
 
 // Main formatter functions that detect media type and use the appropriate formatter
-export function formatMediaDetails(media: any, type: string): any {
+export function formatMediaDetails(media: any, type: MediaType): any {
   switch (type) {
     case 'film':
       return formatFilmDetails(media);
@@ -36,7 +37,7 @@ export function formatMediaDetails(media: any, type: string): any {
   }
 }
 
-export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: string): any {
+export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: MediaType): any {
   switch (type) {
     case 'film':
       return getFilmAdditionalInfo(media, formattedMedia);
@@ -50,3 +51,4 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: st
       return {}; // Retourner un objet vide par défaut
   }
 }
+
