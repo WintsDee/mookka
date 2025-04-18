@@ -39,9 +39,9 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
       return [];
     }
 
-    // Filter news to only include articles from the last 72 hours
+    // Filter news to only include articles from the last 48 hours
     const now = new Date();
-    const seventyTwoHoursAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
+    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
     
     // Validate and filter news items
     const validatedNews = data.news
@@ -57,7 +57,7 @@ export async function fetchNews(type?: string, forceRefresh = false): Promise<Ne
       }))
       .filter((item: NewsItem) => {
         const itemDate = new Date(item.date);
-        return !isNaN(itemDate.getTime()) && itemDate >= seventyTwoHoursAgo;
+        return !isNaN(itemDate.getTime()) && itemDate >= fortyEightHoursAgo;
       });
 
     return validatedNews;

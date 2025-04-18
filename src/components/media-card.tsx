@@ -13,10 +13,9 @@ interface MediaCardProps {
   size?: "small" | "medium" | "large";
   showDetails?: boolean;
   from?: string;
-  className?: string;
 }
 
-const MediaCard = ({ media, size = "medium", showDetails = true, from, className }: MediaCardProps) => {
+const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
     ? media.rating > 5 
@@ -94,7 +93,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
     <Link 
       to={`/media/${type}/${id}`} 
       state={from ? { from } : undefined}
-      className={cn("block animate-fade-in", className)}
+      className="block animate-fade-in"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">

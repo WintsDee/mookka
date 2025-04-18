@@ -4,10 +4,10 @@ import { fetchAllNews } from './news-fetcher.ts';
 import { corsHeaders } from './cors.ts';
 import { NewsItem } from './types.ts';
 
-// Cache the news results for 30 minutes
+// Cache the news results for 15 minutes (reduced from 30 minutes for testing)
 let cachedNews: NewsItem[] | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests

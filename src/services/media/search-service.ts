@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
@@ -65,33 +66,21 @@ function isSimilarText(text: string, query: string, threshold: number = 0.7): bo
  */
 export async function searchMedia(type: MediaType, query: string): Promise<any> {
   try {
-    console.log(`Searching for ${type} with query: ${query}`);
-    
-    // 1. D'abord, rechercher dans la base de données Mookka (si disponible)
-    let localMedia = [];
-    let localError = null;
-    
-    try {
-      const { data, error } = await supabase
-        .from('media')
-        .select('*')
-        .eq('type', type)
-        .or(`title.ilike.%${query}%, author.ilike.%${query}%, director.ilike.%${query}%`)
-        .order('rating', { ascending: false })
-        .limit(20);
-      
-      localMedia = data || [];
-      localError = error;
-    } catch (e) {
-      console.log('Local database search error (expected during development):', e);
-    }
+    // 1. D'abord, rechercher dans la base de données Mookka
+    // Utilisez .or pour chercher dans titre ET dans l'auteur/réalisateur
+    const { data: localMedia, error: localError } = await supabase
+      .from('media')
+      .select('*')
+      .eq('type', type)
+      .or(`title.ilike.%${query}%, author.ilike.%${query}%, director.ilike.%${query}%`)
+      .order('rating', { ascending: false })
+      .limit(20);
     
     if (localError) {
       console.error("Erreur lors de la recherche locale de médias:", localError);
     }
     
     // 2. Ensuite, rechercher via l'API externe
-    console.log(`Calling edge function for ${type}...`);
     const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
       body: { type, query }
     });
@@ -101,16 +90,54 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       throw apiError;
     }
     
-    console.log(`Received response for ${type}:`, apiData?.results?.length || 0, 'results');
+    // 3. Traiter les résultats de l'API
+    let apiResults: any[] = [];
+    if (apiData) {
+      switch (type) {
+        case 'film':
+          apiResults = apiData.results?.map(formatFilmSearchResult) || [];
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'serie':
+          apiResults = apiData.results?.map(formatSerieSearchResult) || [];
+          // Tri par popularité pour TMDB
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'book':
+          apiResults = apiData.items?.map(formatBookSearchResult) || [];
+          // Filtrer les livres avec un score de pertinence trop bas
+          apiResults = apiResults.filter(item => item.popularity > -20);
+          // Tri par score de pertinence pour Google Books
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'game':
+          apiResults = apiData.results?.map(formatGameSearchResult) || [];
+          // Tri par pertinence pour RAWG
+          apiResults.sort((a, b) => b.popularity - a.popularity);
+          break;
+      }
+    }
     
-    // 3. Utiliser directement les résultats de l'API sans transformation supplémentaire
-    // puisque notre fonction Edge formate déjà les résultats correctement
-    let apiResults = apiData?.results || [];
-    
-    // 4. Filtrer plus strictement les contenus inappropriés (optionnel)
+    // 4. Filtrer plus strictement les contenus inappropriés
     apiResults = filterAdultContent(apiResults);
     
-    // 5. Fusionner les résultats (base de données + API) en évitant les doublons
+    // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
+    apiResults = apiResults.filter(item => {
+      // Vérifier la pertinence sur le titre
+      const titleMatch = isSimilarText(item.title, query);
+      
+      // Vérifier aussi la pertinence sur les champs auteur/réalisateur
+      const creatorMatch = (
+        isSimilarText(item.author, query) || 
+        isSimilarText(item.director, query)
+      );
+      
+      // Accepter si l'un des deux correspond
+      return titleMatch || creatorMatch;
+    });
+    
+    // 6. Fusionner les résultats (base de données + API) en évitant les doublons
     let mergedResults: any[] = [];
     
     // D'abord, ajouter les résultats locaux (Mookka)
@@ -131,15 +158,53 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       }));
     }
     
-    // Ensuite, ajouter les résultats de l'API 
-    // (pas besoin de vérifier les doublons pour le moment puisque c'est un démonstrateur)
-    mergedResults = [...mergedResults, ...apiResults];
+    // Ensuite, ajouter les résultats de l'API en évitant les doublons
+    const existingExternalIds = new Set(mergedResults.map(item => item.externalId));
+    
+    for (const apiItem of apiResults) {
+      if (!existingExternalIds.has(apiItem.id)) {
+        mergedResults.push(apiItem);
+      }
+    }
+    
+    // 7. Trier les résultats finaux par pertinence
+    mergedResults.sort((a, b) => {
+      // Donner priorité aux médias de la base de données
+      if (a.fromDatabase && !b.fromDatabase) return -1;
+      if (!a.fromDatabase && b.fromDatabase) return 1;
+      
+      // Pour les médias de l'API, calculer un score de pertinence
+      // basé sur la correspondance du titre/auteur avec la requête
+      const queryLower = query.toLowerCase();
+      
+      // Calculer le score de pertinence du titre
+      const titleScoreA = a.title && a.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      const titleScoreB = b.title && b.title.toLowerCase().includes(queryLower) ? 10 : 0;
+      
+      // Calculer le score de pertinence de l'auteur/réalisateur
+      const authorScoreA = 
+        (a.author && a.author.toLowerCase().includes(queryLower)) || 
+        (a.director && a.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      const authorScoreB = 
+        (b.author && b.author.toLowerCase().includes(queryLower)) || 
+        (b.director && b.director.toLowerCase().includes(queryLower)) ? 8 : 0;
+      
+      // Ajouter le score de popularité
+      const popularityScoreA = (a.popularity || a.rating || 0) / 2;
+      const popularityScoreB = (b.popularity || b.rating || 0) / 2;
+      
+      // Score total
+      const totalScoreA = titleScoreA + authorScoreA + popularityScoreA;
+      const totalScoreB = titleScoreB + authorScoreB + popularityScoreB;
+      
+      return totalScoreB - totalScoreA;
+    });
     
     return { results: mergedResults };
   } catch (error) {
     console.error("Erreur dans searchMedia:", error);
-    // Retourner un tableau vide en cas d'erreur pour éviter de casser l'interface
-    return { results: [] };
+    throw error;
   }
 }
 

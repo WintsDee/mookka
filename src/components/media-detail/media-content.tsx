@@ -5,7 +5,6 @@ import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
 import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
 import { ProgressionTab } from "@/components/media-detail/tabs/progression";
 import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch";
-import { NewsTab } from "@/components/media-detail/tabs/news-tab";
 import { MediaType } from "@/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,7 +26,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       onValueChange={setActiveTab}
       className="w-full h-full flex flex-col overflow-hidden"
     >
-      <TabsList className="grid grid-cols-5 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
+      <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
         <TabsTrigger 
           value="overview" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
@@ -51,12 +50,6 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
         >
           Progression
-        </TabsTrigger>
-        <TabsTrigger 
-          value="news" 
-          className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
-        >
-          Actualités
         </TabsTrigger>
       </TabsList>
       
@@ -93,13 +86,6 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
               mediaId={id} 
               mediaType={type} 
               mediaDetails={additionalInfo}
-            />
-          </TabsContent>
-          
-          <TabsContent value="news" className="mt-0 mb-0">
-            <NewsTab 
-              type={type}
-              title={formattedMedia.title}
             />
           </TabsContent>
         </div>

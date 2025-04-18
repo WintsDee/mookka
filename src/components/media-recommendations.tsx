@@ -20,10 +20,7 @@ export const MediaRecommendations = ({
   onSeeMore,
   from
 }: MediaRecommendationsProps) => {
-  // Make sure we set the type on each media item if a type is provided
-  const filteredMedias = type 
-    ? medias.filter(media => media.type === type).map(media => ({...media, type}))
-    : medias;
+  const filteredMedias = type ? medias.filter(media => media.type === type) : medias;
   
   return (
     <section className="my-6">

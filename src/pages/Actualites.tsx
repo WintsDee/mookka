@@ -3,7 +3,7 @@ import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
-import { useNews } from "@/hooks/news";
+import { useNews } from "@/hooks/use-news";
 import { NewsTabs } from "@/components/news/news-tabs";
 import { NewsWebView } from "@/components/news/news-web-view";
 import { NewsSourceSelector } from "@/components/news/news-source-selector";

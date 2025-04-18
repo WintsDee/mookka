@@ -1,11 +1,13 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Calendar, ExternalLink } from "lucide-react";
+import { Loader2, Calendar, ExternalLink, Clock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { NewsItem } from "@/services/news-service";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 interface NewsGridProps {
@@ -43,15 +45,17 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
   }
 
   return (
-    <div className="space-y-5 pb-24">
-      {items.map((item) => (
-        <NewsCard 
-          key={item.id} 
-          item={item} 
-          onSelect={() => onArticleSelect(item)}
-        />
-      ))}
-    </div>
+    <ScrollArea className="h-[calc(100vh-250px)]">
+      <div className="grid grid-cols-1 gap-5 px-2 pb-24">
+        {items.map((item) => (
+          <NewsCard 
+            key={item.id} 
+            item={item} 
+            onSelect={() => onArticleSelect(item)}
+          />
+        ))}
+      </div>
+    </ScrollArea>
   );
 };
 
@@ -67,15 +71,18 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     setImageError(true);
   };
   
+  // Vérifier si l'URL de l'image est valide
   const isValidImageUrl = (url: string) => {
     return url && url.startsWith('http');
   };
   
+  // Si l'image n'est pas valide ou vide, utiliser une image par défaut en fonction de la catégorie
   const getImageUrl = () => {
     if (isValidImageUrl(item.image) && !imageError) {
       return item.image;
     }
     
+    // Images par défaut selon la catégorie
     switch(item.category) {
       case 'film': return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format';
       case 'serie': return 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?q=80&w=500&auto=format';
@@ -85,6 +92,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     }
   };
 
+  // Décode les entités HTML comme l&#8217;
   const decodeHtmlEntities = (text: string) => {
     const textarea = document.createElement('textarea');
     textarea.innerHTML = text;
@@ -94,6 +102,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
   const title = decodeHtmlEntities(item.title);
   const description = item.description ? decodeHtmlEntities(item.description) : '';
   
+  // Obtenir les couleurs de badge pour chaque catégorie
   const getCategoryBadge = (category: string) => {
     switch(category) {
       case 'film': return "bg-media-film/90 text-white";
@@ -104,6 +113,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ item, onSelect }) => {
     }
   };
   
+  // Formater le nom de la catégorie pour l'affichage
   const getCategoryName = (category: string) => {
     switch(category) {
       case 'film': return 'Film';
