@@ -6,27 +6,46 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface DiscoverSectionProps {
   section: DiscoverySection;
   loading?: boolean;
+  onSeeMore?: () => void;
 }
 
-export function DiscoverSection({ section, loading = false }: DiscoverSectionProps) {
+export function DiscoverSection({ section, loading = false, onSeeMore }: DiscoverSectionProps) {
+  const navigate = useNavigate();
+  
   if (loading) {
     return <DiscoverSectionSkeleton />;
   }
+  
+  const handleSeeMore = () => {
+    if (onSeeMore) {
+      onSeeMore();
+    }
+  };
+  
+  const handleMediaClick = (mediaId: string, mediaType: string) => {
+    navigate(`/media/${mediaType}/${mediaId}`);
+  };
   
   return (
     <section className="my-6 animate-fade-in">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-medium">{section.title}</h2>
-        <Button variant="ghost" size="sm" className="flex items-center text-xs">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center text-xs"
+          onClick={handleSeeMore}
+        >
           Voir plus <ArrowRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
-      <ScrollArea className="w-full">
-        <div className="flex gap-4 pb-4 min-w-full">
+      <ScrollArea className="w-full" type="scroll">
+        <div className="flex gap-4 pb-4 min-w-full overflow-x-auto">
           {section.items.map((item) => (
             <div key={item.id} className="flex-shrink-0">
               <MediaCard 

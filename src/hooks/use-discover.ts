@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { fetchDiscoverySections, fetchTrendingMedia, fetchUpcomingMedia, fetchRecommendedMedia } from "@/services/media";
-import type { DiscoverySection } from "@/services/media";
+import type { DiscoverySection } from "@/services/media/discovery-service";
 import { MediaType } from "@/types";
 import { toast } from "@/components/ui/sonner";
 import { useIsMobile } from "./use-mobile";
@@ -22,9 +22,9 @@ export function useDiscover() {
       // Parallel fetch for different section types
       const [discoverySectionsPromise, trendingPromise, upcomingPromise, recommendedPromise] = await Promise.allSettled([
         fetchDiscoverySections(),
-        fetchTrendingMedia(mediaType === 'all' ? undefined : mediaType as MediaType),
-        fetchUpcomingMedia(mediaType === 'all' ? undefined : mediaType as MediaType),
-        fetchRecommendedMedia(undefined, mediaType === 'all' ? undefined : mediaType as MediaType)
+        fetchTrendingMedia(mediaType),
+        fetchUpcomingMedia(mediaType),
+        fetchRecommendedMedia(undefined, mediaType)
       ]);
       
       let allSections: DiscoverySection[] = [];

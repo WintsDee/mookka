@@ -1,7 +1,6 @@
+import { corsHeaders } from '../cors.ts';
 
-import { corsHeaders } from '../../fetch-news/cors.ts';
-
-// Mock recommended media data
+// Mock recommended media data - we'll keep this as fallback data
 const recommendedMedia = [
   {
     id: "20",
@@ -91,7 +90,7 @@ Deno.serve(async (req) => {
         userId = body.userId;
         mediaType = body.mediaType;
       } catch (e) {
-        // Ignore parse errors
+        console.error("Error parsing request body:", e);
       }
     }
     
@@ -101,17 +100,26 @@ Deno.serve(async (req) => {
       media = cachedData;
     } else {
       console.log("Fetching fresh recommended media data");
+      
       // In a real implementation, we would use the user's preferences to generate recommendations
-      // For now, return mock data
-      media = recommendedMedia;
+      // For now, return mock data with proper type and id fields to ensure navigation works
+      media = recommendedMedia.map(item => ({
+        ...item,
+        id: item.id.toString(),  // Ensure ID is always a string
+        type: item.type || "film", // Ensure type is always defined
+      }));
+      
       cachedData = media;
       lastFetchTime = currentTime;
     }
     
     // Apply media type filter
-    if (mediaType) {
+    if (mediaType && mediaType !== 'all') {
       media = media.filter(item => item.type === mediaType);
     }
+    
+    // Log the outgoing response for debugging
+    console.log(`Returning ${media.length} recommended items`);
     
     return new Response(
       JSON.stringify({

@@ -3,7 +3,7 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaType } from "@/types";
 
-type TabType = MediaType | 'all';
+export type TabType = MediaType | 'all';
 
 interface DiscoverTabsProps {
   activeTab: TabType;
