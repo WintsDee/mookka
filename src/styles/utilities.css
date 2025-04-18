@@ -18,7 +18,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Support PWA */
+/* Support PWA - Amélioré avec plus d'options */
 .env-pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
@@ -27,13 +27,32 @@
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mt-safe {
+  margin-top: env(safe-area-inset-top, 0);
+}
+
 /* Styles pour la barre de navigation mobile */
 .mobile-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
+  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50 pb-safe;
 }
 
 /* Styles pour les cartes de médias */
 .media-card {
   @apply relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-300 hover:shadow-lg hover:scale-[1.02];
 }
-
