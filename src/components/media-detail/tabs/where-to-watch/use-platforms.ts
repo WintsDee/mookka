@@ -40,34 +40,39 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
   };
 
   // Utiliser React Query pour la mise en cache
-  const { data: platforms = [], isLoading, error } = useQuery({
+  const queryResult = useQuery({
     queryKey: ['platforms', mediaType, mediaId],
     queryFn: fetchPlatformsData,
     staleTime: CACHE_TIME,
     refetchOnWindowFocus: false,
-    retry: 1,
-    onSettled: (data, error) => {
-      if (error) {
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : "Une erreur s'est produite lors de la récupération des plateformes";
-        
-        console.error("Erreur lors de la récupération des plateformes:", error);
-        
-        toast({
-          title: "Erreur",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      }
-    }
+    retry: 1
   });
 
+  // Gérer les erreurs à l'extérieur de useQuery
+  useEffect(() => {
+    if (queryResult.error) {
+      const error = queryResult.error;
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Une erreur s'est produite lors de la récupération des plateformes";
+      
+      console.error("Erreur lors de la récupération des plateformes:", error);
+      
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  }, [queryResult.error, toast]);
+
+  const platforms = queryResult.data || [];
+  
   // Retourner l'état enrichi
   return { 
     platforms, 
-    isLoading, 
-    error: error ? (error instanceof Error ? error.message : "Erreur inconnue") : null,
+    isLoading: queryResult.isLoading, 
+    error: queryResult.error ? (queryResult.error instanceof Error ? queryResult.error.message : "Erreur inconnue") : null,
     // Helper functions
     availablePlatforms: platforms.filter(platform => platform.isAvailable === true),
     hasAvailablePlatforms: platforms.some(platform => platform.isAvailable === true)
