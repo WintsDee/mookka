@@ -32,7 +32,10 @@ const Recherche = () => {
       if (debouncedSearchTerm && selectedType) {
         setIsLoading(true);
         try {
-          const result = await searchMedia(selectedType, debouncedSearchTerm);
+          const result = await searchMedia({
+            type: selectedType,
+            query: debouncedSearchTerm
+          });
           
           if (result.results && result.results.length > 0) {
             const formattedResults = formatSearchResults(result.results, selectedType);

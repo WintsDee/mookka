@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MediaCardProps {
   media: Media;
@@ -16,6 +17,9 @@ interface MediaCardProps {
 }
 
 const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
     ? media.rating > 5 
@@ -89,6 +93,15 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     return type as "film" | "serie" | "book" | "game";
   };
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
+
   return (
     <Link 
       to={`/media/${type}/${id}`} 
@@ -97,11 +110,22 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
-          {/* Cover image */}
+          {/* Loading skeleton */}
+          {!imageLoaded && (
+            <Skeleton className="w-full h-full rounded-lg absolute inset-0" />
+          )}
+          
+          {/* Cover image with lazy loading */}
           <img 
-            src={coverImage} 
+            src={imageError ? '/placeholder.svg' : coverImage} 
             alt={title} 
-            className="w-full h-full object-cover rounded-lg"
+            className={cn(
+              "w-full h-full object-cover rounded-lg transition-opacity duration-300",
+              imageLoaded ? "opacity-100" : "opacity-0"
+            )}
+            loading="lazy"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
           />
           
           {/* Status Badge */}
