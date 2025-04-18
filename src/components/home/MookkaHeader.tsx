@@ -7,10 +7,7 @@ const MookkaHeader: React.FC = () => {
       <img 
         src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
         alt="Mookka Logo" 
-        className="w-36 h-36 sm:w-40 sm:h-40 mb-4 drop-shadow-lg" 
-        loading="eager"
-        fetchPriority="high"
-        decoding="sync"
+        className="w-36 h-36 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
       />
       
       <h1 className="text-5xl font-bold mb-2 flex items-center justify-center">

@@ -1,34 +1,24 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import MainContent from "@/components/home/MainContent";
 
 const Index = () => {
-  // Prefetch any additional resources needed for the Index page
-  useEffect(() => {
-    document.body.style.overflow = "hidden"; // Prevent scrolling during initial render
-    
-    return () => {
-      document.body.style.overflow = ""; // Restore scrolling when component unmounts
-    };
-  }, []);
-  
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <div className="relative min-h-screen w-full overflow-auto">
       <div className="absolute inset-0 z-0">
-        {/* Background image with optimized attributes */}
+        {/* Précharger l'image directement via un élément img pour affichage immédiat */}
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
           className="w-full h-full object-cover fixed"
-          loading="eager" 
-          fetchPriority="high"
-          decoding="sync"
+          loading="eager" // Assure un chargement prioritaire
+          fetchPriority="high" // Attribut HTML moderne pour donner priorité élevée
         />
-        {/* Dark overlay */}
+        {/* Réduire l'opacité du fond sombre */}
         <div className="absolute inset-0 bg-black/50" />
       </div>
       
-      {/* Main content */}
+      {/* Contenu principal */}
       <MainContent />
     </div>
   );
