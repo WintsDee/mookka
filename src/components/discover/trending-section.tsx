@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { MediaCard } from "@/components/media-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -49,7 +48,7 @@ export function TrendingSection({ mediaItems }: TrendingSectionProps) {
             <div className="flex gap-4 p-4 pt-0 pb-6">
               {mediaItem.loading ? (
                 Array(6).fill(0).map((_, i) => (
-                  <div key={i} className="min-w-[140px] space-y-2">
+                  <div key={i} className="min-w-[140px] space-y-2 flex-shrink-0">
                     <Skeleton className="h-[200px] w-[140px] rounded-lg" />
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-3 w-1/2" />
@@ -66,6 +65,7 @@ export function TrendingSection({ mediaItems }: TrendingSectionProps) {
                     media={media}
                     size="small"
                     from="decouvrir"
+                    className="flex-shrink-0"
                   />
                 ))
               )}

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -10,6 +11,7 @@ import { MediaGrid } from "@/components/discover/media-grid";
 import { NewsTabs } from "@/components/news/news-tabs";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { useDiscover } from "@/hooks/discover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Decouvrir = () => {
   const {
@@ -37,7 +39,7 @@ const Decouvrir = () => {
     <Background>
       <MobileHeader title="Découvrir" />
       
-      <div className="pb-24 pt-safe mt-16">
+      <div className="h-[calc(100vh-64px)] mt-16 flex flex-col">
         <header className="px-4 pb-2 sticky top-16 z-10 bg-background/95 backdrop-blur-sm border-b">
           <div className="flex items-center justify-end mb-2">
             <Button 
@@ -58,41 +60,43 @@ const Decouvrir = () => {
           />
         </header>
         
-        <Tabs value={activeTab} className="mt-4">
-          <TabsContent value="trending" className="m-0">
-            <TrendingSection mediaItems={trendingMedia} />
-          </TabsContent>
-          
-          <TabsContent value="nouveautes" className="m-0">
-            <MediaGrid 
-              title="Nouveautés" 
-              medias={newReleases}
-              loading={newReleasesLoading}
-              description="Les sorties récentes dans tous les domaines"
-            />
-          </TabsContent>
-          
-          <TabsContent value="recommandations" className="m-0">
-            <MediaGrid 
-              title="Recommandé pour vous" 
-              medias={recommendations}
-              loading={recommendationsLoading}
-              description="Sélectionné en fonction de vos goûts"
-            />
-          </TabsContent>
-          
-          <TabsContent value="actualites" className="m-0">
-            <div className="px-4 pt-2 pb-4">
-              <NewsTabs.Content 
-                news={news}
-                loading={newsLoading}
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                onArticleSelect={() => {}}
+        <ScrollArea className="flex-1 overflow-y-auto pb-16">
+          <Tabs value={activeTab} className="mt-4">
+            <TabsContent value="trending" className="m-0">
+              <TrendingSection mediaItems={trendingMedia} />
+            </TabsContent>
+            
+            <TabsContent value="nouveautes" className="m-0">
+              <MediaGrid 
+                title="Nouveautés" 
+                medias={newReleases}
+                loading={newReleasesLoading}
+                description="Les sorties récentes dans tous les domaines"
               />
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+            
+            <TabsContent value="recommandations" className="m-0">
+              <MediaGrid 
+                title="Recommandé pour vous" 
+                medias={recommendations}
+                loading={recommendationsLoading}
+                description="Sélectionné en fonction de vos goûts"
+              />
+            </TabsContent>
+            
+            <TabsContent value="actualites" className="m-0">
+              <div className="px-4 pt-2 pb-4">
+                <NewsTabs.Content 
+                  news={news}
+                  loading={newsLoading}
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  onArticleSelect={() => {}}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </ScrollArea>
       </div>
       
       <MobileNav />
