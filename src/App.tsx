@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
 import Recherche from "./pages/Recherche";
 import Social from "./pages/Social";
-import Actualites from "./pages/Actualites";
+import Decouvrir from "./pages/Decouvrir";
 import Profil from "./pages/Profil";
 import Notifications from "./pages/Notifications";
 import MediaDetail from "./pages/MediaDetail";
@@ -32,7 +32,7 @@ const App = () => {
             <Route path="/bibliotheque" element={<Bibliotheque />} />
             <Route path="/recherche" element={<Recherche />} />
             <Route path="/social" element={<Social />} />
-            <Route path="/actualites" element={<Actualites />} />
+            <Route path="/decouvrir" element={<Decouvrir />} />
             <Route path="/profil" element={<Profil />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/media/:type/:id" element={<MediaDetail />} />
