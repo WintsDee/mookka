@@ -31,7 +31,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
       )}
 
       {title && (
-        <h1 className="text-lg font-semibold absolute left-1/2 transform -translate-x-1/2">
+        <h1 className="text-lg font-semibold absolute left-16">
           {title}
         </h1>
       )}
@@ -96,3 +96,4 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
 };
 
 export { MobileHeader };
+
