@@ -1,6 +1,7 @@
 
 import { Media, MediaType } from "@/types";
 
+export type { MediaType };
 export type DiscoverTab = "trending" | "nouveautes" | "recommandations" | "actualites";
 
 export interface TrendingMedia {
