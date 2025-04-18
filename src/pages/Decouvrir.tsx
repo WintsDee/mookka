@@ -28,7 +28,7 @@ const Decouvrir = () => {
   return (
     <Background className="animate-fade-in">
       <MobileHeader title="Découvrir" />
-      <div className="pb-24 pt-safe mt-16">
+      <div className="pb-24 pt-16"> {/* Remplacé pt-safe mt-16 par pt-16 pour éliminer l'espace */}
         <div className="px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid grid-cols-2 h-11 mb-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

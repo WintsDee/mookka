@@ -27,35 +27,40 @@ Deno.serve(async (req) => {
     // Handle trending request type
     if (type === "trending") {
       console.log("Processing trending request for categories:", categories);
-      const trendingResults = []
+      const allTrendingResults = []
       
+      // Récupérer tous les médias tendance par catégorie
       for (const category of categories) {
         console.log(`Fetching trending ${category} items`);
         
         switch (category) {
           case 'film':
-            trendingResults.push(...await fetchTrendingFilms(Deno.env.get('TMDB_API_KEY') ?? ''))
+            allTrendingResults.push(...await fetchTrendingFilms(Deno.env.get('TMDB_API_KEY') ?? ''))
             break
             
           case 'serie':
-            trendingResults.push(...await fetchTrendingSeries(Deno.env.get('TMDB_API_KEY') ?? ''))
+            allTrendingResults.push(...await fetchTrendingSeries(Deno.env.get('TMDB_API_KEY') ?? ''))
             break
             
           case 'book':
-            trendingResults.push(...await fetchTrendingBooks(Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''))
+            allTrendingResults.push(...await fetchTrendingBooks(Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''))
             break
             
           case 'game':
-            trendingResults.push(...await fetchTrendingGames(Deno.env.get('RAWG_API_KEY') ?? ''))
+            allTrendingResults.push(...await fetchTrendingGames(Deno.env.get('RAWG_API_KEY') ?? ''))
             break
         }
       }
       
-      // Shuffle results to mix categories
-      const results = trendingResults.sort(() => Math.random() - 0.5)
-      console.log(`Returning ${results.length} trending items`);
+      // Trier par popularité
+      const sortedResults = allTrendingResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
       
-      return new Response(JSON.stringify({ results }), {
+      // Équilibrer les types de médias (assurer au moins 2 de chaque type si disponible)
+      const balancedResults = balanceMediaTypes(sortedResults, categories)
+      
+      console.log(`Returning ${balancedResults.length} trending items`);
+      
+      return new Response(JSON.stringify({ results: balancedResults }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
@@ -100,3 +105,37 @@ Deno.serve(async (req) => {
     })
   }
 })
+
+// Fonction pour équilibrer les types de médias dans les résultats
+function balanceMediaTypes(items: any[], categories: string[]) {
+  const result = [];
+  const typeMap: Record<string, any[]> = {};
+  
+  // Organiser les items par type
+  for (const item of items) {
+    if (!typeMap[item.type]) typeMap[item.type] = [];
+    typeMap[item.type].push(item);
+  }
+  
+  // Assurer un minimum de 2 items par catégorie si disponible
+  const minimumPerType = 2;
+  for (const category of categories) {
+    if (typeMap[category] && typeMap[category].length > 0) {
+      const toAdd = Math.min(minimumPerType, typeMap[category].length);
+      result.push(...typeMap[category].slice(0, toAdd));
+      typeMap[category] = typeMap[category].slice(toAdd);
+    }
+  }
+  
+  // Répartir le reste en fonction de la popularité
+  const remaining = Object.values(typeMap).flat()
+    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+  
+  // Limiter à 20 résultats au total pour éviter un trop grand nombre
+  const totalDesired = 20;
+  const toFill = Math.max(0, totalDesired - result.length);
+  
+  result.push(...remaining.slice(0, toFill));
+  
+  return result;
+}
