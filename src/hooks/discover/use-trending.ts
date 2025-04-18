@@ -17,11 +17,20 @@ export function useTrending() {
     
     for (const type of mediaTypes) {
       try {
+        // Mise à jour des indicateurs de chargement
+        setTrendingMedia(prev => 
+          prev.map(item => 
+            item.type === type ? { ...item, loading: true } : item
+          )
+        );
+        
+        console.log(`Fetching trending for ${type}...`);
         const { results } = await searchMedia(type, "trending");
+        console.log(`Received ${results?.length || 0} ${type} results`);
         
         setTrendingMedia(prev => 
           prev.map(item => 
-            item.type === type ? { ...item, items: results.slice(0, 8), loading: false } : item
+            item.type === type ? { ...item, items: results?.slice(0, 8) || [], loading: false } : item
           )
         );
       } catch (error) {
