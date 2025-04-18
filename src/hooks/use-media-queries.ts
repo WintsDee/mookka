@@ -15,7 +15,11 @@ export function useSearchMedia(type: MediaType, query: string) {
   const { toast } = useToast();
   const queryResult = useQuery({
     queryKey: ['search', type, query],
-    queryFn: () => searchMedia(type, query),
+    queryFn: () => searchMedia({
+      type,
+      query,
+      page: 1
+    }),
     enabled: !!type && query.length > 2,
     staleTime: CACHE_TIME,
     refetchOnWindowFocus: false,

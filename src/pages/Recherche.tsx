@@ -25,7 +25,7 @@ const Recherche = () => {
   const { toast } = useToast();
   const location = useLocation();
   
-  // Use the new hook for searching media
+  // Use the updated hook for searching media
   const { data: searchData, isLoading, error } = useSearchMedia(
     selectedType as MediaType,
     debouncedSearchTerm
