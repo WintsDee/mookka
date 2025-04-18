@@ -4,4 +4,4 @@ export { searchMedia, getMediaById } from './search-service';
 export { addMediaToLibrary, getUserMediaLibrary, updateMediaStatus, removeMediaFromLibrary } from './library-service';
 export { filterAdultContent } from './filters';
 export { getSocialShareSettings, updateSocialShareSettings } from './social-service';
-export { fetchDiscoverySections, fetchTrendingMedia, fetchUpcomingMedia, fetchRecommendedMedia } from './discovery-service';
+export { fetchDiscoverySections, fetchTrendingMedia, fetchUpcomingMedia, fetchRecommendedMedia, DiscoverySection } from './discovery-service';

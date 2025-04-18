@@ -12,16 +12,16 @@ export function useDiscover() {
   const [refreshing, setRefreshing] = useState(false);
   const isMobile = useIsMobile();
 
-  const loadSections = useCallback(async (mediaType?: MediaType) => {
+  const loadSections = useCallback(async (mediaType?: MediaType | 'all') => {
     try {
       setLoading(true);
       
       // Parallel fetch for different section types
       const [discoverySectionsPromise, trendingPromise, upcomingPromise, recommendedPromise] = await Promise.allSettled([
         fetchDiscoverySections(),
-        fetchTrendingMedia(mediaType === 'all' ? undefined : mediaType),
-        fetchUpcomingMedia(mediaType === 'all' ? undefined : mediaType),
-        fetchRecommendedMedia(undefined, mediaType === 'all' ? undefined : mediaType)
+        fetchTrendingMedia(mediaType === 'all' ? undefined : mediaType as MediaType),
+        fetchUpcomingMedia(mediaType === 'all' ? undefined : mediaType as MediaType),
+        fetchRecommendedMedia(undefined, mediaType === 'all' ? undefined : mediaType as MediaType)
       ]);
       
       let allSections: DiscoverySection[] = [];
@@ -32,7 +32,7 @@ export function useDiscover() {
           id: 'trending',
           title: 'Tendances',
           type: 'trending',
-          mediaType: mediaType === 'all' ? undefined : mediaType,
+          mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
           items: trendingPromise.value
         });
       }
@@ -43,7 +43,7 @@ export function useDiscover() {
           id: 'upcoming',
           title: 'À venir',
           type: 'upcoming',
-          mediaType: mediaType === 'all' ? undefined : mediaType,
+          mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
           items: upcomingPromise.value
         });
       }
@@ -54,7 +54,7 @@ export function useDiscover() {
           id: 'recommended',
           title: 'Recommandés pour vous',
           type: 'recommended',
-          mediaType: mediaType === 'all' ? undefined : mediaType,
+          mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
           items: recommendedPromise.value
         });
       }
@@ -87,7 +87,7 @@ export function useDiscover() {
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      await loadSections(activeTab === 'all' ? undefined : activeTab);
+      await loadSections(activeTab);
       toast.success("Contenu mis à jour");
     } catch (error) {
       toast.error("Échec de la mise à jour");
@@ -98,7 +98,7 @@ export function useDiscover() {
   
   const handleTabChange = useCallback((type: MediaType | 'all') => {
     setActiveTab(type);
-    loadSections(type === 'all' ? undefined : type);
+    loadSections(type);
   }, [loadSections]);
 
   // Initial load
