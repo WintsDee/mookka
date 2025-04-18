@@ -73,7 +73,7 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
   // Get availability map for this specific media, or use empty map if not found
   const availabilityMap = platformAvailabilityMap[mediaId] || {};
   
-  // Streaming platforms with conditional availability
+  // Enhanced streaming platforms with conditional availability
   const streamingPlatforms: Platform[] = [
     { 
       id: "1", 
@@ -82,7 +82,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming", 
       category: "subscription",
       logo: "/platforms/netflix.png",
-      isAvailable: availabilityMap["netflix"] || false
+      isAvailable: availabilityMap["netflix"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["Standard", "Premium"],
+        startingPrice: "8.99€/mois"
+      }
     },
     { 
       id: "2", 
@@ -91,7 +96,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming", 
       category: "subscription",
       logo: "/platforms/prime.png",
-      isAvailable: availabilityMap["prime"] || false
+      isAvailable: availabilityMap["prime"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["Prime Video"],
+        startingPrice: "6.99€/mois"
+      }
     },
     { 
       id: "3", 
@@ -100,7 +110,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming", 
       category: "subscription",
       logo: "/platforms/disney.png",
-      isAvailable: availabilityMap["disney"] || false
+      isAvailable: availabilityMap["disney"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["Standard", "Premium"],
+        startingPrice: "8.99€/mois"
+      }
     },
     { 
       id: "4", 
@@ -109,7 +124,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming", 
       category: "subscription",
       logo: "/platforms/canal.png",
-      isAvailable: availabilityMap["canal"] || false
+      isAvailable: availabilityMap["canal"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["Canal+", "Canal+ Ciné Séries"],
+        startingPrice: "20.99€/mois"
+      }
     },
     { 
       id: "6", 
@@ -118,7 +138,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming", 
       category: "subscription",
       logo: "/platforms/apple-tv.png",
-      isAvailable: availabilityMap["apple"] || false
+      isAvailable: availabilityMap["apple"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["Apple TV+"],
+        startingPrice: "9.99€/mois"
+      }
     },
     {
       id: "7",
@@ -127,7 +152,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming",
       category: "free",
       logo: "/platforms/molotov.png",
-      isAvailable: availabilityMap["molotov"] || false
+      isAvailable: availabilityMap["molotov"] || false,
+      pricing: {
+        type: "freemium",
+        plans: ["Gratuit", "Extended", "Premium"],
+        startingPrice: "0€"
+      }
     },
     {
       id: "8",
@@ -136,7 +166,12 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "streaming",
       category: "subscription",
       logo: "/platforms/ocs.png",
-      isAvailable: availabilityMap["ocs"] || false
+      isAvailable: availabilityMap["ocs"] || false,
+      pricing: {
+        type: "subscription",
+        plans: ["OCS"],
+        startingPrice: "10.99€/mois"
+      }
     },
     {
       id: "10",
@@ -145,10 +180,14 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       type: "purchase",
       category: "vod",
       logo: "/platforms/rakuten.png",
-      isAvailable: availabilityMap["rakuten"] || false
+      isAvailable: availabilityMap["rakuten"] || false,
+      pricing: {
+        type: "pay-per-view",
+        plans: ["Location", "Achat"],
+        startingPrice: "3.99€"
+      }
     }
   ];
   
-  // Combine the base platforms with the conditionally available streaming platforms
   return [...streamingPlatforms, ...basePlatforms];
 }
