@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
@@ -90,7 +91,8 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
 
     if (apiError) {
       console.error("Erreur lors de la recherche de médias via API:", apiError);
-      throw apiError;
+      // Ne pas bloquer complètement si l'API est en erreur
+      // On continue avec les résultats locaux
     }
 
     console.log(`API search results:`, apiData);
@@ -112,9 +114,21 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
         case 'book':
           // S'assurer que les données de livre sont correctement formatées
           console.log("Book API results:", apiData.items?.length || 0);
+          
+          // Vérifier si on a un message d'erreur de quota dépassé
+          if (apiData.quotaExceeded) {
+            console.log("Utilisation des données de secours pour les livres (quota dépassé)");
+          }
+          
+          if (apiData.error) {
+            console.log("Utilisation des données de secours pour les livres (erreur API)");
+          }
+          
           apiResults = apiData.items?.map(formatBookSearchResult) || [];
-          // Filtrer les livres avec un score de pertinence trop bas
-          apiResults = apiResults.filter(item => item.popularity > -20);
+          // Filtrer les livres avec un score de pertinence trop bas, sauf pour les données de secours
+          if (!apiData.quotaExceeded && !apiData.error) {
+            apiResults = apiResults.filter(item => item.popularity > -20);
+          }
           // Tri par score de pertinence pour Google Books
           apiResults.sort((a, b) => b.popularity - a.popularity);
           console.log("Formatted book results:", apiResults.length);
