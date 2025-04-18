@@ -20,6 +20,15 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
     updateStatus
   } = useBookProgression(progression, mediaDetails, onUpdate);
 
+  // Create event handlers that extract the values from events
+  const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateCurrentPage(Number(e.target.value));
+  };
+
+  const handlePageBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    saveCurrentPage(Number(e.target.value));
+  };
+
   return (
     <div className="space-y-6">
       <BookStatusSelector 
@@ -30,8 +39,8 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
       <PageTracker 
         currentPage={currentPage}
         totalPages={totalPages}
-        onCurrentPageChange={updateCurrentPage}
-        onCurrentPageBlur={saveCurrentPage}
+        onCurrentPageChange={handlePageChange}
+        onCurrentPageBlur={handlePageBlur}
       />
     </div>
   );

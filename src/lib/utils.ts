@@ -1,9 +1,24 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { format } from "date-fns"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Format a date to a localized string
+ * @param date The date to format
+ * @param formatStr Optional format string (defaults to 'dd/MM/yyyy')
+ * @returns Formatted date string
+ */
+export function formatDate(date: Date, formatStr: string = 'dd/MM/yyyy'): string {
+  try {
+    return format(date, formatStr)
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return 'Date invalide'
+  }
 }
 
 /**
