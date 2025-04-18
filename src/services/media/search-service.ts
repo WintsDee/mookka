@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
@@ -148,8 +149,16 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
  */
 export async function getMediaById(type: MediaType, id: string): Promise<any> {
   try {
-    const { data, error } = await supabase.functions.invoke('fetch-media', {
+    console.log(`Fetching details for ${type}/${id}`);
+    
+    const { data, error } = await supabase.functions.invoke('fetch-media-details', {
       body: { type, id }
+    }).catch(e => {
+      console.error("Error invoking fetch-media-details function:", e);
+      // Fallback to regular fetch-media function
+      return supabase.functions.invoke('fetch-media', {
+        body: { type, id }
+      });
     });
 
     if (error) {
@@ -157,6 +166,12 @@ export async function getMediaById(type: MediaType, id: string): Promise<any> {
       throw error;
     }
 
+    if (!data) {
+      console.error("Aucune donnée reçue pour le média");
+      return null;
+    }
+
+    console.log(`Received media details for ${type}/${id}`);
     return data;
   } catch (error) {
     console.error("Erreur dans getMediaById:", error);

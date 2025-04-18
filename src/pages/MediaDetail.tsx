@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { getMediaById } from "@/services/media"; // Updated import path
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,6 +21,7 @@ const MediaDetail = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
+  const [hasError, setHasError] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
@@ -33,8 +34,23 @@ const MediaDetail = () => {
     const fetchMediaDetails = async () => {
       if (type && id) {
         setIsLoading(true);
+        setHasError(false);
+        
         try {
+          console.log(`Fetching details for ${type}/${id}`);
           const mediaData = await getMediaById(type as MediaType, id);
+          
+          console.log("Media data received:", mediaData ? "yes" : "no");
+          
+          if (!mediaData) {
+            setHasError(true);
+            toast({
+              title: "Erreur",
+              description: "Les détails du média n'ont pas pu être trouvés",
+              variant: "destructive",
+            });
+            return;
+          }
           
           // Convertir les <br> en saut de ligne pour le détail du média
           if (mediaData && mediaData.description) {
@@ -51,6 +67,7 @@ const MediaDetail = () => {
           setMedia(mediaData);
         } catch (error) {
           console.error("Erreur lors de la récupération du média:", error);
+          setHasError(true);
           toast({
             title: "Erreur",
             description: "Impossible de récupérer les détails du média",
@@ -87,7 +104,7 @@ const MediaDetail = () => {
   if (isLoading) {
     return (
       <Background>
-        <MobileHeader />
+        <MobileHeader onBackClick={handleGoBack} />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
           <p className="mt-4 text-lg">Chargement en cours...</p>
@@ -96,56 +113,79 @@ const MediaDetail = () => {
     );
   }
 
-  if (!media) {
+  if (hasError || !media) {
     return (
       <Background>
-        <MobileHeader />
+        <MobileHeader onBackClick={handleGoBack} />
         <div className="flex flex-col items-center justify-center h-screen">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
+          <p className="text-muted-foreground mb-6 text-center px-4">
+            Impossible de charger les détails de ce média. Il pourrait ne plus être disponible ou avoir été déplacé.
+          </p>
           <Button onClick={handleGoBack}>Retour</Button>
         </div>
       </Background>
     );
   }
 
-  const formattedMedia = formatMediaDetails(media, type as MediaType);
-  const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
+  try {
+    // Add try-catch block around the formatting to prevent errors
+    const formattedMedia = formatMediaDetails(media, type as MediaType);
+    const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
 
-  return (
-    <Background>
-      <div className="relative flex flex-col h-screen pt-safe">
-        <MediaDetailHeader 
-          media={media} 
-          formattedMedia={formattedMedia} 
-          type={type as MediaType}
-          onAddToCollection={() => setAddToCollectionOpen(true)}
-        />
-        
-        <div className="flex-1 overflow-hidden">
-          <MediaContent 
-            id={id!} 
-            type={type as MediaType} 
+    return (
+      <Background>
+        <div className="relative flex flex-col h-screen pt-safe">
+          <MediaDetailHeader 
+            media={media} 
             formattedMedia={formattedMedia} 
-            additionalInfo={additionalInfo} 
+            type={type as MediaType}
+            onAddToCollection={() => setAddToCollectionOpen(true)}
+            onBackClick={handleGoBack}
+          />
+          
+          <div className="flex-1 overflow-hidden">
+            <MediaContent 
+              id={id!} 
+              type={type as MediaType} 
+              formattedMedia={formattedMedia} 
+              additionalInfo={additionalInfo} 
+            />
+          </div>
+          
+          <MediaDetailActions 
+            media={media} 
+            type={type as MediaType} 
+            onAddToCollection={() => setAddToCollectionOpen(true)} 
           />
         </div>
         
-        <MediaDetailActions 
-          media={media} 
-          type={type as MediaType} 
-          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        <AddToCollectionDialog
+          open={addToCollectionOpen}
+          onOpenChange={setAddToCollectionOpen}
+          mediaId={id!}
+          onAddToCollection={handleAddToCollection}
+          isAddingToCollection={isAddingToCollection}
         />
-      </div>
-      
-      <AddToCollectionDialog
-        open={addToCollectionOpen}
-        onOpenChange={setAddToCollectionOpen}
-        mediaId={id!}
-        onAddToCollection={handleAddToCollection}
-        isAddingToCollection={isAddingToCollection}
-      />
-    </Background>
-  );
+      </Background>
+    );
+  } catch (error) {
+    console.error("Error formatting media:", error);
+    return (
+      <Background>
+        <MobileHeader onBackClick={handleGoBack} />
+        <div className="flex flex-col items-center justify-center h-screen">
+          <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
+          <h1 className="text-2xl font-bold mb-4">Erreur de format</h1>
+          <p className="text-muted-foreground mb-6 text-center px-4">
+            Une erreur s'est produite lors du formatage des données. Veuillez réessayer plus tard.
+          </p>
+          <Button onClick={handleGoBack}>Retour</Button>
+        </div>
+      </Background>
+    );
+  }
 }
 
 export default MediaDetail;

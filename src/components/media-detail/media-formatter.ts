@@ -4,11 +4,22 @@ import { MediaType } from "@/types";
 export function formatMediaDetails(media: any, type: MediaType): any {
   let formattedMedia: any = {};
   
+  // Adding null check to prevent errors when media is undefined
+  if (!media) {
+    return {
+      id: "unknown",
+      title: "Contenu non disponible",
+      type,
+      coverImage: '/placeholder.svg',
+      description: "Impossible de charger les détails de ce média.",
+    };
+  }
+  
   switch (type) {
     case 'film':
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.title || media.original_title,
+        id: media.id?.toString() || "unknown",
+        title: media.title || media.original_title || "Film sans titre",
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.release_date ? media.release_date.substring(0, 4) : null,
         rating: normalizeRating(media.vote_average, 10),
@@ -21,8 +32,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       break;
     case 'serie':
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.name || media.original_name,
+        id: media.id?.toString() || "unknown",
+        title: media.name || media.original_name || "Série sans titre",
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.first_air_date ? media.first_air_date.substring(0, 4) : null,
         rating: normalizeRating(media.vote_average, 10),
@@ -34,8 +45,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       break;
     case 'book':
       formattedMedia = {
-        id: media.id,
-        title: media.volumeInfo?.title,
+        id: media.id || "unknown",
+        title: media.volumeInfo?.title || "Livre sans titre",
         coverImage: media.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
         year: media.volumeInfo?.publishedDate ? media.volumeInfo.publishedDate.substring(0, 4) : null,
         genres: media.volumeInfo?.categories || [],
@@ -55,8 +66,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       }
       
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.name,
+        id: media.id?.toString() || "unknown",
+        title: media.name || "Jeu sans titre",
         coverImage: media.background_image || '/placeholder.svg',
         year: media.released ? media.released.substring(0, 4) : null,
         rating: normalizeRating(media.rating, 5), // RAWG uses rating out of 5

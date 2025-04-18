@@ -86,7 +86,8 @@ Deno.serve(async (req) => {
     }
     
     if (type === 'game') {
-      const currentYear = new Date().getFullYear()
+      // Updated to use 2025 as the current year
+      const currentYear = 2025
       const trending = await fetch(
         `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&ordering=-rating&dates=${currentYear-1}-01-01,${currentYear}-12-31`
       )
