@@ -1,18 +1,21 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchDiscoverySections, fetchTrendingMedia, fetchUpcomingMedia, fetchRecommendedMedia, DiscoverySection } from "@/services/media";
+import { fetchDiscoverySections, fetchTrendingMedia, fetchUpcomingMedia, fetchRecommendedMedia } from "@/services/media";
+import type { DiscoverySection } from "@/services/media";
 import { MediaType } from "@/types";
 import { toast } from "@/components/ui/sonner";
 import { useIsMobile } from "./use-mobile";
 
+type TabType = MediaType | 'all';
+
 export function useDiscover() {
   const [sections, setSections] = useState<DiscoverySection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<MediaType | 'all'>('all');
+  const [activeTab, setActiveTab] = useState<TabType>('all');
   const [refreshing, setRefreshing] = useState(false);
   const isMobile = useIsMobile();
 
-  const loadSections = useCallback(async (mediaType?: MediaType | 'all') => {
+  const loadSections = useCallback(async (mediaType?: TabType) => {
     try {
       setLoading(true);
       
@@ -33,7 +36,10 @@ export function useDiscover() {
           title: 'Tendances',
           type: 'trending',
           mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
-          items: trendingPromise.value
+          items: trendingPromise.value.map(item => ({
+            ...item,
+            id: item.id || `trending-${Math.random().toString(36).substring(7)}`
+          }))
         });
       }
       
@@ -44,7 +50,10 @@ export function useDiscover() {
           title: 'À venir',
           type: 'upcoming',
           mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
-          items: upcomingPromise.value
+          items: upcomingPromise.value.map(item => ({
+            ...item,
+            id: item.id || `upcoming-${Math.random().toString(36).substring(7)}`
+          }))
         });
       }
       
@@ -55,7 +64,10 @@ export function useDiscover() {
           title: 'Recommandés pour vous',
           type: 'recommended',
           mediaType: mediaType === 'all' ? undefined : mediaType as MediaType,
-          items: recommendedPromise.value
+          items: recommendedPromise.value.map(item => ({
+            ...item,
+            id: item.id || `recommended-${Math.random().toString(36).substring(7)}`
+          }))
         });
       }
       
@@ -74,6 +86,15 @@ export function useDiscover() {
       allSections.sort((a, b) => {
         return sectionOrder.indexOf(a.type) - sectionOrder.indexOf(b.type);
       });
+      
+      // Ensure all media items have an ID
+      allSections = allSections.map(section => ({
+        ...section,
+        items: section.items.map(item => ({
+          ...item,
+          id: item.id || `${section.id}-${Math.random().toString(36).substring(7)}`
+        }))
+      }));
       
       setSections(allSections);
     } catch (error) {
@@ -96,7 +117,7 @@ export function useDiscover() {
     }
   }, [activeTab, loadSections]);
   
-  const handleTabChange = useCallback((type: MediaType | 'all') => {
+  const handleTabChange = useCallback((type: TabType) => {
     setActiveTab(type);
     loadSections(type);
   }, [loadSections]);

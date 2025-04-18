@@ -19,9 +19,20 @@ export function FeaturedMedia({ media, isMobile = true }: FeaturedMediaProps) {
     navigate(`/media/${media.type}/${media.id}`);
   };
   
+  const handleDetailsClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the parent click event
+    navigate(`/media/${media.type}/${media.id}`);
+  };
+  
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the parent click event
+    // Add to library logic would go here
+    console.log("Adding to library:", media.id);
+  };
+  
   return (
     <div 
-      className="relative w-full rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm"
+      className="relative w-full rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm cursor-pointer"
       onClick={handleMediaClick}
     >
       {/* Background image with gradient overlay */}
@@ -83,6 +94,7 @@ export function FeaturedMedia({ media, isMobile = true }: FeaturedMediaProps) {
           <Button 
             size={isMobile ? "sm" : "default"}
             className="bg-primary hover:bg-primary/90"
+            onClick={handleDetailsClick}
           >
             <Play className="mr-1 h-4 w-4" /> Détails
           </Button>
@@ -90,6 +102,7 @@ export function FeaturedMedia({ media, isMobile = true }: FeaturedMediaProps) {
             variant="outline" 
             size={isMobile ? "sm" : "default"}
             className="bg-white/10 hover:bg-white/20 border-white/20"
+            onClick={handleAddClick}
           >
             <Plus className="mr-1 h-4 w-4" /> Ajouter
           </Button>

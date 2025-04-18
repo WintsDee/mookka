@@ -20,7 +20,13 @@ export async function fetchDiscoverySections(): Promise<DiscoverySection[]> {
       return [];
     }
     
-    return data.sections || [];
+    // Process the sections to ensure all media items have the required fields
+    const processedSections = data.sections ? data.sections.map((section: DiscoverySection) => ({
+      ...section,
+      items: section.items.map(item => formatMediaItem(item))
+    })) : [];
+    
+    return processedSections;
   } catch (error) {
     console.error("Error in fetchDiscoverySections:", error);
     return [];
@@ -38,7 +44,7 @@ export async function fetchTrendingMedia(type?: MediaType): Promise<any[]> {
       return [];
     }
     
-    return data.media || [];
+    return data.media ? data.media.map(formatMediaItem) : [];
   } catch (error) {
     console.error("Error in fetchTrendingMedia:", error);
     return [];
@@ -56,7 +62,7 @@ export async function fetchUpcomingMedia(type?: MediaType): Promise<any[]> {
       return [];
     }
     
-    return data.media || [];
+    return data.media ? data.media.map(formatMediaItem) : [];
   } catch (error) {
     console.error("Error in fetchUpcomingMedia:", error);
     return [];
@@ -74,9 +80,28 @@ export async function fetchRecommendedMedia(userId?: string, mediaType?: MediaTy
       return [];
     }
     
-    return data.media || [];
+    return data.media ? data.media.map(formatMediaItem) : [];
   } catch (error) {
     console.error("Error in fetchRecommendedMedia:", error);
     return [];
   }
+}
+
+// Helper function to ensure media items have all required fields
+function formatMediaItem(item: any): any {
+  return {
+    id: item.id || `item-${Math.random().toString(36).substring(7)}`,
+    title: item.title || "Titre inconnu",
+    type: item.type || "film",
+    coverImage: item.coverImage || "/placeholder.svg",
+    year: item.year || null,
+    rating: item.rating || null,
+    genres: Array.isArray(item.genres) ? item.genres : [],
+    description: item.description || "",
+    // Additional media-specific fields
+    ...(item.type === 'book' && { author: item.author }),
+    ...(item.type === 'film' && { director: item.director, duration: item.duration }),
+    ...(item.type === 'game' && { platform: item.platform, publisher: item.publisher }),
+    ...item // Keep any other fields from the original item
+  };
 }

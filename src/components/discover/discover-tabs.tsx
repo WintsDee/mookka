@@ -3,14 +3,16 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MediaType } from "@/types";
 
+type TabType = MediaType | 'all';
+
 interface DiscoverTabsProps {
-  activeTab: MediaType | 'all';
-  onTabChange: (value: MediaType | 'all') => void;
+  activeTab: TabType;
+  onTabChange: (value: TabType) => void;
 }
 
 export function DiscoverTabs({ activeTab, onTabChange }: DiscoverTabsProps) {
   const handleValueChange = (value: string) => {
-    onTabChange(value as MediaType | 'all');
+    onTabChange(value as TabType);
   };
   
   return (

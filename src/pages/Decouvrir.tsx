@@ -8,8 +8,12 @@ import { DiscoverTabs } from "@/components/discover/discover-tabs";
 import { DiscoverSection } from "@/components/discover/discover-section";
 import { FeaturedMedia } from "@/components/discover/featured-media";
 import { Button } from "@/components/ui/button";
-import { Compass, RefreshCw, Loader2 } from "lucide-react";
+import { Compass, RefreshCw, Loader2, Newspaper } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { useNews } from "@/hooks/use-news";
+import { NewsGrid } from "@/components/news/news-grid";
+import { NewsWebView } from "@/components/news/news-web-view";
 
 const Decouvrir = () => {
   const { 
@@ -21,6 +25,17 @@ const Decouvrir = () => {
     handleTabChange,
     isMobile
   } = useDiscover();
+
+  // Include news functionality from the old Actualités tab
+  const {
+    news,
+    loading: newsLoading,
+    refreshing: newsRefreshing,
+    selectedArticle,
+    handleRefresh: handleNewsRefresh,
+    handleArticleSelect,
+    handleArticleClose
+  } = useNews();
   
   // Featured media is the first item from the first section (usually trending)
   const featuredMedia = sections.length > 0 && sections[0].items.length > 0 
@@ -30,8 +45,8 @@ const Decouvrir = () => {
   return (
     <Background>
       <MobileHeader title="Découvrir" />
-      <div className="pb-24 pt-safe mt-16">
-        <header className="px-4 mb-4">
+      <div className="pb-24 pt-safe mt-16 overflow-y-auto max-h-screen">
+        <header className="px-4 mb-4 sticky top-0 bg-background z-10 pb-2">
           <div className="flex justify-between items-center mt-4 mb-2">
             <div className="flex items-center">
               <Compass className="h-5 w-5 mr-2 text-primary" />
@@ -110,10 +125,45 @@ const Decouvrir = () => {
                   </Button>
                 </div>
               )}
+              
+              {/* News Section from the former Actualités tab */}
+              <div className="mt-8 mb-4">
+                <Separator />
+                <div className="flex justify-between items-center my-4">
+                  <div className="flex items-center">
+                    <Newspaper className="h-5 w-5 mr-2 text-primary" />
+                    <h2 className="text-lg font-medium">Actualités</h2>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleNewsRefresh}
+                    disabled={newsRefreshing}
+                  >
+                    {newsRefreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                  </Button>
+                </div>
+                
+                <NewsGrid 
+                  items={news.slice(0, 6)} // Show only first 6 news items
+                  loading={newsLoading}
+                  refreshing={newsRefreshing}
+                  onRefresh={handleNewsRefresh}
+                  onArticleSelect={handleArticleSelect}
+                />
+              </div>
             </>
           )}
         </main>
       </div>
+      
+      {selectedArticle && (
+        <NewsWebView
+          url={selectedArticle.link}
+          title={selectedArticle.title}
+          onClose={handleArticleClose}
+        />
+      )}
       
       <MobileNav />
     </Background>
