@@ -31,6 +31,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/bibliotheque" element={<Bibliotheque />} />
             <Route path="/recherche" element={<Recherche />} />
+            <Route path="/decouverte" element={<Decouverte />} />
             <Route path="/social" element={<Social />} />
             <Route path="/actualites" element={<Actualites />} />
             <Route path="/profil" element={<Profil />} />
