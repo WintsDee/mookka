@@ -1,9 +1,12 @@
 
 import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useNewReleases = () => {
-  const { data: releases = [], isLoading: loading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: releases = [], isLoading: loading, refetch } = useQuery({
     queryKey: ["new-releases"],
     queryFn: async () => {
       try {
@@ -29,8 +32,19 @@ export const useNewReleases = () => {
     }
   });
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
+
   return {
     releases,
-    loading
+    loading,
+    refreshing,
+    handleRefresh
   };
 };

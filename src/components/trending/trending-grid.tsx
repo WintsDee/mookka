@@ -7,9 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface TrendingGridProps {
   items: any[];
   loading?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
-export const TrendingGrid = ({ items, loading }: TrendingGridProps) => {
+export const TrendingGrid = ({ items, loading, refreshing, onRefresh }: TrendingGridProps) => {
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4">
@@ -25,7 +27,10 @@ export const TrendingGrid = ({ items, loading }: TrendingGridProps) => {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-250px)]">
+    <ScrollArea 
+      className="h-[calc(100vh-250px)]"
+      onScrollEndReached={onRefresh}
+    >
       <div className="grid grid-cols-2 gap-4 pb-4">
         {items.map((item) => (
           <MediaCard 

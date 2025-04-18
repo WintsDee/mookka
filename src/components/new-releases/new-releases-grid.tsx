@@ -7,9 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface NewReleasesGridProps {
   items: any[];
   loading?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
-export const NewReleasesGrid = ({ items, loading }: NewReleasesGridProps) => {
+export const NewReleasesGrid = ({ items, loading, refreshing, onRefresh }: NewReleasesGridProps) => {
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4">
@@ -25,7 +27,10 @@ export const NewReleasesGrid = ({ items, loading }: NewReleasesGridProps) => {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-250px)]">
+    <ScrollArea 
+      className="h-[calc(100vh-250px)]"
+      onScrollEndReached={onRefresh}
+    >
       <div className="grid grid-cols-2 gap-4 pb-4">
         {items.map((item) => (
           <MediaCard 

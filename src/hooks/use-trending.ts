@@ -1,9 +1,12 @@
 
 import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useTrending = () => {
-  const { data: trending = [], isLoading: loading } = useQuery({
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { data: trending = [], isLoading: loading, refetch } = useQuery({
     queryKey: ["trending"],
     queryFn: async () => {
       try {
@@ -29,8 +32,19 @@ export const useTrending = () => {
     }
   });
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
+
   return {
     trending,
-    loading
+    loading,
+    refreshing,
+    handleRefresh
   };
 };
