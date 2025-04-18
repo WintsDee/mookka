@@ -20,7 +20,7 @@ export function MobileNav() {
             key={item.path} 
             to={item.path} 
             className={`flex flex-col items-center justify-center ${
-              item.special ? 'relative -mt-8 animate-fade-in' : ''
+              item.special ? 'relative' : ''
             } ${
               location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
