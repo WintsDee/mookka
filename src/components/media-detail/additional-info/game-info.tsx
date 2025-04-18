@@ -1,8 +1,8 @@
+
 import React from "react";
-import { Users, Building, Gamepad, Bookmark, LineChart, Tag, Link, Award, ServerCrash } from "lucide-react";
+import { Users, Building, Gamepad, Bookmark, LineChart, Tag, Link, Award } from "lucide-react";
 import { InfoItem } from "./info-item";
 import { BadgesSection } from "./badges-section";
-import { Badge } from "@/components/ui/badge";
 
 interface GameInfoProps {
   developer?: string;
@@ -14,14 +14,6 @@ interface GameInfoProps {
   website?: string;
   tags?: string[];
   awards?: string[];
-  completionTimeMain?: number;
-  completionTimeFull?: number;
-  dlcs?: {
-    name: string;
-    description?: string;
-    release_date?: string;
-    cover_image?: string;
-  }[];
 }
 
 export function GameInfo({
@@ -33,10 +25,7 @@ export function GameInfo({
   genres,
   website,
   tags,
-  awards,
-  completionTimeMain,
-  completionTimeFull,
-  dlcs
+  awards
 }: GameInfoProps) {
   // Calculate if the component will render anything
   const hasInfo = developer || publisher || platform || esrbRating || metacritic || genres || website;
@@ -115,47 +104,6 @@ export function GameInfo({
         variant="outline" 
         maxItems={5}
       />
-      
-      {(completionTimeMain || completionTimeFull) && (
-        <div className="mt-2">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-1">Temps de jeu</h3>
-          {completionTimeMain && (
-            <InfoItem 
-              icon={<Gamepad className="h-4 w-4 text-muted-foreground" />}
-              label="Histoire principale" 
-              value={`${completionTimeMain} heures`} 
-            />
-          )}
-          {completionTimeFull && (
-            <InfoItem 
-              icon={<ServerCrash className="h-4 w-4 text-muted-foreground" />}
-              label="Complétion à 100%" 
-              value={`${completionTimeFull} heures`} 
-            />
-          )}
-        </div>
-      )}
-      
-      {dlcs && dlcs.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-sm font-semibold text-muted-foreground mb-2">DLC et Extensions</h3>
-          {dlcs.map((dlc, index) => (
-            <div key={index} className="mb-2 p-2 bg-secondary/30 rounded-md">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{dlc.name}</span>
-                {dlc.release_date && (
-                  <Badge variant="outline" className="text-xs">
-                    {new Date(dlc.release_date).toLocaleDateString('fr-FR')}
-                  </Badge>
-                )}
-              </div>
-              {dlc.description && (
-                <p className="text-xs text-muted-foreground mt-1">{dlc.description}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
     </>
   );
 }

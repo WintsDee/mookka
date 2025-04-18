@@ -27,34 +27,17 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
-      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4 relative">
+      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4">
         {navItems.map((item) => (
           <Link 
             key={item.path} 
             to={item.path} 
             className={`flex flex-col items-center justify-center ${
-              location.pathname === item.path 
-                ? item.path === '/recherche' 
-                  ? 'text-white' 
-                  : 'text-[#3B82F6]'
-                : 'text-muted-foreground'
+              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
           >
-            {item.path === '/recherche' && location.pathname !== '/recherche' ? (
-              <div className="absolute -top-6 w-16 h-16 flex items-center justify-center rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#3B82F6] shadow-lg transition-all hover:scale-105">
-                <Search size={26} className="text-white" />
-                <span className="sr-only">{item.label}</span>
-              </div>
-            ) : (
-              <>
-                <item.icon size={item.path === '/recherche' ? 26 : 22} className={`
-                  ${item.path === '/recherche' && location.pathname === '/recherche' ? 'text-[#8B5CF6]' : ''}
-                `} />
-                <span className={`text-xs mt-1.5 ${
-                  item.path === '/recherche' && location.pathname === '/recherche' ? 'text-[#8B5CF6] font-medium' : ''
-                }`}>{item.label}</span>
-              </>
-            )}
+            <item.icon size={22} />
+            <span className="text-xs mt-1.5">{item.label}</span>
           </Link>
         ))}
       </div>

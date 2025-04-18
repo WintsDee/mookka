@@ -1,212 +1,215 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 
-// En-têtes CORS pour permettre les requêtes cross-origin
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
-// Fonction principale du serveur
-serve(async (req) => {
-  // Gérer les requêtes OPTIONS (CORS preflight)
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Extraire les paramètres de la requête
-    const { type, id, action, query, page = 1 } = await req.json();
-    
-    if (!type) {
-      throw new Error("Le paramètre 'type' est requis");
-    }
-
-    // Initialiser le client Supabase
+    // Create a Supabase client with the auth context of the function
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    )
 
-    console.log(`Requête reçue pour ${type}, action: ${action || 'details'}, id: ${id || 'non spécifié'}`);
-    
-    // Récupérer les clés API appropriées selon le type de média
-    let apiKey = '';
-    let baseUrl = '';
-    
+    // Get request body
+    const { type, query, id } = await req.json()
+
+    // Get the appropriate API key based on media type
+    let apiKey = ''
+    let apiUrl = ''
+
     switch (type) {
       case 'film':
       case 'serie':
-        apiKey = Deno.env.get('TMDB_API_KEY') || '';
-        baseUrl = 'https://api.themoviedb.org/3';
-        break;
-      case 'book':
-        apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') || '';
-        baseUrl = 'https://www.googleapis.com/books/v1';
-        break;
-      case 'game':
-        apiKey = Deno.env.get('RAWG_API_KEY') || '';
-        baseUrl = 'https://api.rawg.io/api';
-        break;
-      default:
-        throw new Error(`Type de média non pris en charge: ${type}`);
-    }
-
-    // Variables pour stocker les résultats de l'API
-    let apiUrl = '';
-    let data = null;
-
-    // Construire l'URL API en fonction de l'action
-    if (action === 'search') {
-      // Recherche de médias
-      switch (type) {
-        case 'film':
-          apiUrl = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}&language=fr`;
-          break;
-        case 'serie':
-          apiUrl = `${baseUrl}/search/tv?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}&language=fr`;
-          break;
-        case 'book':
-          apiUrl = `${baseUrl}/volumes?q=${encodeURIComponent(query)}&key=${apiKey}&maxResults=20&startIndex=${(page - 1) * 20}`;
-          break;
-        case 'game':
-          apiUrl = `${baseUrl}/games?key=${apiKey}&search=${encodeURIComponent(query)}&page=${page}`;
-          break;
-      }
-    } else if (action === 'trending') {
-      // Médias tendance
-      switch (type) {
-        case 'film':
-          apiUrl = `${baseUrl}/trending/movie/week?api_key=${apiKey}&language=fr`;
-          break;
-        case 'serie':
-          apiUrl = `${baseUrl}/trending/tv/week?api_key=${apiKey}&language=fr`;
-          break;
-        case 'book':
-          // Pour les livres, utiliser les livres populaires ou recommandés
-          apiUrl = `${baseUrl}/volumes?q=subject:bestseller&key=${apiKey}&maxResults=20&orderBy=relevance`;
-          break;
-        case 'game':
-          apiUrl = `${baseUrl}/games?key=${apiKey}&ordering=-metacritic&page_size=20`;
-          break;
-      }
-    } else if (action === 'similar' && id) {
-      // Médias similaires
-      switch (type) {
-        case 'film':
-          apiUrl = `${baseUrl}/movie/${id}/similar?api_key=${apiKey}&language=fr`;
-          break;
-        case 'serie':
-          apiUrl = `${baseUrl}/tv/${id}/similar?api_key=${apiKey}&language=fr`;
-          break;
-        case 'book':
-          // Pour les livres, rechercher des livres du même auteur ou genre
-          apiUrl = `${baseUrl}/volumes/${id}/related?key=${apiKey}`;
-          break;
-        case 'game':
-          apiUrl = `${baseUrl}/games/${id}/suggested?key=${apiKey}`;
-          break;
-      }
-    } else if (id) {
-      // Détails d'un média spécifique
-      switch (type) {
-        case 'film':
-          apiUrl = `${baseUrl}/movie/${id}?api_key=${apiKey}&language=fr&append_to_response=credits,videos,reviews`;
-          break;
-        case 'serie':
-          apiUrl = `${baseUrl}/tv/${id}?api_key=${apiKey}&language=fr&append_to_response=credits,videos,reviews,seasons`;
-          break;
-        case 'book':
-          apiUrl = `${baseUrl}/volumes/${id}?key=${apiKey}`;
-          break;
-        case 'game':
-          apiUrl = `${baseUrl}/games/${id}?key=${apiKey}`;
-          break;
-      }
-    } else {
-      throw new Error("Paramètres d'action invalides");
-    }
-
-    console.log(`Appel API: ${apiUrl}`);
-
-    // Effectuer l'appel API
-    const response = await fetch(apiUrl);
-    data = await response.json();
-
-    // Si nous avons des détails pour un jeu et que nous avons un ID, récupérer les DLCs
-    if (type === 'game' && id && !action) {
-      // Vérifier si nous avons déjà ces DLCs en base de données
-      const { data: existingDlcs, error: dlcError } = await supabaseClient
-        .from('game_dlcs')
-        .select('*')
-        .eq('game_id', id);
-        
-      if (dlcError) {
-        console.error("Erreur lors de la recherche des DLCs existants:", dlcError);
-      }
-      
-      // Si nous avons déjà des DLCs en base, utiliser ceux-là pour éviter une requête API
-      if (existingDlcs && existingDlcs.length > 0) {
-        data.dlcs = existingDlcs.map((dlc) => ({
-          id: dlc.id,
-          name: dlc.name,
-          description: dlc.description,
-          release_date: dlc.release_date,
-          cover_image: dlc.cover_image
-        }));
-      } else {
-        // Sinon, faire une requête à l'API pour récupérer les DLCs
-        const dlcsUrl = `${baseUrl}/games/${id}/additions?key=${apiKey}&language=fr`;
-        try {
-          const dlcsResponse = await fetch(dlcsUrl);
-          const dlcsData = await dlcsResponse.json();
-          
-          // Ajouter les informations de DLC au retour
-          if (dlcsData.results && dlcsData.results.length > 0) {
-            data.dlcs = dlcsData.results.map((dlc) => ({
-              id: dlc.id,
-              name: dlc.name,
-              description: dlc.description,
-              release_date: dlc.released,
-              cover_image: dlc.background_image
-            }));
+        apiKey = Deno.env.get('TMDB_API_KEY') ?? ''
+        if (id) {
+          // Ajouter append_to_response pour obtenir plus de détails, y compris les saisons détaillées pour les séries
+          const appendParams = type === 'serie' 
+            ? 'credits,seasons,episode_groups,external_ids,content_ratings,videos,watch/providers' 
+            : 'credits,external_ids,videos,watch/providers,release_dates';
             
-            // Stocker les DLCs en base de données pour une utilisation future
-            try {
-              const dlcsToInsert = data.dlcs.map((dlc) => ({
-                name: dlc.name,
-                description: dlc.description,
-                release_date: dlc.release_date,
-                cover_image: dlc.cover_image,
-                game_id: id
-              }));
-              
-              await supabaseClient.from('game_dlcs').upsert(dlcsToInsert);
-            } catch (insertError) {
-              console.error("Erreur lors de l'insertion des DLCs:", insertError);
-            }
+          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false&append_to_response=${appendParams}`
+          
+          // Pour les séries, on peut également récupérer les informations détaillées sur chaque saison
+          if (type === 'serie') {
+            // La requête principale inclut déjà les saisons de base, mais on pourrait enrichir avec plus de détails
+            // par exemple en faisant des requêtes pour chaque saison si nécessaire
           }
-        } catch (error) {
-          console.error("Erreur lors de la récupération des DLC:", error);
+        } else {
+          // Utiliser une requête plus complète pour inclure les personnes (réalisateurs, acteurs)
+          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false&append_to_response=credits`
+        }
+        break
+      case 'book':
+        apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
+        
+        // Requête améliorée pour livres qui considère le titre et l'auteur
+        let bookQuery = query
+        if (!id) {
+          // Inclure une recherche par auteur
+          bookQuery = `${query} OR inauthor:${query}`
+        }
+        
+        apiUrl = id 
+          ? `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
+          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(bookQuery)}&key=${apiKey}&maxResults=40`
+        break
+      case 'game':
+        apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
+        apiUrl = id
+          ? `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`
+          : `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&search_precise=true&page=1&page_size=40&exclude_additions=true&exclude_parents=false&ordering=-rating&language=fr`
+        break
+      default:
+        throw new Error('Type de média non pris en charge')
+    }
+
+    // Fetch data from the appropriate API
+    const response = await fetch(apiUrl)
+    let data = await response.json()
+
+    // Pour les séries, récupérer des détails supplémentaires sur chaque saison
+    if (type === 'serie' && id && data.seasons && Array.isArray(data.seasons)) {
+      // Enrichir chaque saison avec des détails si nécessaire
+      // Note: Cette approche peut générer beaucoup de requêtes API
+      // On le fait uniquement pour les premières saisons ou selon une logique métier
+      const enrichedSeasons = [];
+      
+      for (const season of data.seasons) {
+        if (season.season_number > 0) { // Ignorer les "saisons" spéciales (0)
+          // Optionnellement, récupérer des détails supplémentaires pour certaines saisons
+          try {
+            // On peut limiter le nombre de requêtes pour éviter de surcharger l'API
+            if (enrichedSeasons.length < 3) { // Limiter à 3 saisons enrichies
+              const seasonDetailUrl = `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=fr-FR`;
+              const seasonResponse = await fetch(seasonDetailUrl);
+              const seasonDetail = await seasonResponse.json();
+              
+              // Fusionner les données de base avec les détails
+              enrichedSeasons.push({
+                ...season,
+                episodes: seasonDetail.episodes
+              });
+            } else {
+              enrichedSeasons.push(season);
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération des détails pour la saison ${season.season_number}:`, error);
+            enrichedSeasons.push(season);
+          }
         }
       }
+      
+      // Mettre à jour les données avec les saisons enrichies
+      data.seasons = enrichedSeasons;
+    }
+    
+    // Filtrage plus flexible pour les livres
+    if (type === 'book' && !id && data.items) {
+      // Mots-clés pour le contenu adulte (keep only the most explicit ones)
+      const adultContentKeywords = [
+        'xxx', 'erotic', 'érotique', 'porn', 'porno',
+        'pornographique', 'bdsm', 'kamasutra', 'explicit', 'explicite'
+      ]
+      
+      data.items = data.items.filter((item: any) => {
+        const title = (item.volumeInfo?.title || '').toLowerCase()
+        const description = (item.volumeInfo?.description || '').toLowerCase()
+        
+        const contentText = `${title} ${description}`
+        
+        // Only filter out explicit adult content, be more permissive otherwise
+        return !adultContentKeywords.some(keyword => contentText.includes(keyword))
+      })
+      
+      // Améliorer le classement des résultats en fonction de la pertinence
+      const queryLower = query.toLowerCase()
+      
+      data.items.sort((a: any, b: any) => {
+        const titleA = (a.volumeInfo?.title || '').toLowerCase()
+        const titleB = (b.volumeInfo?.title || '').toLowerCase()
+        
+        const authorA = (a.volumeInfo?.authors || []).join(' ').toLowerCase()
+        const authorB = (b.volumeInfo?.authors || []).join(' ').toLowerCase()
+        
+        // Score pour titre exact, titre contient, auteur exact, auteur contient
+        const scoreA = 
+          (titleA === queryLower ? 10 : 0) + 
+          (titleA.includes(queryLower) ? 5 : 0) + 
+          (authorA === queryLower ? 8 : 0) + 
+          (authorA.includes(queryLower) ? 4 : 0)
+          
+        const scoreB = 
+          (titleB === queryLower ? 10 : 0) + 
+          (titleB.includes(queryLower) ? 5 : 0) + 
+          (authorB === queryLower ? 8 : 0) + 
+          (authorB.includes(queryLower) ? 4 : 0)
+          
+        return scoreB - scoreA
+      })
+    }
+    
+    // Filtering for games - amélioration pour les jeux
+    if (type === 'game' && !id && data.results) {
+      // Ordonner les jeux par pertinence
+      const queryLower = query.toLowerCase()
+      
+      data.results.sort((a: any, b: any) => {
+        // Facteur 1: Correspondance avec le terme recherché
+        const titleA = (a.name || '').toLowerCase()
+        const titleB = (b.name || '').toLowerCase()
+        
+        const titleMatchScoreA = 
+          (titleA === queryLower ? 20 : 0) + 
+          (titleA.includes(queryLower) ? 10 : 0)
+          
+        const titleMatchScoreB = 
+          (titleB === queryLower ? 20 : 0) + 
+          (titleB.includes(queryLower) ? 10 : 0)
+        
+        // Facteur 2: Note moyenne
+        const ratingA = a.rating || 0
+        const ratingB = b.rating || 0
+        
+        // Facteur 3: Nombre de notes (popularité)
+        const ratingsCountA = a.ratings_count || 0
+        const ratingsCountB = b.ratings_count || 0
+        
+        // Facteur 4: Année de sortie (favoriser les jeux récents mais pas trop)
+        const yearA = a.released ? parseInt(a.released.substring(0, 4)) : 0
+        const yearB = b.released ? parseInt(b.released.substring(0, 4)) : 0
+        
+        // Calcul du score total (favorise d'abord la correspondance puis la qualité et la popularité)
+        const scoreA = titleMatchScoreA + (ratingA * 5) + Math.min(ratingsCountA / 200, 20) + (yearA >= 2015 ? 5 : 0)
+        const scoreB = titleMatchScoreB + (ratingB * 5) + Math.min(ratingsCountB / 200, 20) + (yearB >= 2015 ? 5 : 0)
+        
+        return scoreB - scoreA
+      })
     }
 
-    // Retourner les résultats avec les en-têtes CORS
+    // Return the response with CORS headers
     return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
-    });
+    })
   } catch (error) {
-    console.error("Erreur dans la fonction fetch-media:", error);
-    
-    // Retourner l'erreur avec les en-têtes CORS
+    // Return error with CORS headers
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
-    });
+    })
   }
-});
+})

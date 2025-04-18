@@ -1,18 +1,13 @@
-
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { formatDistanceToNow, format, isAfter, isBefore, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Info } from "lucide-react";
 
 interface Episode {
   number: number;
   title?: string;
-  description?: string;
   airDate?: string;
-  still_path?: string;
 }
 
 interface EpisodeListProps {
@@ -47,6 +42,7 @@ export function EpisodeList({
   };
   
   const validWatchedEpisodes = Array.isArray(watchedEpisodes) ? watchedEpisodes : [];
+  
   const twoWeeksAgo = addDays(new Date(), -14);
   const today = new Date();
   
@@ -67,36 +63,13 @@ export function EpisodeList({
               onCheckedChange={() => onToggleEpisode(seasonNumber, episodeNumber)}
               className="mr-3 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
             />
-            
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <label 
-                  htmlFor={`s${seasonNumber}e${episodeNumber}`}
-                  className="flex-1 cursor-pointer font-medium"
-                >
-                  Épisode {episodeNumber} {episode.title ? `- ${episode.title}` : ''}
-                </label>
-                
-                {episode.description && (
-                  <HoverCard>
-                    <HoverCardTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        {episode.still_path && (
-                          <img 
-                            src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
-                            alt={episode.title}
-                            className="w-full h-40 object-cover rounded-lg"
-                          />
-                        )}
-                        <p className="text-sm">{episode.description}</p>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                )}
-              </div>
+              <label 
+                htmlFor={`s${seasonNumber}e${episodeNumber}`}
+                className="flex-1 cursor-pointer font-medium"
+              >
+                Épisode {episodeNumber} {episode.title ? `- ${episode.title}` : ''}
+              </label>
               
               {episode.airDate && (
                 <div className="text-xs text-muted-foreground mt-1">
@@ -122,4 +95,3 @@ export function EpisodeList({
     </div>
   );
 }
-
