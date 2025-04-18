@@ -42,7 +42,7 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
     case 'film':
       return getFilmAdditionalInfo(media, formattedMedia);
     case 'serie':
-      return getSerieAdditionalInfo(media, formattedMedia);
+      return getSerieAdditionalInfo(media);
     case 'book':
       return getBookAdditionalInfo(media, formattedMedia);
     case 'game':
@@ -51,4 +51,3 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
       return {}; // Retourner un objet vide par défaut
   }
 }
-
