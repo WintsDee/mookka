@@ -17,6 +17,7 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
+import Decouverte from "./pages/Decouverte";
 
 const queryClient = new QueryClient();
 
