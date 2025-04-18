@@ -28,7 +28,7 @@ const MediaDetail = () => {
 
   // Store the previous path and search parameters to navigate back correctly
   // Extract path without trailing segment that might cause issues
-  const previousPath = location.state?.from || "/recherche";
+  const previousPath = location.state?.from || "/decouvrir";
   const searchParams = location.state?.search || "";
 
   useEffect(() => {
@@ -102,13 +102,17 @@ const MediaDetail = () => {
 
   const handleGoBack = () => {
     // Navigate back to the previous page preserving state and search params
-    if (previousPath === "/recherche" && searchParams) {
-      navigate({
-        pathname: previousPath,
-        search: searchParams
-      }, { replace: true });
+    if (previousPath) {
+      if (previousPath.includes('/recherche') && searchParams) {
+        navigate({
+          pathname: previousPath,
+          search: searchParams
+        });
+      } else {
+        navigate(previousPath);
+      }
     } else {
-      navigate(previousPath, { replace: true });
+      navigate('/decouvrir');
     }
   };
 

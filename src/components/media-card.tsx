@@ -27,6 +27,9 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
   
+  // Nettoyer l'ID s'il contient des segments de route supplémentaires
+  const cleanId = id.includes('/') ? id.split('/')[0] : id;
+  
   const sizeClasses = {
     small: "w-32 h-48",
     medium: "w-40 h-60",
@@ -92,8 +95,8 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
 
   return (
     <Link 
-      to={`/media/${type}/${id}`} 
-      state={from ? { from } : undefined}
+      to={`/media/${type}/${cleanId}`} 
+      state={{ from: from || location.pathname }}
       className={cn("block animate-fade-in", className)}
     >
       <div className={cn("media-card relative", sizeClasses[size])}>

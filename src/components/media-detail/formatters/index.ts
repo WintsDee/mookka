@@ -1,22 +1,13 @@
 
-import { MediaType } from "@/types";
-import { formatFilmDetails, getFilmAdditionalInfo } from "./film-formatter";
-import { formatSerieDetails, getSerieAdditionalInfo } from "./serie-formatter";
-import { formatBookDetails, getBookAdditionalInfo } from "./book-formatter";
-import { formatGameDetails, getGameAdditionalInfo } from "./game-formatter";
+// Export all formatters from their respective files
+export { formatFilmDetails, getFilmAdditionalInfo } from './film-formatter';
+export { formatSerieDetails, getSerieAdditionalInfo } from './serie-formatter';
+export { formatBookDetails, getBookAdditionalInfo } from './book-formatter';
+export { formatGameDetails, getGameAdditionalInfo } from './game-formatter';
+export { normalizeRating, formatDate } from './utils';
 
-export function formatMediaDetails(media: any, type: MediaType): any {
-  // Adding null check to prevent errors when media is undefined
-  if (!media) {
-    return {
-      id: "unknown",
-      title: "Contenu non disponible",
-      type,
-      coverImage: '/placeholder.svg',
-      description: "Impossible de charger les détails de ce média.",
-    };
-  }
-  
+// Main formatter functions that detect media type and use the appropriate formatter
+export function formatMediaDetails(media: any, type: string): any {
   switch (type) {
     case 'film':
       return formatFilmDetails(media);
@@ -26,26 +17,22 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       return formatBookDetails(media);
     case 'game':
       return formatGameDetails(media);
+    default:
+      throw new Error(`Type de média non pris en charge: ${type}`);
   }
 }
 
-export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: MediaType): any {
-  const info: any = {
-    mediaType: type,
-    releaseDate: formattedMedia.year ? `${formattedMedia.year}` : undefined,
-    duration: formattedMedia.duration
-  };
-  
-  switch(type) {
+export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: string): any {
+  switch (type) {
     case 'film':
-      return { ...info, ...getFilmAdditionalInfo(media, formattedMedia) };
+      return getFilmAdditionalInfo(media, formattedMedia);
     case 'serie':
-      return { ...info, ...getSerieAdditionalInfo(media) };
+      return getSerieAdditionalInfo(media, formattedMedia);
     case 'book':
-      return { ...info, ...getBookAdditionalInfo(media, formattedMedia) };
+      return getBookAdditionalInfo(media, formattedMedia);
     case 'game':
-      return { ...info, ...getGameAdditionalInfo(media, formattedMedia) };
+      return getGameAdditionalInfo(media, formattedMedia);
+    default:
+      return {}; // Retourner un objet vide par défaut
   }
-  
-  return info;
 }

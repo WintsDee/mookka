@@ -149,7 +149,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
  */
 export async function getMediaById(type: MediaType, id: string): Promise<any> {
   try {
-    // Nettoyer l'ID si nécessaire
+    // Nettoyer l'ID de tout segment de route supplémentaire
     let cleanId = id;
     if (id && id.includes('/')) {
       cleanId = id.split('/')[0];
