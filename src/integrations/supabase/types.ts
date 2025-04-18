@@ -239,9 +239,44 @@ export type Database = {
         }
         Relationships: []
       }
+      game_dlcs: {
+        Row: {
+          cover_image: string | null
+          created_at: string | null
+          description: string | null
+          game_id: string
+          id: string
+          name: string
+          release_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          game_id: string
+          id?: string
+          name: string
+          release_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          game_id?: string
+          id?: string
+          name?: string
+          release_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           author: string | null
+          completion_time_full: number | null
+          completion_time_main: number | null
           cover_image: string | null
           created_at: string
           description: string | null
@@ -260,6 +295,8 @@ export type Database = {
         }
         Insert: {
           author?: string | null
+          completion_time_full?: number | null
+          completion_time_main?: number | null
           cover_image?: string | null
           created_at?: string
           description?: string | null
@@ -278,6 +315,8 @@ export type Database = {
         }
         Update: {
           author?: string | null
+          completion_time_full?: number | null
+          completion_time_main?: number | null
           cover_image?: string | null
           created_at?: string
           description?: string | null
