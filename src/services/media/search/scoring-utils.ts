@@ -2,11 +2,7 @@
 import { MediaType } from "@/types";
 import { isSimilarText } from "./similarity-utils";
 
-export function calculateRelevanceScore(
-  item: any,
-  query: string,
-  type: MediaType
-): number {
+export function calculateRelevanceScore(item: any, query: string, type: MediaType): number {
   const queryLower = query.toLowerCase();
   
   // Base score calculation for all media types

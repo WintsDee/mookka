@@ -45,3 +45,11 @@ export function isSimilarText(text: string, query: string, threshold: number = 0
   
   return false;
 }
+
+export function filterByRelevance(results: any[], query: string): any[] {
+  return results.filter(item => {
+    const titleMatch = isSimilarText(item.title, query);
+    const creatorMatch = isSimilarText(item.author, query) || isSimilarText(item.director, query);
+    return titleMatch || creatorMatch;
+  });
+}
