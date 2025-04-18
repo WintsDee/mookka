@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 import { corsHeaders } from './cors.ts'
 import { fetchTrendingFilms, fetchFilmById } from './media-handlers/films.ts'
@@ -23,6 +22,107 @@ Deno.serve(async (req) => {
     )
 
     const { type, query, id, categories } = await req.json()
+
+    // Handle new releases request type
+    if (type === "new-releases") {
+      console.log("Processing new releases request for categories:", categories);
+      const allNewReleases = []
+      
+      const currentDate = new Date();
+      const oneMonthAgo = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+      
+      for (const category of categories) {
+        console.log(`Fetching new releases for ${category}`);
+        
+        switch (category) {
+          case 'film':
+            const filmResponse = await fetch(
+              `https://api.themoviedb.org/3/movie/now_playing?api_key=${Deno.env.get('TMDB_API_KEY')}&language=fr-FR&page=1`
+            );
+            const filmData = await filmResponse.json();
+            allNewReleases.push(...(filmData.results || []).map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              type: 'film',
+              coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+              year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : null,
+              rating: item.vote_average,
+              releaseDate: item.release_date,
+              popularity: item.popularity
+            })));
+            break;
+            
+          case 'serie':
+            const serieResponse = await fetch(
+              `https://api.themoviedb.org/3/tv/on_the_air?api_key=${Deno.env.get('TMDB_API_KEY')}&language=fr-FR&page=1`
+            );
+            const serieData = await serieResponse.json();
+            allNewReleases.push(...(serieData.results || []).map((item: any) => ({
+              id: item.id,
+              title: item.name,
+              type: 'serie',
+              coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+              year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
+              rating: item.vote_average,
+              releaseDate: item.first_air_date,
+              popularity: item.popularity
+            })));
+            break;
+            
+          case 'book':
+            const bookResponse = await fetch(
+              `https://www.googleapis.com/books/v1/volumes?q=subject:fiction&orderBy=newest&maxResults=10&key=${Deno.env.get('GOOGLE_BOOKS_API_KEY')}`
+            );
+            const bookData = await bookResponse.json();
+            allNewReleases.push(...(bookData.items || []).map((item: any) => ({
+              id: item.id,
+              title: item.volumeInfo?.title,
+              type: 'book',
+              coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+              year: item.volumeInfo?.publishedDate ? parseInt(item.volumeInfo.publishedDate.substring(0, 4)) : null,
+              author: item.volumeInfo?.authors?.[0],
+              rating: item.volumeInfo?.averageRating ? item.volumeInfo.averageRating * 2 : null,
+              releaseDate: item.volumeInfo?.publishedDate,
+              popularity: (item.volumeInfo?.averageRating || 0) * ((item.volumeInfo?.ratingsCount || 0) + 1) * 10
+            })));
+            break;
+            
+          case 'game':
+            const today = new Date().toISOString().split('T')[0];
+            const monthAgo = oneMonthAgo.toISOString().split('T')[0];
+            const gameResponse = await fetch(
+              `https://api.rawg.io/api/games?key=${Deno.env.get('RAWG_API_KEY')}&dates=${monthAgo},${today}&ordering=-released&page_size=10`
+            );
+            const gameData = await gameResponse.json();
+            allNewReleases.push(...(gameData.results || []).map((item: any) => ({
+              id: item.id,
+              title: item.name,
+              type: 'game',
+              coverImage: item.background_image,
+              year: item.released ? parseInt(item.released.substring(0, 4)) : null,
+              rating: item.rating,
+              releaseDate: item.released,
+              popularity: item.ratings_count * (item.rating || 1)
+            })));
+            break;
+        }
+      }
+      
+      // Trier par date de sortie (le plus récent d'abord)
+      const sortedReleases = allNewReleases
+        .filter(item => item.releaseDate) // Garder seulement les items avec une date
+        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+      
+      // Équilibrer les types de médias (assurer au moins 2 de chaque type si disponible)
+      const balancedResults = balanceMediaTypes(sortedReleases, categories);
+      
+      console.log(`Returning ${balancedResults.length} new releases`);
+      
+      return new Response(JSON.stringify({ results: balancedResults }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
+    }
 
     // Handle trending request type
     if (type === "trending") {
