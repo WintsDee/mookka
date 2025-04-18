@@ -20,6 +20,9 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     setIsLoading(true);
     setError(null);
     
+    // Log for debugging
+    console.log(`usePlatforms hook initializing: ${mediaType} ID:${mediaId}`);
+    
     // Function to fetch platforms where to watch/buy the media
     const fetchPlatforms = async () => {
       // Create a timeout promise
@@ -34,6 +37,13 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
         const dataPromise = new Promise<Platform[]>((resolve) => {
           setTimeout(() => {
             const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
+            console.log(`Platform data generated for ${mediaType} ID:${mediaId}:`, 
+              { 
+                total: mockPlatforms.length,
+                available: mockPlatforms.filter(p => p.isAvailable).length,
+                platforms: mockPlatforms.map(p => p.name)
+              }
+            );
             resolve(mockPlatforms);
           }, 1000);
         });
@@ -41,8 +51,6 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
         // Race between the data fetch and the timeout
         const data = await Promise.race([dataPromise, timeoutPromise]);
         
-        // Filter available platforms if needed
-        // const availablePlatforms = data.filter(platform => platform.isAvailable === true);
         setPlatforms(data);
         setIsLoading(false);
       } catch (error) {

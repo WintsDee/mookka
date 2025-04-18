@@ -24,54 +24,167 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
     }
   ];
   
-  // Platform availability per specific content ID
+  // Expanded platform availability map with more comprehensive data for popular media
   const platformAvailabilityMap: Record<string, Record<string, boolean>> = {
-    // Brooklyn Nine-Nine (ID: 48891)
-    "48891": {
+    // Popular TV shows
+    "48891": { // Brooklyn Nine-Nine
       "netflix": true,
       "prime": false,
       "disney": false,
       "canal": true,
-      "apple": false,
-      "molotov": false,
-      "ocs": false,
-      "rakuten": false
-    },
-    // Other example IDs
-    "1": {
-      "netflix": false,
-      "prime": false,
-      "disney": true,
-      "canal": false,
-      "apple": false,
+      "apple": true,
       "molotov": false,
       "ocs": false,
       "rakuten": true
     },
-    "2": {
-      "netflix": false,
-      "prime": true,
+    "63174": { // The Witcher
+      "netflix": true,
+      "prime": false,
       "disney": false,
       "canal": false,
       "apple": false,
-      "molotov": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": false
+    },
+    "1399": { // Game of Thrones
+      "netflix": false,
+      "prime": false,
+      "disney": false,
+      "canal": false,
+      "apple": false,
+      "molotov": false,
+      "ocs": true,
+      "rakuten": true
+    },
+    "100088": { // House of the Dragon
+      "netflix": false,
+      "prime": false,
+      "disney": false,
+      "canal": false,
+      "apple": false,
+      "molotov": false,
       "ocs": true,
       "rakuten": false
     },
-    "3": {
-      "netflix": false,
-      "prime": true,
+    "1396": { // Breaking Bad
+      "netflix": true,
+      "prime": false,
       "disney": false,
       "canal": false,
       "apple": true,
       "molotov": false,
       "ocs": false,
+      "rakuten": true
+    },
+    "85552": { // Euphoria
+      "netflix": false,
+      "prime": false,
+      "disney": false,
+      "canal": false,
+      "apple": false,
+      "molotov": false,
+      "ocs": true,
       "rakuten": false
+    },
+    
+    // Popular films
+    "238": { // The Godfather
+      "netflix": true,
+      "prime": true,
+      "disney": false,
+      "canal": true,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "550": { // Fight Club
+      "netflix": true,
+      "prime": false,
+      "disney": false,
+      "canal": false,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "155": { // The Dark Knight
+      "netflix": false,
+      "prime": true,
+      "disney": false,
+      "canal": true,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "299534": { // Avengers: Endgame
+      "netflix": false,
+      "prime": false,
+      "disney": true,
+      "canal": false,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "11": { // Star Wars
+      "netflix": false,
+      "prime": false,
+      "disney": true,
+      "canal": false,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "13": { // Forrest Gump
+      "netflix": true,
+      "prime": true,
+      "disney": false,
+      "canal": true,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "120": { // The Lord of the Rings
+      "netflix": false,
+      "prime": true,
+      "disney": false,
+      "canal": true,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    "603": { // The Matrix
+      "netflix": true,
+      "prime": false,
+      "disney": false,
+      "canal": true,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
+    },
+    
+    // Default for other content
+    "default": {
+      "netflix": false,
+      "prime": false,
+      "disney": false,
+      "canal": false,
+      "apple": true,
+      "molotov": false,
+      "ocs": false,
+      "rakuten": true
     }
   };
   
-  // Get availability map for this specific media, or use empty map if not found
-  const availabilityMap = platformAvailabilityMap[mediaId] || {};
+  // Get availability map for this specific media, or use default map if not found
+  const availabilityMap = platformAvailabilityMap[mediaId] || platformAvailabilityMap["default"];
   
   // Enhanced streaming platforms with conditional availability
   const streamingPlatforms: Platform[] = [
@@ -85,13 +198,13 @@ export function generateFilmAndSeriesPlatforms(mediaId: string, encodedTitle: st
       isAvailable: availabilityMap["netflix"] || false,
       pricing: {
         type: "subscription",
-        plans: ["Standard", "Premium"],
-        startingPrice: "8.99€/mois"
+        plans: ["Essentiel", "Standard", "Premium"],
+        startingPrice: "5.99€/mois"
       }
     },
     { 
       id: "2", 
-      name: "Amazon Prime Video", 
+      name: "Prime Video", 
       url: `https://www.primevideo.com/search/ref=atv_sr_sug_4?phrase=${encodedTitle}`, 
       type: "streaming", 
       category: "subscription",

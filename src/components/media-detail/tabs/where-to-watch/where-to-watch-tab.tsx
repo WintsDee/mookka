@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
@@ -17,6 +18,9 @@ interface WhereToWatchTabProps {
 
 export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabProps) {
   const { availablePlatforms, isLoading, error, hasAvailablePlatforms } = usePlatforms(mediaId, mediaType, title);
+  
+  // Log platform data for debugging
+  console.log(`WhereToWatch tab for ${mediaType} ID:${mediaId}`, { availablePlatforms, hasAvailablePlatforms });
   
   if (isLoading) {
     return <WhereToWatchLoading />;
