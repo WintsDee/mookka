@@ -10,7 +10,7 @@ import { MobileHeader } from "@/components/mobile-header";
 import { Button } from "@/components/ui/button";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { useCollections } from "@/hooks/use-collections";
-import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
+import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/formatters"; // Updated import path
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
@@ -104,7 +104,9 @@ const MediaDetail = () => {
   if (isLoading) {
     return (
       <Background>
-        <MobileHeader onBackClick={handleGoBack} />
+        <MobileHeader 
+          showBackButton={true}
+        />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
           <p className="mt-4 text-lg">Chargement en cours...</p>
@@ -116,7 +118,9 @@ const MediaDetail = () => {
   if (hasError || !media) {
     return (
       <Background>
-        <MobileHeader onBackClick={handleGoBack} />
+        <MobileHeader 
+          showBackButton={true}
+        />
         <div className="flex flex-col items-center justify-center h-screen">
           <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
@@ -142,7 +146,6 @@ const MediaDetail = () => {
             formattedMedia={formattedMedia} 
             type={type as MediaType}
             onAddToCollection={() => setAddToCollectionOpen(true)}
-            onBackClick={handleGoBack}
           />
           
           <div className="flex-1 overflow-hidden">
@@ -174,7 +177,9 @@ const MediaDetail = () => {
     console.error("Error formatting media:", error);
     return (
       <Background>
-        <MobileHeader onBackClick={handleGoBack} />
+        <MobileHeader 
+          showBackButton={true}
+        />
         <div className="flex flex-col items-center justify-center h-screen">
           <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
           <h1 className="text-2xl font-bold mb-4">Erreur de format</h1>
