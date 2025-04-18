@@ -1,15 +1,9 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Search, 
-  MessagesSquare, 
-  Globe,
-  Bookmark,
-  Library  
-} from 'lucide-react';
 import { SearchButton } from './navigation/SearchButton';
 import { NavItem } from './navigation/NavItem';
+import { navigationItems } from './navigation/config';
 
 export function MobileNav() {
   const location = useLocation();
@@ -18,18 +12,10 @@ export function MobileNav() {
     return null;
   }
 
-  const navItems = [
-    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
-    { path: '/collections', icon: Bookmark, label: 'Collections' },
-    { path: '/recherche', icon: Search, label: 'Recherche', special: true },
-    { path: '/social', icon: MessagesSquare, label: 'Social' },
-    { path: '/actualites', icon: Globe, label: 'Actualités' },
-  ];
-
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
       <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4 relative">
-        {navItems.map((item) => (
+        {navigationItems.map((item) => (
           <Link 
             key={item.path} 
             to={item.path} 

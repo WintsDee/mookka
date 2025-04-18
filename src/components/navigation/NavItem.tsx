@@ -1,5 +1,4 @@
 
-import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 
 interface NavItemProps {
