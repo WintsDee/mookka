@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -303,7 +304,7 @@ const Social = () => {
   };
 
   return (
-    <Background>
+    <Background className="animate-fade-in">
       <MobileHeader title="Social" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">
@@ -315,13 +316,13 @@ const Social = () => {
                 <TabsTrigger value="discover">Découvrir</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="activity" className="mt-4">
+              <TabsContent value="activity" className="mt-4 transition-all duration-300">
                 <ScrollArea className="h-[calc(100vh-200px)]">
                   {renderActivities()}
                 </ScrollArea>
               </TabsContent>
               
-              <TabsContent value="friends">
+              <TabsContent value="friends" className="transition-all duration-300">
                 <div className="flex flex-col items-center justify-center h-40 text-center px-6">
                   <p className="text-muted-foreground">
                     Fonctionnalité à venir dans la prochaine mise à jour
@@ -329,7 +330,7 @@ const Social = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="discover">
+              <TabsContent value="discover" className="transition-all duration-300">
                 <div className="flex flex-col items-center justify-center h-40 text-center px-6">
                   <p className="text-muted-foreground">
                     Fonctionnalité à venir dans la prochaine mise à jour
