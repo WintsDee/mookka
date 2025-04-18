@@ -34,7 +34,9 @@ export function updateEpisodeProgress(
   
   // Count total watched episodes across all seasons
   const newWatchedCount = Object.values(newWatchedEpisodes).reduce(
-    (count, episodes) => count + (Array.isArray(episodes) ? episodes.length : 0), 
+    (count: number, episodes: any) => {
+      return count + (Array.isArray(episodes) ? episodes.length : 0);
+    }, 
     0
   );
   
