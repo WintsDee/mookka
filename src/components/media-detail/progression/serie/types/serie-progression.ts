@@ -2,7 +2,9 @@
 export interface Episode {
   number: number;
   title?: string;
+  description?: string;
   airDate?: string;
+  still_path?: string;
 }
 
 export interface Season {
@@ -22,5 +24,6 @@ export interface SerieProgressionResult {
   progression: any;
   toggleEpisode: (seasonNumber: number, episodeNumber: number) => any;
   toggleSeason: (seasonNumber: number, episodeCount: number) => any;
-  updateStatus: (newStatus: string) => any;
+  updateStatus: (status: string) => any;
 }
+
