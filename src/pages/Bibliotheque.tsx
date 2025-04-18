@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -11,12 +12,13 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
+  const navigate = useNavigate(); // Add navigation hook
   
   // Filtrer les médias en fonction du type sélectionné et du terme de recherche
   const filteredMedia = mockMedia
@@ -99,7 +101,10 @@ const Bibliotheque = () => {
                 <p className="text-muted-foreground mb-4">
                   Votre bibliothèque est vide. Commencez à ajouter des médias !
                 </p>
-                <Button variant="outline">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/recherche')} // Navigate to recherche page
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Ajouter un média
                 </Button>
