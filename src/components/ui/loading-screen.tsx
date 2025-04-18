@@ -9,7 +9,9 @@ export const LoadingScreen = () => {
         <img
           src="/lovable-uploads/b0bb1f66-b362-4d55-8a5e-5dede4e852e7.png"
           alt="Mookka"
-          className="w-16 h-16 animate-pulse"
+          className="w-16 h-16"
+          loading="eager"
+          fetchpriority="high"
         />
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
