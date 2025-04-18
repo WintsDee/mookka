@@ -29,9 +29,9 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         navigate({
           pathname: previousPath,
           search: searchParams
-        }, { replace: true, state: { transition: 'smooth' } });
+        }, { replace: true });
       } else {
-        navigate(previousPath, { replace: true, state: { transition: 'smooth' } });
+        navigate(previousPath, { replace: true });
       }
     } else {
       // Default fallback
@@ -48,7 +48,7 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   };
 
   return (
-    <div className="relative h-52 w-full pt-8 transition-opacity duration-300">
+    <div className="relative h-52 w-full pt-8">
       <Button 
         variant="ghost" 
         size="icon" 

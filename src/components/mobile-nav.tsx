@@ -19,7 +19,7 @@ export function MobileNav() {
           <Link 
             key={item.path} 
             to={item.path}
-            className={`flex flex-col items-center justify-center transition-transform duration-300 ${
+            className={`flex flex-col items-center justify-center transition-all duration-200 ${
               item.special ? 'relative -mt-8' : ''
             }`}
           >
