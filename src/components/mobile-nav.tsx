@@ -25,8 +25,8 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
-      <div className="grid grid-cols-5 gap-1 py-2 px-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50">
+      <div className="grid grid-cols-5 gap-1 py-2 px-2 pb-safe">
         {navItems.map((item) => (
           <Link 
             key={item.path} 

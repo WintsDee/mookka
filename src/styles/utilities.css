@@ -24,32 +24,32 @@
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0.5rem) !important;
 }
 
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: env(safe-area-inset-top, 0.5rem) !important;
 }
 
 .pl-safe {
-  padding-left: env(safe-area-inset-left, 0);
+  padding-left: env(safe-area-inset-left, 0.5rem) !important;
 }
 
 .pr-safe {
-  padding-right: env(safe-area-inset-right, 0);
+  padding-right: env(safe-area-inset-right, 0.5rem) !important;
 }
 
 .mb-safe {
-  margin-bottom: env(safe-area-inset-bottom, 0);
+  margin-bottom: env(safe-area-inset-bottom, 0.5rem) !important;
 }
 
 .mt-safe {
-  margin-top: env(safe-area-inset-top, 0);
+  margin-top: env(safe-area-inset-top, 0.5rem) !important;
 }
 
 /* Styles pour la barre de navigation mobile */
 .mobile-nav {
-  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50 pb-safe;
+  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
 }
 
 /* Styles pour les cartes de médias */

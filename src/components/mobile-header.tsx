@@ -21,7 +21,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
   const { profile } = useProfile();
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 pt-safe z-50">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 pt-safe z-50">
       {title && <h1 className="text-lg font-semibold">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0">
@@ -34,7 +34,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
         )}
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 py-4">
         {children}
         {/* Formulaire d'aide caché mais accessible via data attribute */}
         <div className="hidden">

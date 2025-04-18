@@ -4,20 +4,28 @@
     @apply border-border;
   }
   
+  :root {
+    --app-height: 100%;
+  }
+  
   html {
-    @apply h-[100dvh] w-full overflow-hidden;
-    /* Ensure content respects safe areas */
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    @apply h-full w-full overflow-hidden;
+    height: var(--app-height);
   }
   
   body, #root {
-    @apply h-[100dvh] w-full overflow-hidden;
+    @apply h-full w-full overflow-hidden;
+    height: var(--app-height);
   }
   
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    position: fixed;
+    overflow: hidden;
   }
 }
 
