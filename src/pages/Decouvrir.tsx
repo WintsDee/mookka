@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
-import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
+import { MobileNav } from "@/components/mobile-nav";
 import { useNews } from "@/hooks/use-news";
 import { useTrending } from "@/hooks/use-trending";
 import { useNewReleases } from "@/hooks/use-new-releases";
@@ -64,7 +64,7 @@ const Decouvrir = () => {
   return (
     <Background>
       <MobileHeader title="Découvrir" />
-      <div className="pb-24 pt-16">
+      <div className="pt-16 pb-24"> {/* Removed extra padding, adjusted to match mobile header height */}
         <div className="px-4">
           <Tabs 
             value={activeTab} 
