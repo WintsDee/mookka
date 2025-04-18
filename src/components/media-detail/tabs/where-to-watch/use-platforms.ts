@@ -46,18 +46,20 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     staleTime: CACHE_TIME,
     refetchOnWindowFocus: false,
     retry: 1,
-    onError: (error) => {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Une erreur s'est produite lors de la récupération des plateformes";
-      
-      console.error("Erreur lors de la récupération des plateformes:", error);
-      
-      toast({
-        title: "Erreur",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    onSettled: (data, error) => {
+      if (error) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Une erreur s'est produite lors de la récupération des plateformes";
+        
+        console.error("Erreur lors de la récupération des plateformes:", error);
+        
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 
