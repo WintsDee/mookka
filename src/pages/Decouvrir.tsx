@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { useNews } from "@/hooks/use-news";
+import { useTrending } from "@/hooks/use-trending";
 import { NewsGrid } from "@/components/news/news-grid";
+import { TrendingGrid } from "@/components/trending/trending-grid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { NewsWebView } from "@/components/news/news-web-view";
 
@@ -14,13 +15,15 @@ const Decouvrir = () => {
   const [activeTab, setActiveTab] = useLocalStorage("decouvrir-tab", "actualites");
   const { 
     news, 
-    loading, 
+    loading: newsLoading, 
     refreshing,
     handleRefresh,
     handleArticleSelect,
     selectedArticle,
     handleArticleClose
   } = useNews();
+
+  const { trending, loading: trendingLoading } = useTrending();
   
   return (
     <Background className="animate-fade-in">
@@ -36,7 +39,7 @@ const Decouvrir = () => {
             <TabsContent value="actualites" className="mt-2">
               <NewsGrid 
                 items={news}
-                loading={loading}
+                loading={newsLoading}
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
                 onArticleSelect={handleArticleSelect}
@@ -44,16 +47,10 @@ const Decouvrir = () => {
             </TabsContent>
             
             <TabsContent value="tendances" className="mt-2">
-              <ScrollArea className="h-[calc(100vh-250px)]">
-                <div className="space-y-4 px-2">
-                  {/* Placeholder for now - will be implemented in next iteration */}
-                  <div className="flex flex-col items-center justify-center h-40 text-center">
-                    <p className="text-muted-foreground">
-                      Les tendances seront disponibles dans une prochaine mise à jour
-                    </p>
-                  </div>
-                </div>
-              </ScrollArea>
+              <TrendingGrid 
+                items={trending}
+                loading={trendingLoading}
+              />
             </TabsContent>
           </Tabs>
         </div>
