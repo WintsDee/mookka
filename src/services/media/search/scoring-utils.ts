@@ -12,9 +12,14 @@ export function calculateRelevanceScore(
   // Base score calculation for all media types
   let score = 0;
   
-  // Title matching (highest priority)
-  const titleMatch = isSimilarText(item.title, query);
-  if (titleMatch) score += 10;
+  // Exact title match (highest priority)
+  if (item.title && item.title.toLowerCase() === queryLower) {
+    score += 50; // Significant boost for exact matches
+  }
+  // Partial title matching
+  else if (isSimilarText(item.title, query)) {
+    score += 10;
+  }
   
   // Creator matching (author/director - high priority)
   const creatorMatch = 

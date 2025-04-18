@@ -39,6 +39,19 @@ export function mergeSearchResults(
   
   // Sort results by relevance score
   mergedResults.sort((a, b) => {
+    const queryLower = query.toLowerCase();
+    
+    // Check for exact title matches - these get highest priority
+    const titleA = (a.title || '').toLowerCase();
+    const titleB = (b.title || '').toLowerCase();
+    
+    const exactMatchA = titleA === queryLower;
+    const exactMatchB = titleB === queryLower;
+    
+    // If one has an exact match and the other doesn't, prioritize the exact match
+    if (exactMatchA && !exactMatchB) return -1;
+    if (!exactMatchA && exactMatchB) return 1;
+    
     // Prioritize local database results
     if (a.fromDatabase && !b.fromDatabase) return -1;
     if (!a.fromDatabase && b.fromDatabase) return 1;

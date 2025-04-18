@@ -130,17 +130,25 @@ Deno.serve(async (req) => {
         const authorA = (a.volumeInfo?.authors || []).join(' ').toLowerCase()
         const authorB = (b.volumeInfo?.authors || []).join(' ').toLowerCase()
         
+        // Prioritize exact matches
+        const exactTitleMatchA = titleA === queryLower ? 100 : 0
+        const exactTitleMatchB = titleB === queryLower ? 100 : 0
+        
+        // If we have one exact match, prioritize it heavily
+        if (exactTitleMatchA !== exactTitleMatchB) {
+          return exactTitleMatchB - exactTitleMatchA
+        }
+        
+        // Otherwise use the existing scoring system
         const scoreA = 
-          (titleA === queryLower ? 10 : 0) + 
-          (titleA.includes(queryLower) ? 5 : 0) + 
-          (authorA === queryLower ? 8 : 0) + 
-          (authorA.includes(queryLower) ? 4 : 0)
+          (titleA.includes(queryLower) ? 30 : 0) + 
+          (authorA === queryLower ? 25 : 0) + 
+          (authorA.includes(queryLower) ? 15 : 0)
           
         const scoreB = 
-          (titleB === queryLower ? 10 : 0) + 
-          (titleB.includes(queryLower) ? 5 : 0) + 
-          (authorB === queryLower ? 8 : 0) + 
-          (authorB.includes(queryLower) ? 4 : 0)
+          (titleB.includes(queryLower) ? 30 : 0) + 
+          (authorB === queryLower ? 25 : 0) + 
+          (authorB.includes(queryLower) ? 15 : 0)
           
         return scoreB - scoreA
       })
@@ -153,17 +161,25 @@ Deno.serve(async (req) => {
         const nameA = (a.name || '').toLowerCase()
         const nameB = (b.name || '').toLowerCase()
         
+        // Prioritize exact matches (100 points)
+        const exactMatchA = nameA === queryLower ? 100 : 0
+        const exactMatchB = nameB === queryLower ? 100 : 0
+        
+        // If we have an exact match, it should absolutely get priority
+        if (exactMatchA !== exactMatchB) {
+          return exactMatchB - exactMatchA
+        }
+        
+        // Otherwise fall back to the regular scoring system
         const scoreA = 
-          (nameA === queryLower ? 30 : 0) + 
-          (nameA.includes(queryLower) ? 20 : 0) +
-          (queryLower.includes(nameA) ? 10 : 0) +
+          (nameA.includes(queryLower) ? 30 : 0) + 
+          (queryLower.includes(nameA) ? 15 : 0) +
           (a.rating || 0) * 3 +
           Math.min((a.ratings_count || 0) / 100, 15)
           
         const scoreB = 
-          (nameB === queryLower ? 30 : 0) + 
-          (nameB.includes(queryLower) ? 20 : 0) +
-          (queryLower.includes(nameB) ? 10 : 0) +
+          (nameB.includes(queryLower) ? 30 : 0) + 
+          (queryLower.includes(nameB) ? 15 : 0) +
           (b.rating || 0) * 3 +
           Math.min((b.ratings_count || 0) / 100, 15)
         
