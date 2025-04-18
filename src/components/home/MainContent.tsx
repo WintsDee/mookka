@@ -10,17 +10,16 @@ import { Link } from "react-router-dom";
 const MainContent: React.FC = () => {
   return (
     <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 text-center">
-      <div className="w-full max-w-md animate-fade-in flex flex-col items-center rounded-xl p-6">
+      <div className="w-full max-w-md flex flex-col items-center rounded-xl p-6 animate-fade-in">
         <MookkaHeader />
-        <div className="mt-6">
+        <div className="mt-6 animate-fade-in [animation-delay:200ms]">
           <ActionButtons />
         </div>
-        <div className="mt-6">
+        <div className="mt-6 animate-fade-in [animation-delay:400ms]">
           <MediaTypeIcons />
         </div>
         
-        {/* Support button (discreet) */}
-        <div className="mt-8 opacity-80 hover:opacity-100 transition-opacity">
+        <div className="mt-8 opacity-80 hover:opacity-100 transition-opacity animate-fade-in [animation-delay:600ms]">
           <Link to="/soutenir">
             <Button 
               variant="ghost" 
