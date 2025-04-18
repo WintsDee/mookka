@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
 import { getMediaById } from "@/services/media";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,6 +9,7 @@ import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-d
 export function useMediaDetail() {
   const { type, id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
   const [hasError, setHasError] = useState(false);
@@ -19,19 +20,24 @@ export function useMediaDetail() {
   const searchParams = location.state?.search || "";
 
   useEffect(() => {
+    // Rediriger si l'URL contient des segments supplémentaires
+    if (id && id.includes('/')) {
+      const cleanId = id.split('/')[0];
+      navigate(`/media/${type}/${cleanId}`, { 
+        state: location.state,
+        replace: true 
+      });
+      return;
+    }
+    
     const fetchMediaDetails = async () => {
-      let cleanId = id;
-      if (id && id.includes('/')) {
-        cleanId = id.split('/')[0];
-      }
-      
-      if (type && cleanId) {
+      if (type && id) {
         setIsLoading(true);
         setHasError(false);
         
         try {
-          console.log(`Fetching details for ${type}/${cleanId}`);
-          const mediaData = await getMediaById(type as MediaType, cleanId);
+          console.log(`Fetching details for ${type}/${id}`);
+          const mediaData = await getMediaById(type as MediaType, id);
           
           console.log("Media data received:", mediaData ? "yes" : "no");
           
@@ -71,7 +77,7 @@ export function useMediaDetail() {
     };
 
     fetchMediaDetails();
-  }, [type, id, toast]);
+  }, [type, id, toast, navigate, location.state]);
 
   const formattedMedia = media ? formatMediaDetails(media, type as MediaType) : null;
   const additionalInfo = media && formattedMedia ? getAdditionalMediaInfo(media, formattedMedia, type as MediaType) : null;

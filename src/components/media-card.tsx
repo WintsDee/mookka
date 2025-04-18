@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,8 @@ interface MediaCardProps {
 }
 
 const MediaCard = ({ media, size = "medium", showDetails = true, from, className }: MediaCardProps) => {
+  const location = useLocation();
+  
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
     ? media.rating > 5 
@@ -95,10 +97,11 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
 
   return (
     <Link 
-      to={`/media/${type}/${cleanId}`} 
-      state={{ from: from || location.pathname }}
+      to={`/media/${type}/${cleanId}`}
+      state={{ from: from || location.pathname }} 
       className={cn("block animate-fade-in", className)}
     >
+      {/* Le reste du composant reste inchangé */}
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
           {/* Cover image */}
