@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -29,13 +28,6 @@ const Bibliotheque = () => {
         genre.toLowerCase().includes(searchTerm.toLowerCase())
       ))
     );
-  
-  // Grouper les médias par statut
-  const mediaByStatus = {
-    current: filteredMedia.filter(m => m.status === "watching"),
-    pending: filteredMedia.filter(m => m.status === "to-watch"),
-    completed: filteredMedia.filter(m => m.status === "completed")
-  };
 
   return (
     <Background>
@@ -102,50 +94,14 @@ const Bibliotheque = () => {
         
         <ScrollArea className="h-[calc(100vh-220px)] px-6">
           <div className="space-y-8 pb-24">
-            {/* En cours de visionnage/lecture/jeu */}
-            {mediaByStatus.current.length > 0 && (
-              <MediaRecommendations 
-                title="En cours" 
-                medias={mediaByStatus.current}
-                onSeeMore={() => console.log("Voir plus - En cours")}
-                from={location.pathname}
-              />
-            )}
-            
-            {/* À voir/lire/jouer */}
-            {mediaByStatus.pending.length > 0 && (
-              <MediaRecommendations 
-                title="À découvrir" 
-                medias={mediaByStatus.pending}
-                onSeeMore={() => console.log("Voir plus - À découvrir")}
-                from={location.pathname}
-              />
-            )}
-            
-            {/* Terminés */}
-            {mediaByStatus.completed.length > 0 && (
-              <MediaRecommendations 
-                title="Terminés" 
-                medias={mediaByStatus.completed}
-                onSeeMore={() => console.log("Voir plus - Terminés")}
-                from={location.pathname}
-              />
-            )}
-            
-            {/* Si aucun résultat */}
             {filteredMedia.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground mb-4 text-center">
-                  Aucun média trouvé pour cette recherche.
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground mb-4">
+                  Votre bibliothèque est vide. Commencez à ajouter des médias !
                 </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchTerm("");
-                    setFilter("all");
-                  }}
-                >
-                  Réinitialiser les filtres
+                <Button variant="outline">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Ajouter un média
                 </Button>
               </div>
             )}
