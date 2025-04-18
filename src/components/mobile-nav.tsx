@@ -6,7 +6,7 @@ import {
   MessagesSquare, 
   Globe,
   Bookmark,
-  Library
+  Library  // Replace BookStack with Library
 } from 'lucide-react';
 
 export function MobileNav() {
@@ -18,7 +18,7 @@ export function MobileNav() {
   }
 
   const navItems = [
-    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
+    { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' }, // Updated icon
     { path: '/collections', icon: Bookmark, label: 'Collections' },
     { path: '/recherche', icon: Search, label: 'Recherche' },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
@@ -32,15 +32,9 @@ export function MobileNav() {
           <Link 
             key={item.path} 
             to={item.path} 
-            className={`flex flex-col items-center justify-center transition-colors duration-200 ${
+            className={`flex flex-col items-center justify-center ${
               location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
-            onClick={(e) => {
-              // Prevent navigation if we're already on this page to avoid double rendering
-              if (location.pathname === item.path) {
-                e.preventDefault();
-              }
-            }}
           >
             <item.icon size={22} />
             <span className="text-xs mt-1.5">{item.label}</span>

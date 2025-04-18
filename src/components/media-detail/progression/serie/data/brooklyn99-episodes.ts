@@ -1,6 +1,4 @@
-
-// Data for Brooklyn 99 episodes per season
-export const BROOKLYN_99_EPISODES: Record<number, Array<{ number: number; title: string; airDate?: string }>> = {
+export const BROOKLYN_99_EPISODES: Record<number, Array<{ number: number; title: string; airDate: string }>> = {
   1: [
     { number: 1, title: "Pilot", airDate: "2013-09-17" },
     { number: 2, title: "The Tagger", airDate: "2013-09-24" },
@@ -86,15 +84,15 @@ export const BROOKLYN_99_EPISODES: Record<number, Array<{ number: number; title:
     { number: 8, title: "Skyfire Cycle", airDate: "2016-11-29" },
     { number: 9, title: "The Overmining", airDate: "2016-12-06" },
     { number: 10, title: "Captain Latvia", airDate: "2016-12-13" },
-    { number: 11, title: "The Fugitive, Part 1", airDate: "2017-01-01" },
-    { number: 12, title: "The Fugitive, Part 2", airDate: "2017-01-01" },
+    { number: 11, title: "The Fugitive Pt. 1", airDate: "2017-01-01" },
+    { number: 12, title: "The Fugitive Pt. 2", airDate: "2017-01-01" },
     { number: 13, title: "The Audit", airDate: "2017-04-11" },
     { number: 14, title: "Serve & Protect", airDate: "2017-04-18" },
     { number: 15, title: "The Last Ride", airDate: "2017-04-25" },
     { number: 16, title: "Moo Moo", airDate: "2017-05-02" },
-    { number: 17, title: "Cop-Con", airDate: "2017-05-09" },
-    { number: 18, title: "Chasing Amy", airDate: "2017-05-16" },
-    { number: 19, title: "Your Honor", airDate: "2017-05-09" },
+    { number: 17, title: "Cop Con", airDate: "2017-05-09" },
+    { number: 18, title: "Chasing Amy", airDate: "2017-05-09" },
+    { number: 19, title: "Your Honor", airDate: "2017-05-16" },
     { number: 20, title: "The Slaughterhouse", airDate: "2017-05-16" },
     { number: 21, title: "The Bank Job", airDate: "2017-05-23" },
     { number: 22, title: "Crime & Punishment", airDate: "2017-05-23" }
@@ -110,17 +108,17 @@ export const BROOKLYN_99_EPISODES: Record<number, Array<{ number: number; title:
     { number: 8, title: "Return To Skyfire", airDate: "2017-11-21" },
     { number: 9, title: "99", airDate: "2017-12-05" },
     { number: 10, title: "Game Night", airDate: "2017-12-12" },
-    { number: 11, title: "The Favor", airDate: "2018-01-02" },
-    { number: 12, title: "Safe House", airDate: "2018-03-18" },
-    { number: 13, title: "The Negotiation", airDate: "2018-03-25" },
-    { number: 14, title: "The Box", airDate: "2018-04-01" },
-    { number: 15, title: "The Puzzle Master", airDate: "2018-04-08" },
-    { number: 16, title: "NutriBoom", airDate: "2018-04-15" },
-    { number: 17, title: "DFW", airDate: "2018-04-15" },
-    { number: 18, title: "Gray Star Mutual", airDate: "2018-04-22" },
-    { number: 19, title: "Bachelor/ette Party", airDate: "2018-04-29" },
-    { number: 20, title: "Show Me Going", airDate: "2018-05-06" },
-    { number: 21, title: "White Whale", airDate: "2018-05-13" },
+    { number: 11, title: "The Favor", airDate: "2018-03-18" },
+    { number: 12, title: "Safe House", airDate: "2018-03-25" },
+    { number: 13, title: "The Negotiation", airDate: "2018-04-01" },
+    { number: 14, title: "The Box", airDate: "2018-04-08" },
+    { number: 15, title: "The Puzzle Master", airDate: "2018-04-15" },
+    { number: 16, title: "NutriBoom", airDate: "2018-04-22" },
+    { number: 17, title: "DFW", airDate: "2018-04-29" },
+    { number: 18, title: "Gray Star Mutual", airDate: "2018-05-06" },
+    { number: 19, title: "Bachelor/ette Party", airDate: "2018-05-13" },
+    { number: 20, title: "Show Me Going", airDate: "2018-05-13" },
+    { number: 21, title: "White Whale", airDate: "2018-05-20" },
     { number: 22, title: "Jake & Amy", airDate: "2018-05-20" }
   ],
   6: [
@@ -167,7 +165,6 @@ export const BROOKLYN_99_EPISODES: Record<number, Array<{ number: number; title:
     { number: 6, title: "The Set Up", airDate: "2021-08-26" },
     { number: 7, title: "Game of Boyles", airDate: "2021-09-02" },
     { number: 8, title: "Renewal", airDate: "2021-09-02" },
-    { number: 9, title: "The Last Day, Part 1", airDate: "2021-09-16" },
-    { number: 10, title: "The Last Day, Part 2", airDate: "2021-09-16" }
+    { number: 9, title: "The Last Day", airDate: "2021-09-16" }
   ]
 };

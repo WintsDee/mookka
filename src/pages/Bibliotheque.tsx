@@ -2,19 +2,41 @@
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FilterIcon, Search } from "lucide-react";
+import { MediaCard } from "@/components/media-card";
+import { MediaRecommendations } from "@/components/media-recommendations";
+import { mockMedia } from "@/data/mockData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusCircle, FilterIcon, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { useLocation } from "react-router-dom";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
   
+  // Filtrer les médias en fonction du type sélectionné et du terme de recherche
+  const filteredMedia = mockMedia
+    .filter(media => filter === "all" || media.type === filter)
+    .filter(media => 
+      searchTerm === "" || 
+      media.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (media.genres && media.genres.some(genre => 
+        genre.toLowerCase().includes(searchTerm.toLowerCase())
+      ))
+    );
+  
+  // Grouper les médias par statut
+  const mediaByStatus = {
+    current: filteredMedia.filter(m => m.status === "watching"),
+    pending: filteredMedia.filter(m => m.status === "to-watch"),
+    completed: filteredMedia.filter(m => m.status === "completed")
+  };
+
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
@@ -79,15 +101,54 @@ const Bibliotheque = () => {
         </header>
         
         <ScrollArea className="h-[calc(100vh-220px)] px-6">
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4 text-center">
-              Votre bibliothèque est vide
-            </p>
-            <Link to="/recherche"> {/* Wrap the Button with Link */}
-              <Button variant="outline">
-                Commencez à ajouter du contenu
-              </Button>
-            </Link>
+          <div className="space-y-8 pb-24">
+            {/* En cours de visionnage/lecture/jeu */}
+            {mediaByStatus.current.length > 0 && (
+              <MediaRecommendations 
+                title="En cours" 
+                medias={mediaByStatus.current}
+                onSeeMore={() => console.log("Voir plus - En cours")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* À voir/lire/jouer */}
+            {mediaByStatus.pending.length > 0 && (
+              <MediaRecommendations 
+                title="À découvrir" 
+                medias={mediaByStatus.pending}
+                onSeeMore={() => console.log("Voir plus - À découvrir")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* Terminés */}
+            {mediaByStatus.completed.length > 0 && (
+              <MediaRecommendations 
+                title="Terminés" 
+                medias={mediaByStatus.completed}
+                onSeeMore={() => console.log("Voir plus - Terminés")}
+                from={location.pathname}
+              />
+            )}
+            
+            {/* Si aucun résultat */}
+            {filteredMedia.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4 text-center">
+                  Aucun média trouvé pour cette recherche.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilter("all");
+                  }}
+                >
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -98,4 +159,3 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
-
