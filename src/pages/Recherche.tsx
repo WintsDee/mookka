@@ -66,7 +66,7 @@ const Recherche = () => {
   return (
     <Background>
       <MobileHeader title="Recherche" />
-      <div className="flex flex-col h-[calc(100vh-64px)] pb-16">
+      <div className="flex flex-col h-[calc(100vh-64px)] pb-16 pt-safe mt-16">
         <header className="px-6 mb-4">
           <MediaTypeSelector 
             selectedType={selectedType}
