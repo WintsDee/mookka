@@ -1,6 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
-import { corsHeaders } from '../fetch-news/cors.ts'
+import { corsHeaders } from './cors.ts'
 
 const TMDB_API_KEY = Deno.env.get('TMDB_API_KEY')
 const RAWG_API_KEY = Deno.env.get('RAWG_API_KEY')
@@ -81,4 +81,3 @@ Deno.serve(async (req) => {
     })
   }
 })
-
