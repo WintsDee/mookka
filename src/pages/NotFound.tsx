@@ -1,60 +1,26 @@
-
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Background } from "@/components/ui/background";
-import { AlertTriangle } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-    
-    // Redirection automatique si le chemin contient des segments supplémentaires pour les médias
-    const pathSegments = location.pathname.split('/');
-    if (pathSegments.length > 3 && pathSegments[1] === 'media') {
-      const [_, mediaSegment, typeSegment, idSegment] = pathSegments;
-      
-      if (idSegment) {
-        // Extraire l'ID principal (en cas de segments supplémentaires)
-        const cleanId = idSegment.split('/')[0];
-        // Rediriger vers la bonne URL de détail du média
-        navigate(`/media/${typeSegment}/${cleanId}`, { 
-          replace: true,
-          state: location.state
-        });
-        return;
-      }
-    }
-  }, [location.pathname, location.state, navigate]);
-
-  const handleReturnHome = () => {
-    navigate('/', { replace: true });
-  };
+  }, [location.pathname]);
 
   return (
-    <Background>
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <AlertTriangle className="h-16 w-16 text-amber-500 mb-6" />
-        <h1 className="text-3xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-6 text-center">
-          Oops! La page que vous recherchez n'existe pas
-        </p>
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <Button onClick={handleReturnHome} size="lg">
-            Retour à l'accueil
-          </Button>
-          <Button variant="outline" onClick={() => navigate(-1)} size="lg">
-            Retour à la page précédente
-          </Button>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">404</h1>
+        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
+        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
+          Return to Home
+        </a>
       </div>
-    </Background>
+    </div>
   );
 };
 

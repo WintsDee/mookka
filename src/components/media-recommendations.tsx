@@ -4,7 +4,6 @@ import { MediaCard } from "@/components/media-card";
 import { Media, MediaType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface MediaRecommendationsProps {
   title: string;
@@ -33,21 +32,16 @@ export const MediaRecommendations = ({
           </Button>
         )}
       </div>
-      
-      <ScrollArea className="w-full">
-        <div className="flex gap-4 pb-4">
-          {filteredMedias.map((media) => (
-            <MediaCard 
-              key={media.id} 
-              media={media} 
-              size="medium" 
-              from={from}
-              className="flex-shrink-0"
-            />
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        {filteredMedias.map((media) => (
+          <MediaCard 
+            key={media.id} 
+            media={media} 
+            size="medium" 
+            from={from}
+          />
+        ))}
+      </div>
     </section>
   );
 };

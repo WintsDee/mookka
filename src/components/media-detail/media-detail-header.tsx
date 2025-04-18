@@ -25,17 +25,17 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       const previousPath = location.state.from;
       const searchParams = location.state.search || "";
       
-      if (previousPath.includes("/recherche") && searchParams) {
+      if (previousPath === "/recherche" && searchParams) {
         navigate({
           pathname: previousPath,
           search: searchParams
-        });
+        }, { replace: true });
       } else {
-        navigate(previousPath);
+        navigate(previousPath, { replace: true });
       }
     } else {
       // Default fallback
-      navigate("/decouvrir");
+      navigate(-1);
     }
   };
 
@@ -119,9 +119,9 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           </div>
           {formattedMedia.genres && formattedMedia.genres.length > 0 && (
             <div className="flex gap-1.5 flex-wrap">
-              {formattedMedia.genres.map((genre: string, index: number) => (
+              {formattedMedia.genres.map((genre: string) => (
                 <Badge 
-                  key={`${genre}-${index}`}
+                  key={genre} 
                   variant="outline" 
                   className={cn(
                     "text-xs py-0 bg-black/60 backdrop-blur-sm border-white/30 text-white font-medium shadow-md",
