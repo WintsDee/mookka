@@ -29,7 +29,8 @@ const MediaDetail = () => {
 
   const handleGoBack = () => {
     if (previousPath) {
-      if (previousPath.includes('/recherche') && searchParams) {
+      // Naviguer vers la route précédente avec les paramètres de recherche si nécessaire
+      if (searchParams) {
         navigate({
           pathname: previousPath,
           search: searchParams

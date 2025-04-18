@@ -98,10 +98,12 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from, className
   return (
     <Link 
       to={`/media/${type}/${cleanId}`}
-      state={{ from: from || location.pathname }} 
+      state={{ 
+        from: from || location.pathname, 
+        search: location.search
+      }} 
       className={cn("block animate-fade-in", className)}
     >
-      {/* Le reste du composant reste inchangé */}
       <div className={cn("media-card relative", sizeClasses[size])}>
         <div className="relative w-full h-full">
           {/* Cover image */}

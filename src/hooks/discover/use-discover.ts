@@ -61,7 +61,7 @@ export function useDiscover() {
         }
         break;
     }
-  }, [storedPreferences, loadTrendingMedia, loadNewReleases, loadRecommendations, loadNews, news.length, newReleases.length, recommendations.length, activeTab]);
+  }, [storedPreferences, loadTrendingMedia, loadNewReleases, loadRecommendations, loadNews, news.length, newReleases.length, recommendations.length, activeTab, trendingMedia]);
 
   const handleTabChange = useCallback((tab: DiscoverTab) => {
     setActiveTab(tab);
