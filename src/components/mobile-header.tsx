@@ -30,7 +30,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
         </Link>
       )}
 
-      {title && <h1 className="text-lg font-semibold mx-auto">{title}</h1>}
+      {title && <h1 className="text-lg font-semibold w-full text-left">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0 absolute right-6">
         {!title && !isSoutienPage && (
@@ -92,3 +92,4 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
 };
 
 export { MobileHeader };
+
