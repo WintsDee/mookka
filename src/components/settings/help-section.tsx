@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { HelpCircle, AlertCircle, MessageSquare } from "lucide-react";
 import { 
   Accordion,
@@ -12,21 +11,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { helpSections } from "./data/help-section-data";
 import { HelpCard } from "@/components/ui/help-card";
-import { HelpFeedback } from "@/components/profile/help-feedback";
 
 export function HelpSection() {
-  const navigate = useNavigate();
-  
   const openFeedbackDialog = (initialTab: 'help' | 'feedback' = 'feedback') => {
-    // Use the global function if it exists
     if (typeof window.openHelpFeedbackDialog === 'function') {
       window.openHelpFeedbackDialog(initialTab);
-    } else {
-      // Fallback to finding an element in the DOM
-      const element = document.querySelector('[data-tab="' + initialTab + '"]') as HTMLElement;
-      if (element) {
-        element.click();
-      }
     }
   };
   
@@ -69,27 +58,24 @@ export function HelpSection() {
         
         <div className="mt-4 flex flex-col gap-2">
           <Button
-            onClick={() => openFeedbackDialog('feedback')}
+            onClick={() => openFeedbackDialog('help')}
             variant="outline"
+            className="w-full"
+          >
+            <AlertCircle className="mr-2 h-4 w-4" />
+            Besoin d'aide supplémentaire ?
+          </Button>
+          
+          <Button
+            onClick={() => openFeedbackDialog('feedback')}
+            variant="default"
             className="w-full"
           >
             <MessageSquare className="mr-2 h-4 w-4" />
             Signaler un problème
           </Button>
-          
-          <Button
-            onClick={() => openFeedbackDialog('help')}
-            variant="default"
-            className="w-full"
-          >
-            <HelpCircle className="mr-2 h-4 w-4" />
-            Envoyer un feedback
-          </Button>
         </div>
       </div>
-      
-      {/* Add the HelpFeedback component with the data-help-feedback-trigger attribute */}
-      <HelpFeedback data-help-feedback-trigger />
     </div>
   );
 }

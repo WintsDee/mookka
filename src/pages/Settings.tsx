@@ -19,33 +19,19 @@ const Settings = () => {
         <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="px-6 py-4">
             <div className="space-y-6">
-              {/* Notifications */}
               <NotificationsSection />
-              
               <Separator />
-              
-              {/* Confidentialité */}
               <PrivacySection />
-              
               <Separator />
-              
-              {/* Centre d'aide */}
               <HelpSection />
-              
               <Separator />
-              
-              {/* À propos */}
               <AboutSection />
             </div>
           </div>
         </ScrollArea>
       </div>
       
-      {/* This is the hidden global instance for triggering from other locations */}
-      <div className="hidden">
-        <HelpFeedback data-help-feedback-trigger />
-      </div>
-      
+      <HelpFeedback data-help-feedback-trigger />
       <MobileNav />
     </Background>
   );
