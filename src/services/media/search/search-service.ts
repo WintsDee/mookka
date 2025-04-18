@@ -3,6 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from '../filters';
 import { mergeSearchResults } from './results-merger';
+import { filterByRelevance } from './similarity-utils';
+import { 
+  formatFilmSearchResult,
+  formatSerieSearchResult,
+  formatBookSearchResult,
+  formatGameSearchResult
+} from '../formatters';
 
 /**
  * Search for media in external APIs and local database
@@ -99,4 +106,3 @@ function formatApiResults(apiData: any, type: MediaType, query: string): any[] {
   
   return results;
 }
-
