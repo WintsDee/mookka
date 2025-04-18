@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
@@ -111,11 +110,14 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
         case 'book':
+          // S'assurer que les données de livre sont correctement formatées
+          console.log("Book API results:", apiData.items?.length || 0);
           apiResults = apiData.items?.map(formatBookSearchResult) || [];
           // Filtrer les livres avec un score de pertinence trop bas
           apiResults = apiResults.filter(item => item.popularity > -20);
           // Tri par score de pertinence pour Google Books
           apiResults.sort((a, b) => b.popularity - a.popularity);
+          console.log("Formatted book results:", apiResults.length);
           break;
         case 'game':
           apiResults = apiData.results?.map(formatGameSearchResult) || [];
@@ -241,4 +243,3 @@ export async function getMediaById(type: MediaType, id: string): Promise<any> {
     throw error;
   }
 }
-

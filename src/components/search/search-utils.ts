@@ -56,7 +56,8 @@ export function formatSearchResult(item: any, selectedType: MediaType): any {
         type: selectedType,
         coverImage: item.coverImage || '/placeholder.svg',
         year: item.year,
-        author: item.author
+        author: item.author,
+        rating: item.rating // Ajouté le rating pour les livres
       };
     case 'game':
       return {

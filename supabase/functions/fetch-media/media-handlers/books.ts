@@ -37,5 +37,51 @@ export const fetchTrendingBooks = async (apiKey: string) => {
 export const fetchBookById = async (apiKey: string, id: string) => {
   const apiUrl = `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
   const response = await fetch(apiUrl)
-  return await response.json()
+  const data = await response.json()
+  
+  if (!data || !data.volumeInfo) {
+    console.error("Aucun livre trouvé avec cet ID");
+    return null;
+  }
+  
+  return {
+    id: data.id,
+    title: data.volumeInfo?.title,
+    type: 'book',
+    coverImage: data.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+    year: data.volumeInfo?.publishedDate ? parseInt(data.volumeInfo.publishedDate.substring(0, 4)) : null,
+    author: data.volumeInfo?.authors?.[0],
+    rating: data.volumeInfo?.averageRating ? data.volumeInfo.averageRating * 2 : null,
+    genres: data.volumeInfo?.categories,
+    description: data.volumeInfo?.description,
+    publisher: data.volumeInfo?.publisher,
+    pageCount: data.volumeInfo?.pageCount,
+    language: data.volumeInfo?.language,
+    externalData: data
+  };
+}
+
+// Nouvelle fonction pour rechercher des livres par titre ou auteur
+export const searchBooks = async (apiKey: string, query: string) => {
+  // Recherche plus précise qui combine titres et auteurs
+  const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20&key=${apiKey}`
+  
+  try {
+    console.log(`Recherche de livres avec la requête: ${query}`);
+    const response = await fetch(apiUrl)
+    const data = await response.json()
+    
+    if (!data.items || data.items.length === 0) {
+      console.log("Aucun livre trouvé pour cette recherche");
+      return { items: [] };
+    }
+    
+    console.log(`Nombre de livres trouvés: ${data.items.length}`);
+    
+    // Retourner les résultats bruts pour être traités par le service de recherche
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la recherche de livres:", error);
+    return { items: [] };
+  }
 }
