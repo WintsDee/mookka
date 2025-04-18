@@ -26,17 +26,17 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50">
-      <div className="grid grid-cols-5 gap-1 py-2 px-2 pb-safe">
+      <div className="grid grid-cols-5 gap-1 py-1.5 px-2 pb-safe">
         {navItems.map((item) => (
           <Link 
             key={item.path} 
             to={item.path} 
-            className={`flex flex-col items-center justify-center py-1.5 ${
+            className={`flex flex-col items-center justify-center py-1 ${
               location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
           >
             <item.icon size={20} />
-            <span className="text-[10px] mt-1">{item.label}</span>
+            <span className="text-[10px] mt-0.5">{item.label}</span>
           </Link>
         ))}
       </div>

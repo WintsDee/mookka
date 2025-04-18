@@ -34,7 +34,7 @@ const MobileHeader = ({ title, children }: MobileHeaderProps) => {
         )}
       </div>
       
-      <div className="flex items-center gap-4 py-4">
+      <div className="flex items-center gap-4 py-3">
         {children}
         {/* Formulaire d'aide caché mais accessible via data attribute */}
         <div className="hidden">
