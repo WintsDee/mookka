@@ -41,7 +41,7 @@ export function updateEpisodeProgress(
   );
   
   // Determine the new status based on watch progress
-  const newStatus = determineStatus(newWatchedCount, totalEpisodes);
+  const newStatus = determineStatus(newWatchedCount as number, totalEpisodes);
   
   // Return the updated progression data
   return {
