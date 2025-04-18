@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
 import { corsHeaders } from './cors.ts'
 import { fetchTrendingFilms, fetchFilmById } from './media-handlers/films.ts'
@@ -21,7 +22,10 @@ Deno.serve(async (req) => {
       }
     )
 
-    const { type, query, id, categories } = await req.json()
+    const reqBody = await req.json()
+    const { type, query, id, categories } = reqBody
+    
+    console.log("Request body:", reqBody)
 
     // Handle new releases request type
     if (type === "new-releases") {
@@ -166,37 +170,96 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Handle individual media requests
-    let data;
-    const apiKey = type === 'film' || type === 'serie' 
-      ? Deno.env.get('TMDB_API_KEY')
-      : type === 'book'
-      ? Deno.env.get('GOOGLE_BOOKS_API_KEY')
-      : Deno.env.get('RAWG_API_KEY');
+    // Handle search request
+    if (query && type) {
+      console.log(`Processing search request for ${type} with query: "${query}"`);
+      let results = [];
 
-    if (id) {
       switch (type) {
         case 'film':
-          data = await fetchFilmById(apiKey ?? '', id)
-          break
+          const filmSearchResponse = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${Deno.env.get('TMDB_API_KEY')}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false`
+          );
+          const filmSearchData = await filmSearchResponse.json();
+          console.log(`Film search returned ${filmSearchData.results?.length || 0} results`);
+          return new Response(JSON.stringify(filmSearchData), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          });
+
         case 'serie':
-          data = await fetchSerieById(apiKey ?? '', id)
-          break
+          const serieSearchResponse = await fetch(
+            `https://api.themoviedb.org/3/search/tv?api_key=${Deno.env.get('TMDB_API_KEY')}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false`
+          );
+          const serieSearchData = await serieSearchResponse.json();
+          console.log(`Serie search returned ${serieSearchData.results?.length || 0} results`);
+          return new Response(JSON.stringify(serieSearchData), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          });
+
         case 'book':
-          data = await fetchBookById(apiKey ?? '', id)
-          break
+          const bookSearchResponse = await fetch(
+            `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=20&key=${Deno.env.get('GOOGLE_BOOKS_API_KEY')}`
+          );
+          const bookSearchData = await bookSearchResponse.json();
+          console.log(`Book search returned ${bookSearchData.items?.length || 0} results`);
+          return new Response(JSON.stringify(bookSearchData), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          });
+
         case 'game':
-          data = await fetchGameById(apiKey ?? '', id)
-          break
-        default:
-          throw new Error('Type de média non pris en charge')
+          const gameSearchResponse = await fetch(
+            `https://api.rawg.io/api/games?key=${Deno.env.get('RAWG_API_KEY')}&search=${encodeURIComponent(query)}&page_size=20`
+          );
+          const gameSearchData = await gameSearchResponse.json();
+          console.log(`Game search returned ${gameSearchData.results?.length || 0} results`);
+          return new Response(JSON.stringify(gameSearchData), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          });
       }
     }
 
-    return new Response(JSON.stringify(data), {
+    // Handle individual media requests
+    if (id && type) {
+      console.log(`Processing individual media request for ${type} with ID: ${id}`);
+      let data;
+      const apiKey = type === 'film' || type === 'serie' 
+        ? Deno.env.get('TMDB_API_KEY')
+        : type === 'book'
+        ? Deno.env.get('GOOGLE_BOOKS_API_KEY')
+        : Deno.env.get('RAWG_API_KEY');
+
+      switch (type) {
+        case 'film':
+          data = await fetchFilmById(apiKey ?? '', id);
+          break;
+        case 'serie':
+          data = await fetchSerieById(apiKey ?? '', id);
+          break;
+        case 'book':
+          data = await fetchBookById(apiKey ?? '', id);
+          break;
+        case 'game':
+          data = await fetchGameById(apiKey ?? '', id);
+          break;
+        default:
+          throw new Error('Type de média non pris en charge');
+      }
+
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
+    return new Response(JSON.stringify({error: "Request invalid or missing parameters", params: reqBody}), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+      status: 400,
+    });
+
   } catch (error) {
     console.error("Error processing request:", error);
     return new Response(JSON.stringify({ error: error.message }), {

@@ -65,6 +65,8 @@ function isSimilarText(text: string, query: string, threshold: number = 0.7): bo
  * Search for media in external APIs and local database
  */
 export async function searchMedia(type: MediaType, query: string): Promise<any> {
+  console.log(`Searching for "${query}" in media type: ${type}`);
+  
   try {
     // 1. D'abord, rechercher dans la base de données Mookka
     // Utilisez .or pour chercher dans titre ET dans l'auteur/réalisateur
@@ -79,6 +81,8 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     if (localError) {
       console.error("Erreur lors de la recherche locale de médias:", localError);
     }
+
+    console.log(`Local database search results: ${localMedia?.length || 0} items found`);
     
     // 2. Ensuite, rechercher via l'API externe
     const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
@@ -86,9 +90,11 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     });
 
     if (apiError) {
-      console.error("Erreur lors de la recherche de médias:", apiError);
+      console.error("Erreur lors de la recherche de médias via API:", apiError);
       throw apiError;
     }
+
+    console.log(`API search results:`, apiData);
     
     // 3. Traiter les résultats de l'API
     let apiResults: any[] = [];
@@ -119,10 +125,14 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       }
     }
     
+    console.log(`Formatted API results: ${apiResults.length} items`);
+    
     // 4. Filtrer plus strictement les contenus inappropriés
     apiResults = filterAdultContent(apiResults);
     
     // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
+    // Désactivé temporairement car peut être trop restrictif - nous gardons tous les résultats pour le moment
+    /*
     apiResults = apiResults.filter(item => {
       // Vérifier la pertinence sur le titre
       const titleMatch = isSimilarText(item.title, query);
@@ -136,6 +146,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       // Accepter si l'un des deux correspond
       return titleMatch || creatorMatch;
     });
+    */
     
     // 6. Fusionner les résultats (base de données + API) en évitant les doublons
     let mergedResults: any[] = [];
@@ -201,6 +212,8 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       return totalScoreB - totalScoreA;
     });
     
+    console.log(`Final merged results: ${mergedResults.length} items`);
+    
     return { results: mergedResults };
   } catch (error) {
     console.error("Erreur dans searchMedia:", error);
@@ -228,3 +241,4 @@ export async function getMediaById(type: MediaType, id: string): Promise<any> {
     throw error;
   }
 }
+

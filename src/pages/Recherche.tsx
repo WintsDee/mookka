@@ -31,13 +31,17 @@ const Recherche = () => {
     const fetchSearchResults = async () => {
       if (debouncedSearchTerm && selectedType) {
         setIsLoading(true);
+        console.log(`Fetching search results for "${debouncedSearchTerm}" in ${selectedType}`);
+        
         try {
-          const result = await searchMedia(selectedType, debouncedSearchTerm);
+          const result = await searchMedia(selectedType as MediaType, debouncedSearchTerm);
           
           if (result.results && result.results.length > 0) {
-            const formattedResults = formatSearchResults(result.results, selectedType);
+            console.log(`Search returned ${result.results.length} results`);
+            const formattedResults = formatSearchResults(result.results, selectedType as MediaType);
             setSearchResults(formattedResults);
           } else {
+            console.log("Search returned no results");
             setSearchResults([]);
           }
         } catch (error) {
