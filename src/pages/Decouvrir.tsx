@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -11,6 +10,7 @@ import { MediaGrid } from "@/components/discover/media-grid";
 import { NewsTabs } from "@/components/news/news-tabs";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { useDiscover } from "@/hooks/use-discover";
+import { useNews } from "@/hooks/news";
 
 const Decouvrir = () => {
   const {
