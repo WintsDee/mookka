@@ -12,7 +12,6 @@ import {
 export function MobileNav() {
   const location = useLocation();
   
-  // Cache la navigation sur les pages de détail de média et sur la page "Soutenir"
   if (location.pathname.startsWith('/media/') || location.pathname === '/soutenir') {
     return null;
   }
@@ -20,7 +19,7 @@ export function MobileNav() {
   const navItems = [
     { path: '/bibliotheque', icon: Library, label: 'Bibliothèque' },
     { path: '/collections', icon: Bookmark, label: 'Collections' },
-    { path: '/recherche', icon: Search, label: 'Recherche' },
+    { path: '/recherche', icon: Search, label: 'Recherche', highlight: true },
     { path: '/social', icon: MessagesSquare, label: 'Social' },
     { path: '/actualites', icon: Globe, label: 'Actualités' },
   ];
@@ -32,12 +31,32 @@ export function MobileNav() {
           <Link 
             key={item.path} 
             to={item.path} 
-            className={`flex flex-col items-center justify-center ${
-              location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
+            className={`flex flex-col items-center justify-center transition-all duration-300 ${
+              location.pathname === item.path 
+                ? item.highlight 
+                  ? 'text-blue-400 scale-110 animate-pulse' 
+                  : 'text-[#3B82F6]'
+                : item.highlight
+                  ? 'text-blue-400 hover:scale-110'
+                  : 'text-muted-foreground hover:text-gray-300'
             }`}
           >
-            <item.icon size={22} />
-            <span className="text-xs mt-1.5">{item.label}</span>
+            <div 
+              className={`rounded-full p-2 transition-all duration-300 ${
+                location.pathname === item.path && item.highlight
+                  ? 'bg-blue-500/20'
+                  : item.highlight 
+                    ? 'bg-blue-500/10 group-hover:bg-blue-500/20' 
+                    : ''
+              }`}
+            >
+              <item.icon size={22} />
+            </div>
+            <span className={`text-xs mt-1.5 ${
+              item.highlight ? 'font-medium' : ''
+            }`}>
+              {item.label}
+            </span>
           </Link>
         ))}
       </div>
