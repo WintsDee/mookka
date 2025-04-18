@@ -82,7 +82,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     
     // 2. Ensuite, rechercher via l'API externe
     const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
-      body: { type, query }
+      body: { type, action: 'search', query }
     });
 
     if (apiError) {
@@ -124,13 +124,15 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     
     // 5. Appliquer le filtre de pertinence amélioré qui tient compte des erreurs de frappe
     apiResults = apiResults.filter(item => {
+      if (!item.title) return false;
+      
       // Vérifier la pertinence sur le titre
       const titleMatch = isSimilarText(item.title, query);
       
       // Vérifier aussi la pertinence sur les champs auteur/réalisateur
       const creatorMatch = (
-        isSimilarText(item.author, query) || 
-        isSimilarText(item.director, query)
+        (item.author && isSimilarText(item.author, query)) || 
+        (item.director && isSimilarText(item.director, query))
       );
       
       // Accepter si l'un des deux correspond
@@ -201,6 +203,7 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
       return totalScoreB - totalScoreA;
     });
     
+    console.log("Merged search results:", mergedResults);
     return { results: mergedResults };
   } catch (error) {
     console.error("Erreur dans searchMedia:", error);
@@ -225,6 +228,55 @@ export async function getMediaById(type: MediaType, id: string): Promise<any> {
     return data;
   } catch (error) {
     console.error("Erreur dans getMediaById:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch trending media
+ */
+export async function fetchTrending(type: MediaType): Promise<any> {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-media', {
+      body: { type, action: 'trending' }
+    });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des médias tendance:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Erreur dans fetchTrending:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch media details
+ */
+export async function fetchMediaDetails(type: MediaType, id: string): Promise<any> {
+  return getMediaById(type, id);
+}
+
+/**
+ * Fetch similar media
+ */
+export async function fetchSimilarMedia(type: MediaType, id: string): Promise<any> {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-media', {
+      body: { type, id, action: 'similar' }
+    });
+
+    if (error) {
+      console.error("Erreur lors de la récupération des médias similaires:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Erreur dans fetchSimilarMedia:", error);
     throw error;
   }
 }

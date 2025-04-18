@@ -9,3 +9,4 @@ export {
   updateMediaStatus,
   removeMediaFromLibrary
 } from './library';
+export { fetchMediaDetails, fetchSimilarMedia, fetchTrending } from './search-service';
