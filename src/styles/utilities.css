@@ -1,0 +1,39 @@
+
+/* Masquer les barres de défilement mais garder la fonctionnalité */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Optimisation du scroll pour mobile */
+.overscroll-none {
+  overscroll-behavior: none;
+}
+
+.-webkit-overflow-scrolling-touch {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Support PWA */
+.env-pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Styles pour la barre de navigation mobile */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-secondary/90 backdrop-blur-lg border-t border-border px-2 py-3 flex justify-around z-50;
+}
+
+/* Styles pour les cartes de médias */
+.media-card {
+  @apply relative overflow-hidden rounded-lg bg-card border border-border transition-all duration-300 hover:shadow-lg hover:scale-[1.02];
+}
+
