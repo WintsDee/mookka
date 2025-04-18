@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -31,7 +32,7 @@ function App() {
     // Simulate initial app loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // Show loading screen for 2 seconds
+    }, 1000); // Réduire le temps de chargement à 1 seconde
 
     return () => clearTimeout(timer);
   }, []);
@@ -44,7 +45,7 @@ function App() {
             {isLoading ? (
               <LoadingScreen />
             ) : (
-              <>
+              <div className="h-full">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/recherche" element={<Recherche />} />
@@ -62,7 +63,7 @@ function App() {
                 </Routes>
                 <Toaster position="bottom-center" closeButton />
                 <PWAInstallPrompt />
-              </>
+              </div>
             )}
           </ThemeProvider>
         </TooltipProvider>
