@@ -1,19 +1,18 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8'
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "./cors.ts";
-import { MediaType } from "./types.ts";
-import { fetchTMDBData } from "./api/tmdb.ts";
-import { fetchGoogleBooksData } from "./api/google-books.ts";
-import { fetchRAWGData } from "./api/rawg.ts";
-import { enrichSerieSeasons } from "./utils/serie-enrichment.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    // Create a Supabase client with the auth context of the function
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -24,44 +23,162 @@ Deno.serve(async (req) => {
       }
     )
 
+    // Get request body
     const { type, query, id } = await req.json()
-    let data;
+
+    // Get the appropriate API key based on media type
+    let apiKey = ''
+    let apiUrl = ''
 
     switch (type) {
       case 'film':
       case 'serie':
-        const tmdbApiKey = Deno.env.get('TMDB_API_KEY') ?? '';
-        data = await fetchTMDBData(type, id, query, tmdbApiKey);
-        
-        if (type === 'serie' && id && data.seasons) {
-          await enrichSerieSeasons(data, id, tmdbApiKey);
+        apiKey = Deno.env.get('TMDB_API_KEY') ?? ''
+        if (id) {
+          const appendParams = type === 'serie' 
+            ? 'credits,seasons,episode_groups,external_ids,content_ratings,videos,watch/providers' 
+            : 'credits,external_ids,videos,watch/providers,release_dates';
+            
+          apiUrl = `https://api.themoviedb.org/3/${type === 'film' ? 'movie' : 'tv'}/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false&append_to_response=${appendParams}`
+          
+          if (type === 'serie') {
+            // La requête principale inclut déjà les saisons de base, mais on pourrait enrichir avec plus de détails
+            // par exemple en faisant des requêtes pour chaque saison si nécessaire
+          }
+        } else {
+          apiUrl = `https://api.themoviedb.org/3/search/${type === 'film' ? 'movie' : 'tv'}?api_key=${apiKey}&language=fr-FR&query=${encodeURIComponent(query)}&page=1&include_adult=false&append_to_response=credits`
         }
-        break;
-
+        break
       case 'book':
-        const googleBooksApiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? '';
-        data = await fetchGoogleBooksData(id, query, googleBooksApiKey);
-        break;
-
+        apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY') ?? ''
+        
+        let bookQuery = query
+        if (!id) {
+          bookQuery = `${query} OR inauthor:${query}`
+        }
+        
+        apiUrl = id 
+          ? `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
+          : `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(bookQuery)}&key=${apiKey}&maxResults=40`
+        break
       case 'game':
-        const rawgApiKey = Deno.env.get('RAWG_API_KEY') ?? '';
-        data = await fetchRAWGData(id, query, rawgApiKey);
-        break;
-
+        apiKey = Deno.env.get('RAWG_API_KEY') ?? ''
+        if (id) {
+          apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}`
+        } else {
+          apiUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page=1&page_size=40&exclude_additions=true&search_precise=false&search_exact=false&ordering=-relevance,-rating`
+        }
+        break
       default:
-        throw new Error('Unsupported media type');
+        throw new Error('Type de média non pris en charge')
+    }
+
+    // Fetch data from the appropriate API
+    const response = await fetch(apiUrl)
+    let data = await response.json()
+
+    // Pour les séries, récupérer des détails supplémentaires sur chaque saison
+    if (type === 'serie' && id && data.seasons && Array.isArray(data.seasons)) {
+      const enrichedSeasons = [];
+      
+      for (const season of data.seasons) {
+        if (season.season_number > 0) { // Ignorer les "saisons" spéciales (0)
+          try {
+            if (enrichedSeasons.length < 3) { // Limiter à 3 saisons enrichies
+              const seasonDetailUrl = `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=fr-FR`;
+              const seasonResponse = await fetch(seasonDetailUrl);
+              const seasonDetail = await seasonResponse.json();
+              
+              enrichedSeasons.push({
+                ...season,
+                episodes: seasonDetail.episodes
+              });
+            } else {
+              enrichedSeasons.push(season);
+            }
+          } catch (error) {
+            console.error(`Erreur lors de la récupération des détails pour la saison ${season.season_number}:`, error);
+            enrichedSeasons.push(season);
+          }
+        }
+      }
+      
+      data.seasons = enrichedSeasons;
+    }
+    
+    if (type === 'book' && !id && data.items) {
+      const adultContentKeywords = [
+        'xxx', 'erotic', 'érotique', 'porn', 'porno',
+        'pornographique', 'bdsm', 'kamasutra', 'explicit', 'explicite'
+      ]
+      
+      data.items = data.items.filter((item: any) => {
+        const title = (item.volumeInfo?.title || '').toLowerCase()
+        const description = (item.volumeInfo?.description || '').toLowerCase()
+        
+        const contentText = `${title} ${description}`
+        
+        return !adultContentKeywords.some(keyword => contentText.includes(keyword))
+      })
+      
+      const queryLower = query.toLowerCase()
+      
+      data.items.sort((a: any, b: any) => {
+        const titleA = (a.volumeInfo?.title || '').toLowerCase()
+        const titleB = (b.volumeInfo?.title || '').toLowerCase()
+        
+        const authorA = (a.volumeInfo?.authors || []).join(' ').toLowerCase()
+        const authorB = (b.volumeInfo?.authors || []).join(' ').toLowerCase()
+        
+        const scoreA = 
+          (titleA === queryLower ? 10 : 0) + 
+          (titleA.includes(queryLower) ? 5 : 0) + 
+          (authorA === queryLower ? 8 : 0) + 
+          (authorA.includes(queryLower) ? 4 : 0)
+          
+        const scoreB = 
+          (titleB === queryLower ? 10 : 0) + 
+          (titleB.includes(queryLower) ? 5 : 0) + 
+          (authorB === queryLower ? 8 : 0) + 
+          (authorB.includes(queryLower) ? 4 : 0)
+          
+        return scoreB - scoreA
+      })
+    }
+    
+    if (type === 'game' && !id && data.results) {
+      const queryLower = query.toLowerCase()
+      
+      data.results.sort((a: any, b: any) => {
+        const nameA = (a.name || '').toLowerCase()
+        const nameB = (b.name || '').toLowerCase()
+        
+        const scoreA = 
+          (nameA === queryLower ? 30 : 0) + 
+          (nameA.includes(queryLower) ? 20 : 0) +
+          (queryLower.includes(nameA) ? 10 : 0) +
+          (a.rating || 0) * 3 +
+          Math.min((a.ratings_count || 0) / 100, 15)
+          
+        const scoreB = 
+          (nameB === queryLower ? 30 : 0) + 
+          (nameB.includes(queryLower) ? 20 : 0) +
+          (queryLower.includes(nameB) ? 10 : 0) +
+          (b.rating || 0) * 3 +
+          Math.min((b.ratings_count || 0) / 100, 15)
+        
+        return scoreB - scoreA
+      })
     }
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
-    });
+    })
   } catch (error) {
-    console.error('Error in fetch-media function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
-    });
+    })
   }
-});
-
+})
