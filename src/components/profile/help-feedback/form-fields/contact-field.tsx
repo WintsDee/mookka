@@ -3,7 +3,7 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Control } from "react-hook-form";
-import { FeedbackFormValues } from "@/hooks/use-feedback-form";
+import { FeedbackFormValues } from "../feedback-form";
 
 interface ContactFieldProps {
   control: Control<FeedbackFormValues>;

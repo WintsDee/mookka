@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +17,6 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
-import AccountPrivacy from "./pages/AccountPrivacy";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +40,6 @@ const App = () => {
             <Route path="/collections/:id" element={<CollectionDetail />} />
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/privacy" element={<AccountPrivacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>
