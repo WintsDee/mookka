@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { usePWAStatus } from "@/hooks/use-pwa-status"
@@ -36,11 +37,14 @@ export function PWAInstallPrompt() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md fixed top-4 left-1/2 transform -translate-x-1/2 translate-y-0 bg-black/80 backdrop-blur-md rounded-xl p-6 border border-white/10 shadow-lg">
+      <DialogContent className="sm:max-w-md fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-md rounded-xl p-6 border border-white/10 shadow-lg">
         {!showInstructions ? (
           <>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">Installez l'app</DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Pour une meilleure expérience sur votre appareil
+              </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3">
               <p className="text-lg font-medium text-gray-200">
@@ -65,6 +69,9 @@ export function PWAInstallPrompt() {
           <>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">Comment installer</DialogTitle>
+              <DialogDescription className="text-gray-300">
+                Suivez ces instructions pour installer l'application
+              </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="space-y-3">
