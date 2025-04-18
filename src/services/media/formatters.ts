@@ -1,4 +1,3 @@
-
 import { MediaType } from "@/types";
 
 /**
@@ -177,7 +176,9 @@ export const formatGameSearchResult = (item: any) => {
     year: releaseYear,
     rating: item.rating || null,
     popularity: gameRelevance,
-    externalData: item
+    externalData: item,
+    completionTimeMain: item.completion_time_main,
+    completionTimeFull: item.completion_time_full,
   };
 };
 
@@ -203,3 +204,33 @@ export const formatLibraryMedia = (item: any) => ({
   publisher: item.media.publisher,
   platform: item.media.platform
 });
+
+/**
+ * Format media details
+ */
+export const formatMediaDetails = (media: any, type: MediaType): any => {
+  if (type === 'game') {
+    return {
+      id: media.id.toString(),
+      title: media.name,
+      type: 'game' as MediaType,
+      coverImage: media.background_image || '/placeholder.svg',
+      year: media.released ? parseInt(media.released.substring(0, 4)) : null,
+      rating: media.rating || null,
+      popularity: media.ratings_count ? Math.min(media.ratings_count / 100, 40) : 0,
+      externalData: media,
+      completionTimeMain: media.completion_time_main,
+      completionTimeFull: media.completion_time_full,
+    };
+  }
+  return {
+    id: media.id.toString(),
+    title: media.title,
+    type: 'film' as MediaType,
+    coverImage: media.poster_path ? `https://image.tmdb.org/t/p/w500${media.poster_path}` : '/placeholder.svg',
+    year: media.release_date ? parseInt(media.release_date.substring(0, 4)) : null,
+    rating: media.vote_average || null,
+    popularity: media.popularity || 0,
+    externalData: media,
+  };
+};

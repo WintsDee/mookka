@@ -1,4 +1,3 @@
-
 export type MediaType = 'film' | 'serie' | 'book' | 'game';
 
 export type MediaStatus = 
@@ -21,6 +20,8 @@ export interface Media {
   author?: string; // Pour livres
   publisher?: string; // Pour jeux
   platform?: string; // Pour jeux
+  completionTimeMain?: number; // Temps moyen pour terminer l'histoire principale
+  completionTimeFull?: number; // Temps moyen pour compléter à 100%
 }
 
 export interface User {
@@ -31,3 +32,4 @@ export interface User {
   following?: number;
   followers?: number;
 }
+
