@@ -9,26 +9,18 @@ import { MediaType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Fonction pour filtrer les médias en fonction du terme de recherche et du type
-  const filterMedia = (media: any) => {
-    const matchesSearch = searchTerm === "" || 
-      media.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filter === "all" || media.type === filter;
-    return matchesSearch && matchesType;
-  };
-  
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 pt-safe">
-        <header className="px-6 py-6 mt-16">
-          <div className="relative">
+      <div className="pb-24 pt-safe mt-16">
+        <header className="px-6 mb-6">
+          <div className="mt-4 relative">
             <Input
               type="text"
               placeholder="Rechercher dans ma bibliothèque..."
@@ -86,12 +78,12 @@ const Bibliotheque = () => {
           </div>
         </header>
         
-        <ScrollArea className="h-[calc(100vh-280px)] px-6">
+        <ScrollArea className="h-[calc(100vh-220px)] px-6">
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-muted-foreground mb-4 text-center">
               Votre bibliothèque est vide
             </p>
-            <Link to="/recherche">
+            <Link to="/recherche"> {/* Wrap the Button with Link */}
               <Button variant="outline">
                 Commencez à ajouter du contenu
               </Button>
@@ -106,3 +98,4 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
+
