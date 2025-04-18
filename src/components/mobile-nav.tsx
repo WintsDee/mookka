@@ -12,6 +12,7 @@ import {
 export function MobileNav() {
   const location = useLocation();
   
+  // Hide navigation on media detail pages
   if (location.pathname.startsWith('/media/')) {
     return null;
   }
@@ -25,18 +26,24 @@ export function MobileNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t z-50">
-      <div className="grid grid-cols-5 gap-1 py-1.5 px-2 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
+      <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4">
         {navItems.map((item) => (
           <Link 
             key={item.path} 
             to={item.path} 
-            className={`flex flex-col items-center justify-center py-1 ${
+            className={`flex flex-col items-center justify-center transition-colors duration-200 ${
               location.pathname === item.path ? 'text-[#3B82F6]' : 'text-muted-foreground'
             }`}
+            onClick={(e) => {
+              // Prevent navigation if we're already on this page to avoid double rendering
+              if (location.pathname === item.path) {
+                e.preventDefault();
+              }
+            }}
           >
-            <item.icon size={20} />
-            <span className="text-[10px] mt-0.5">{item.label}</span>
+            <item.icon size={22} />
+            <span className="text-xs mt-1.5">{item.label}</span>
           </Link>
         ))}
       </div>

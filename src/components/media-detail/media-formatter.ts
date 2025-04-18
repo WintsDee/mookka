@@ -1,3 +1,4 @@
+
 import { MediaType } from "@/types";
 
 export function formatMediaDetails(media: any, type: MediaType): any {
@@ -109,51 +110,14 @@ export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: Me
     case 'serie':
       info.seasons = media.number_of_seasons;
       info.episodes = media.number_of_episodes;
-      info.cast = media.cast?.map((actor: any) => actor.name);
+      info.cast = media.credits?.cast?.slice(0, 10).map((actor: any) => actor.name);
       info.creators = media.created_by?.map((creator: any) => creator.name).join(', ');
-      info.status = translateStatus(media.status);
+      info.status = translateStatus(media.status); // Traduire le statut
       info.networks = media.networks?.map((n: any) => n.name).join(', ');
       info.originalTitle = media.original_name;
       info.language = media.original_language?.toUpperCase();
       info.nextEpisode = media.next_episode_to_air ? new Date(media.next_episode_to_air.air_date).toLocaleDateString('fr-FR') : undefined;
       info.awards = media.awards || [];
-      info.type = media.type;
-      info.genres = media.genres?.map((g: any) => g.name);
-      info.episodeRuntime = media.episode_run_time?.[0];
-      info.firstAirDate = media.first_air_date;
-      info.lastAirDate = media.last_air_date;
-      info.inProduction = media.in_production;
-      info.keywords = media.keywordsList;
-      info.voteAverage = media.vote_average;
-      info.voteCount = media.vote_count;
-      info.popularity = media.popularity;
-      info.seasonsDetailed = media.seasons?.map((season: any) => ({
-        id: season.id,
-        name: season.name,
-        overview: season.overview,
-        seasonNumber: season.season_number,
-        episodeCount: season.episode_count,
-        airDate: season.air_date,
-        episodes: season.episodes?.map((episode: any) => ({
-          id: episode.id,
-          number: episode.number,
-          title: episode.title,
-          overview: episode.overview,
-          airDate: episode.airDate,
-          stillPath: episode.stillPath,
-          runtime: episode.runtime,
-          voteAverage: episode.voteAverage,
-          crew: episode.crew,
-          guestStars: episode.guestStars
-        }))
-      }));
-      
-      // French specific data if available
-      if (media.frenchData) {
-        info.frenchTitle = media.frenchData.name;
-        info.frenchOverview = media.frenchData.overview;
-        info.frenchTagline = media.frenchData.tagline;
-      }
       break;
       
     case 'book':

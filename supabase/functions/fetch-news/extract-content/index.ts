@@ -23,9 +23,8 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Extracting content from: ${url}`);
-    
     // Extraction du contenu de l'article via Fetch API
+    console.log(`Extracting content from: ${url}`);
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; MookkaBot/1.0; +https://mookka.app)",
@@ -84,14 +83,8 @@ serve(async (req) => {
     
     // Si toujours rien, essayer de chercher tous les paragraphes de la page
     if (paragraphs.length === 0) {
-      $('p').each((i, el) => {
-        const text = $(el).text().trim();
-        // Prendre uniquement les paragraphes qui ont une longueur significative
-        if (text.length > 60) {
-          paragraphs.push(decodeHTMLEntities(text));
-        }
-      });
-      console.log(`Found content using all paragraphs: ${paragraphs.length} paragraphs`);
+      paragraphs = extractParagraphsFromElement($, $('body'));
+      console.log(`Found content using body: ${paragraphs.length} paragraphs`);
     }
     
     // Filtrer le contenu non pertinent
@@ -104,8 +97,8 @@ serve(async (req) => {
         // Éliminer les paragraphes qui contiennent des mots-clés de navigation ou de publicité
         const lowerText = cleanText.toLowerCase();
         const unwantedTerms = ['accepter', 'cookies', 'newsletter', 'inscription', 'cliquez', 
-                             'rejoignez', 'privacy', 'confidentialité', 'publicité', 'copyright',
-                             'fermer', 'close', 'acceptez', 'partager sur'];
+                              'rejoignez', 'privacy', 'confidentialité', 'publicité', 'copyright',
+                              'fermer', 'close', 'acceptez', 'partager sur'];
         return !unwantedTerms.some(term => lowerText.includes(term));
       })
       .slice(0, 30); // Limiter à 30 paragraphes pour les contenus très longs
@@ -114,6 +107,18 @@ serve(async (req) => {
     if (paragraphs.length === 0) {
       console.log("No suitable paragraphs found with DOM parsing, trying regex approach");
       paragraphs = extractBasicParagraphs(htmlContent);
+    }
+    
+    // Si on a des paragraphes, mais qu'ils sont trop courts en moyenne, c'est probablement pas bon
+    if (paragraphs.length > 0) {
+      const avgLength = paragraphs.reduce((sum, p) => sum + p.length, 0) / paragraphs.length;
+      if (avgLength < 60 && paragraphs.length < 3) {
+        console.log(`Average paragraph length (${avgLength}) is too short, trying alternative approach`);
+        const altParagraphs = extractBasicParagraphs(htmlContent);
+        if (altParagraphs.length > 0) {
+          paragraphs = altParagraphs;
+        }
+      }
     }
     
     console.log(`Final extracted paragraphs: ${paragraphs.length}`);

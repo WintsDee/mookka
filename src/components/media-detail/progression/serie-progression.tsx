@@ -49,11 +49,11 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
   };
 
   console.log("Rendering SerieProgression with data:", {
-    seasons: seasons.length,
+    seasons,
     totalEpisodes,
     watchedEpisodes,
     status,
-    upcomingEpisodes: upcomingEpisodes.length
+    progression
   });
 
   return (

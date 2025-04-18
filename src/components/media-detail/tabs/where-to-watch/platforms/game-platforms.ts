@@ -6,7 +6,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     { 
       id: "1", 
       name: "Steam", 
-      url: `https://store.steampowered.com/search/?term=${encodedTitle}`, 
+      url: `https://store.steampowered.com/search/?term=${encodedTitle}&lang=french`, 
       type: "purchase", 
       logo: "/platforms/steam.png",
       isAvailable: true 
@@ -14,7 +14,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     { 
       id: "2", 
       name: "Epic Games Store", 
-      url: `https://store.epicgames.com/browse?q=${encodedTitle}&sortBy=relevancy&sortDir=DESC`, 
+      url: `https://store.epicgames.com/fr/browse?q=${encodedTitle}&sortBy=relevancy&sortDir=DESC&lang=fr`, 
       type: "purchase", 
       logo: "/platforms/epic.png",
       isAvailable: mediaId === "8"
@@ -22,7 +22,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     { 
       id: "3", 
       name: "PlayStation Store", 
-      url: `https://store.playstation.com/search/${encodedTitle}`, 
+      url: `https://store.playstation.com/fr-fr/search/${encodedTitle}`, 
       type: "purchase", 
       logo: "/platforms/playstation.png",
       isAvailable: mediaId === "7" || mediaId === "9" 
@@ -30,7 +30,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     { 
       id: "4", 
       name: "Xbox Store", 
-      url: `https://www.xbox.com/games/all-games?q=${encodedTitle}`, 
+      url: `https://www.xbox.com/fr-FR/games/all-games?q=${encodedTitle}`, 
       type: "purchase", 
       logo: "/platforms/xbox.png",
       isAvailable: mediaId === "7"
@@ -38,7 +38,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     { 
       id: "5", 
       name: "Nintendo eShop", 
-      url: `https://www.nintendo.com/search/?q=${encodedTitle}&p=1&cat=gme`, 
+      url: `https://www.nintendo.fr/Rechercher/Rechercher-299117.html?q=${encodedTitle}`, 
       type: "purchase", 
       logo: "/platforms/nintendo.png",
       isAvailable: mediaId === "8"
@@ -46,7 +46,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     {
       id: "6",
       name: "GOG",
-      url: `https://www.gog.com/games?query=${encodedTitle}`,
+      url: `https://www.gog.com/fr/games?query=${encodedTitle}`,
       type: "purchase",
       logo: "/platforms/gog.png",
       isAvailable: false
@@ -62,7 +62,7 @@ export function generateGamePlatforms(mediaId: string, encodedTitle: string): Pl
     {
       id: "8",
       name: "Ubisoft Connect",
-      url: `https://store.ubisoft.com/search?q=${encodedTitle}`,
+      url: `https://store.ubisoft.com/fr/search?q=${encodedTitle}`,
       type: "purchase",
       logo: "/platforms/ubisoft.png",
       isAvailable: mediaId === "9"
