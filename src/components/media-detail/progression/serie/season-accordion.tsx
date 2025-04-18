@@ -9,18 +9,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { EpisodeList } from "./episode-list";
-
-interface Season {
-  season_number: number;
-  name?: string;
-  episode_count: number;
-  air_date?: string;
-  episodes?: Array<{
-    number: number;
-    title?: string;
-    airDate?: string;
-  }>;
-}
+import { Season } from "./types/serie-progression";
 
 interface SeasonAccordionProps {
   seasons: Season[];
@@ -36,8 +25,17 @@ export function SeasonAccordion({
   onToggleSeason 
 }: SeasonAccordionProps) {
   if (!seasons || seasons.length === 0) {
-    return null;
+    return (
+      <div className="py-4 text-center text-muted-foreground">
+        Aucune saison disponible
+      </div>
+    );
   }
+
+  // Sort seasons by number
+  const sortedSeasons = [...seasons].sort((a, b) => 
+    (a.season_number || 0) - (b.season_number || 0)
+  );
 
   const formatSeasonDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -55,9 +53,9 @@ export function SeasonAccordion({
 
   return (
     <Accordion type="multiple" className="w-full space-y-4">
-      {seasons.map((season) => {
+      {sortedSeasons.map((season) => {
         const seasonNumber = season.season_number;
-        const episodeCount = season.episode_count;
+        const episodeCount = season.episode_count || 0;
         const seasonName = season.name || `Saison ${seasonNumber}`;
         const seasonDate = formatSeasonDate(season.air_date);
         const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
@@ -71,8 +69,14 @@ export function SeasonAccordion({
             airDate: undefined
           }));
         
-        // Déterminer le texte du bouton en fonction de l'état actuel
-        const isAllWatched = watchedEpisodesForSeason.length === episodeCount;
+        // Sort episodes by number
+        const sortedEpisodes = [...seasonEpisodes].sort((a, b) => 
+          (a.number || 0) - (b.number || 0)
+        );
+        
+        // Determine toggle button text based on current state
+        const isAllWatched = Array.isArray(watchedEpisodesForSeason) && 
+          watchedEpisodesForSeason.length === episodeCount;
         const toggleButtonText = isAllWatched ? 'Tout décocher' : 'Tout cocher';
         
         return (
@@ -94,19 +98,21 @@ export function SeasonAccordion({
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
-                      {watchedEpisodesForSeason.length}/{episodeCount} épisodes
+                      {Array.isArray(watchedEpisodesForSeason) ? watchedEpisodesForSeason.length : 0}/{episodeCount} épisodes
                     </span>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="h-8 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSeason(seasonNumber, episodeCount);
-                      }}
-                    >
-                      {toggleButtonText}
-                    </Button>
+                    {episodeCount > 0 && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleSeason(seasonNumber, episodeCount);
+                        }}
+                      >
+                        {toggleButtonText}
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <Progress 
@@ -116,12 +122,18 @@ export function SeasonAccordion({
               </div>
             </AccordionTrigger>
             <AccordionContent className="border-t border-border/30">
-              <EpisodeList 
-                seasonNumber={seasonNumber} 
-                episodes={seasonEpisodes} 
-                watchedEpisodes={watchedEpisodesForSeason} 
-                onToggleEpisode={onToggleEpisode} 
-              />
+              {sortedEpisodes.length > 0 ? (
+                <EpisodeList 
+                  seasonNumber={seasonNumber} 
+                  episodes={sortedEpisodes} 
+                  watchedEpisodes={Array.isArray(watchedEpisodesForSeason) ? watchedEpisodesForSeason : []} 
+                  onToggleEpisode={onToggleEpisode} 
+                />
+              ) : (
+                <div className="p-4 text-center text-muted-foreground">
+                  Aucun épisode disponible pour cette saison
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
         );
