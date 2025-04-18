@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
@@ -13,47 +13,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { PlusCircle, Search, ArrowRight } from "lucide-react";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { LibrarySort, SortOption } from "@/components/library/library-sort";
-import { useQuery } from "@tanstack/react-query";
-import { getUserMediaLibrary } from "@/services/media/library/get-library";
-import { Skeleton } from "@/components/ui/skeleton";
-
-// Composant pour l'état de chargement
-const LibraryLoadingSkeleton = () => (
-  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 animate-pulse">
-    {Array.from({ length: 8 }).map((_, index) => (
-      <Skeleton key={index} className="w-full h-60 rounded-lg" />
-    ))}
-  </div>
-);
-
-// Composant pour l'état vide
-const EmptyLibrary = ({ searchTerm, onSearchGlobal }: { searchTerm: string, onSearchGlobal: () => void }) => (
-  <div className="flex flex-col items-center justify-center py-12 text-center">
-    <p className="text-muted-foreground mb-4">
-      {searchTerm 
-        ? "Aucun média trouvé dans votre bibliothèque"
-        : "Votre bibliothèque est vide. Commencez à ajouter des médias !"}
-    </p>
-    {!searchTerm && (
-      <Button 
-        variant="outline" 
-        onClick={() => useNavigate()('/recherche')}
-      >
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Ajouter un média
-      </Button>
-    )}
-    {searchTerm && (
-      <Button 
-        variant="outline" 
-        onClick={onSearchGlobal}
-      >
-        Rechercher "{searchTerm}" dans le catalogue
-        <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    )}
-  </div>
-);
 
 const Bibliotheque = () => {
   const [selectedTypes, setSelectedTypes] = useState<MediaType[]>([]);
@@ -64,19 +23,8 @@ const Bibliotheque = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Utiliser React Query pour récupérer les médias de la bibliothèque
-  const { data: libraryMedia, isLoading } = useQuery({
-    queryKey: ['library-media'],
-    queryFn: getUserMediaLibrary,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
-  });
-
-  // Médias à afficher, soit de l'API soit mock
-  const mediaToDisplay = libraryMedia || mockMedia;
-  
   // Filtrer les médias
-  const filteredMedia = mediaToDisplay
+  const filteredMedia = mockMedia
     .filter(media => 
       (selectedTypes.length === 0 || selectedTypes.includes(media.type)) &&
       (selectedStatuses.length === 0 || (media.status && selectedStatuses.includes(media.status))) &&
@@ -150,12 +98,35 @@ const Bibliotheque = () => {
         
         <ScrollArea className="h-[calc(100vh-220px)] px-6">
           <div className="space-y-8 pb-24">
-            {isLoading ? (
-              <LibraryLoadingSkeleton />
-            ) : filteredMedia.length === 0 ? (
-              <EmptyLibrary searchTerm={searchTerm} onSearchGlobal={handleSearchInGlobalSearch} />
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 animate-fade-in">
+            {filteredMedia.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground mb-4">
+                  {searchTerm 
+                    ? "Aucun média trouvé dans votre bibliothèque"
+                    : "Votre bibliothèque est vide. Commencez à ajouter des médias !"}
+                </p>
+                {!searchTerm && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/recherche')}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Ajouter un média
+                  </Button>
+                )}
+                {searchTerm && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handleSearchInGlobalSearch}
+                  >
+                    Rechercher "{searchTerm}" dans le catalogue
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+            {filteredMedia.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {filteredMedia.map((media) => (
                   <MediaCard 
                     key={media.id} 

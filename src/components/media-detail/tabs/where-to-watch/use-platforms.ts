@@ -4,77 +4,76 @@ import { MediaType } from "@/types";
 import { Platform, PlatformHookResult } from "./types";
 import { generatePlatformData } from "./platform-data";
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
 
 // Timeout duration in milliseconds
 const FETCH_TIMEOUT = 5000;
-// Cache duration in milliseconds
-const CACHE_TIME = 1000 * 60 * 60; // 1 hour
 
-/**
- * Récupère les plateformes pour un média avec mise en cache via React Query
- */
 export function usePlatforms(mediaId: string, mediaType: MediaType, title: string): PlatformHookResult {
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fonction pour récupérer les plateformes
-  const fetchPlatformsData = async (): Promise<Platform[]> => {
-    return new Promise((resolve, reject) => {
-      // Créer un timeout pour éviter les requêtes trop longues
-      const timeoutId = setTimeout(() => {
-        reject(new Error('Request timed out'));
-      }, FETCH_TIMEOUT);
-
-      try {
-        // Simuler une requête API
-        setTimeout(() => {
-          clearTimeout(timeoutId);
-          const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
-          resolve(mockPlatforms);
-        }, 500); // Temps réduit pour une meilleure expérience
-      } catch (error) {
-        clearTimeout(timeoutId);
-        reject(error);
-      }
-    });
-  };
-
-  // Utiliser React Query pour la mise en cache
-  const queryResult = useQuery({
-    queryKey: ['platforms', mediaType, mediaId],
-    queryFn: fetchPlatformsData,
-    staleTime: CACHE_TIME,
-    refetchOnWindowFocus: false,
-    retry: 1
-  });
-
-  // Gérer les erreurs à l'extérieur de useQuery
   useEffect(() => {
-    if (queryResult.error) {
-      const error = queryResult.error;
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Une erreur s'est produite lors de la récupération des plateformes";
-      
-      console.error("Erreur lors de la récupération des plateformes:", error);
-      
-      toast({
-        title: "Erreur",
-        description: errorMessage,
-        variant: "destructive",
+    // Reset states when inputs change
+    setPlatforms([]);
+    setIsLoading(true);
+    setError(null);
+    
+    // Function to fetch platforms where to watch/buy the media
+    const fetchPlatforms = async () => {
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Request timed out'));
+        }, FETCH_TIMEOUT);
       });
-    }
-  }, [queryResult.error, toast]);
+      
+      try {
+        // Simulate API call with timeout protection
+        const dataPromise = new Promise<Platform[]>((resolve) => {
+          setTimeout(() => {
+            const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
+            resolve(mockPlatforms);
+          }, 1000);
+        });
+        
+        // Race between the data fetch and the timeout
+        const data = await Promise.race([dataPromise, timeoutPromise]);
+        
+        // Filter available platforms if needed
+        // const availablePlatforms = data.filter(platform => platform.isAvailable === true);
+        setPlatforms(data);
+        setIsLoading(false);
+      } catch (error) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : "Une erreur s'est produite lors de la récupération des plateformes";
+        
+        console.error("Erreur lors de la récupération des plateformes:", error);
+        setError(errorMessage);
+        setIsLoading(false);
+        
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
+    };
+    
+    // Execute the fetch function
+    fetchPlatforms();
+  }, [mediaId, mediaType, title, toast]);
 
-  const platforms = queryResult.data || [];
-  
-  // Retourner l'état enrichi
+  // Return enhanced result object
   return { 
     platforms, 
-    isLoading: queryResult.isLoading, 
-    error: queryResult.error ? (queryResult.error instanceof Error ? queryResult.error.message : "Erreur inconnue") : null,
-    // Helper functions
+    isLoading, 
+    error,
+    // Helper function to get only available platforms
     availablePlatforms: platforms.filter(platform => platform.isAvailable === true),
+    // Flag indicating if any platforms are available
     hasAvailablePlatforms: platforms.some(platform => platform.isAvailable === true)
   };
 }
