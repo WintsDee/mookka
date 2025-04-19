@@ -6,49 +6,75 @@ import { MediaCard } from "@/components/media-card";
 import { MediaRecommendations } from "@/components/media-recommendations";
 import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, FilterIcon, Search } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaType } from "@/types";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLocation, useNavigate } from "react-router-dom";
+import { LibrarySearch } from "@/components/library/library-search";
+import { LibraryFilters } from "@/components/library/library-filters";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"date" | "title" | "rating">("date");
+  const [showCompleted, setShowCompleted] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate(); // Add navigation hook
+  const navigate = useNavigate();
   
-  // Filtrer les médias en fonction du type sélectionné et du terme de recherche
+  // Filtrer les médias en fonction du type sélectionné, du terme de recherche et des filtres
   const filteredMedia = mockMedia
     .filter(media => filter === "all" || media.type === filter)
+    .filter(media => showCompleted || media.status !== "completed")
     .filter(media => 
       searchTerm === "" || 
       media.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (media.genres && media.genres.some(genre => 
         genre.toLowerCase().includes(searchTerm.toLowerCase())
       ))
-    );
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "title":
+          return a.title.localeCompare(b.title);
+        case "rating":
+          return (b.rating || 0) - (a.rating || 0);
+        case "date":
+        default:
+          return new Date(b.added_at || 0).getTime() - new Date(a.added_at || 0).getTime();
+      }
+    });
+
+  // Gérer la redirection vers la recherche globale si aucun résultat n'est trouvé
+  const handleEmptyResults = () => {
+    if (searchTerm && filteredMedia.length === 0) {
+      navigate(`/recherche?q=${encodeURIComponent(searchTerm)}&type=${filter === "all" ? "" : filter}`);
+    }
+  };
 
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 pt-safe mt-16">
-        <header className="px-6 mb-6">
-          <div className="mt-4 relative">
-            <Input
-              type="text"
-              placeholder="Rechercher dans ma bibliothèque..."
-              className="pl-10"
+      <div className="pb-24 pt-safe mt-20">
+        <header className="px-6">
+          <div className="flex items-center gap-4">
+            <LibrarySearch
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value === "") {
+                  handleEmptyResults();
+                }
+              }}
+              onSearch={handleEmptyResults}
             />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-            
-            <Button variant="outline" size="icon" className="absolute right-0 top-0">
-              <FilterIcon className="h-4 w-4" />
-            </Button>
+            <LibraryFilters
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              showCompleted={showCompleted}
+              onShowCompletedChange={setShowCompleted}
+            />
           </div>
           
           <div className="mt-4">
