@@ -90,7 +90,7 @@ const Profil = () => {
   };
 
   return (
-    <Background>
+    <Background className="animate-fade-in">
       <MobileHeader title="Profil" />
       <div className="pt-safe pb-24 mt-16">
         {loading ? (

@@ -22,6 +22,7 @@ export function MobileNav() {
             className={`flex flex-col items-center justify-center transition-all duration-200 ${
               item.special ? 'relative -mt-8' : ''
             }`}
+            state={{ transition: true }}
           >
             {item.special ? (
               <SearchButton />

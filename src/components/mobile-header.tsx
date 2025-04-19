@@ -33,11 +33,26 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
       
       <div className="w-8 h-8 flex-shrink-0 absolute right-6">
         {!title && !isSoutienPage && (
-          <img 
-            src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
-            alt="Mookka Logo" 
-            className="w-full h-full object-contain"
-          />
+          <Link to="/profil">
+            {profile?.avatar_url ? (
+              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
+                <AvatarImage 
+                  src={profile.avatar_url} 
+                  alt={profile?.username || "Utilisateur"}
+                  className="object-cover w-full h-full"
+                />
+                <AvatarFallback>
+                  <User size={20} />
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <img 
+                src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
+                alt="Mookka Logo" 
+                className="w-full h-full object-contain"
+              />
+            )}
+          </Link>
         )}
       </div>
       
