@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
@@ -91,16 +90,18 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   // Ensure we're using the correct media type and ID for the URL
   const mediaType = type || "film";
-  // Ensure ID is always a string, and for externalId cases, use that ID
-  const mediaId = media.externalId?.toString() || id?.toString() || "";
+  // Use id as a string, external ID if available
+  const mediaId = media.externalId || id?.toString() || "";
   
-  // Create a safe state object with search params if from is provided
-  const fromState = from 
-    ? { 
-        from: from,
-        search: window.location.search
-      } 
-    : undefined;
+  // Create state object with current location for back navigation
+  const currentPath = window.location.pathname;
+  const currentSearch = window.location.search;
+  
+  // Create a state object with the current path for back navigation
+  const fromState = { 
+    from: from || currentPath,
+    search: currentSearch
+  };
 
   return (
     <Link 

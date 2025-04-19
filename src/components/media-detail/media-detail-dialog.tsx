@@ -1,11 +1,13 @@
 
-import React from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import React, { useEffect } from "react";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { MediaType } from "@/types";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MediaDetailDialogProps {
   open: boolean;
@@ -50,15 +52,28 @@ export function MediaDetailDialog({
           });
         }
       } else {
+        // If no specific "from" path, just go back
         navigate(-1);
       }
     }
     onOpenChange(open);
   };
 
+  // Force dialog to be open when component mounts
+  useEffect(() => {
+    if (!open) {
+      onOpenChange(true);
+    }
+  }, [open, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-none w-full h-full p-0 gap-0 bg-background">
+        <DialogClose asChild className="absolute top-2 right-4 z-50">
+          <Button variant="ghost" size="icon" className="text-white bg-black/30 hover:bg-black/40 backdrop-blur-sm">
+            <X className="h-4 w-4" />
+          </Button>
+        </DialogClose>
         <div className="flex flex-col h-full overflow-hidden">
           <MediaDetailHeader
             media={media}

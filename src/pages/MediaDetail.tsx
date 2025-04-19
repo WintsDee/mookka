@@ -26,6 +26,10 @@ const MediaDetail = () => {
           console.log(`Fetching media details for ${type}/${id}`);
           const mediaData = await getMediaById(type as MediaType, id);
           
+          if (!mediaData) {
+            throw new Error("Média non trouvé");
+          }
+          
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
           }
@@ -45,6 +49,8 @@ const MediaDetail = () => {
             description: "Impossible de récupérer les détails du média",
             variant: "destructive",
           });
+          // Navigate back if media can't be loaded
+          setTimeout(() => navigate(-1), 1500);
         } finally {
           setIsLoading(false);
         }
@@ -52,7 +58,15 @@ const MediaDetail = () => {
     };
 
     fetchMediaDetails();
-  }, [type, id, toast]);
+  }, [type, id, toast, navigate]);
+
+  // Handle dialog closing
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      // If we close the dialog, navigate back (handled by the dialog component)
+    }
+  };
 
   if (isLoading) {
     return (
@@ -88,7 +102,7 @@ const MediaDetail = () => {
     <Background>
       <MediaDetailDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={handleDialogOpenChange}
         media={media}
         formattedMedia={formattedMedia}
         type={type as MediaType}
