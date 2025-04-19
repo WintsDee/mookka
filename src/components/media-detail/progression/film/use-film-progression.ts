@@ -6,6 +6,7 @@ interface FilmProgressionData {
   watched: boolean;
   watch_time: number;
   status: MediaStatus;
+  notes?: string;
 }
 
 export function useFilmProgression(
@@ -16,6 +17,7 @@ export function useFilmProgression(
   const [watched, setWatched] = useState(initialProgression?.watched || false);
   const [watchTime, setWatchTime] = useState(initialProgression?.watch_time || 0);
   const [status, setStatus] = useState<MediaStatus>(initialProgression?.status || 'to-watch');
+  const [notes, setNotes] = useState<string>(initialProgression?.notes || '');
 
   useEffect(() => {
     // Update when external progression changes
@@ -23,6 +25,7 @@ export function useFilmProgression(
       setWatched(initialProgression.watched || false);
       setWatchTime(initialProgression.watch_time || 0);
       setStatus(initialProgression.status || 'to-watch');
+      setNotes(initialProgression.notes || '');
     }
   }, [initialProgression]);
 
@@ -39,7 +42,7 @@ export function useFilmProgression(
     }
     
     setStatus(newStatus);
-    updateProgression(isWatched, isWatched ? totalDuration : 0, newStatus);
+    updateProgression(isWatched, isWatched ? totalDuration : 0, newStatus, notes);
   };
 
   const updateWatchTime = (time: number[]) => {
@@ -62,7 +65,7 @@ export function useFilmProgression(
     
     setWatched(newWatched);
     setStatus(newStatus);
-    updateProgression(newWatched, newTime, newStatus);
+    updateProgression(newWatched, newTime, newStatus, notes);
   };
 
   const updateStatus = (newStatus: MediaStatus) => {
@@ -81,19 +84,26 @@ export function useFilmProgression(
     
     setWatched(newWatched);
     setWatchTime(newWatchTime);
-    updateProgression(newWatched, newWatchTime, newStatus);
+    updateProgression(newWatched, newWatchTime, newStatus, notes);
+  };
+
+  const updateNotes = (newNotes: string) => {
+    setNotes(newNotes);
+    updateProgression(watched, watchTime, status, newNotes);
   };
 
   const updateProgression = (
     watched: boolean,
     watch_time: number,
-    status: MediaStatus
+    status: MediaStatus,
+    notes: string
   ) => {
     onProgressionUpdate({
       ...initialProgression,
       watched,
       watch_time,
-      status
+      status,
+      notes
     });
   };
 
@@ -101,8 +111,10 @@ export function useFilmProgression(
     watched,
     watchTime,
     status,
+    notes,
     updateWatched,
     updateWatchTime,
-    updateStatus
+    updateStatus,
+    updateNotes
   };
 }

@@ -36,15 +36,23 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
         // Simulate API call with timeout protection
         const dataPromise = new Promise<Platform[]>((resolve) => {
           setTimeout(() => {
+            // Générer UNIQUEMENT des plateformes qui sont réellement disponibles
+            // Ne pas inclure de plateformes par défaut
             const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
+            
+            // Filter out any platforms that are marked as not available
+            const availablePlatforms = mockPlatforms.filter(p => p.isAvailable === true);
+            
             console.log(`Platform data generated for ${mediaType} ID:${mediaId}:`, 
               { 
                 total: mockPlatforms.length,
-                available: mockPlatforms.filter(p => p.isAvailable).length,
-                platforms: mockPlatforms.map(p => p.name)
+                available: availablePlatforms.length,
+                platforms: availablePlatforms.map(p => p.name)
               }
             );
-            resolve(mockPlatforms);
+            
+            // Retourner uniquement les plateformes disponibles
+            resolve(availablePlatforms);
           }, 1000);
         });
         
@@ -74,15 +82,15 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
     fetchPlatforms();
   }, [mediaId, mediaType, title, toast]);
 
-  // Return enhanced result object
+  // Return enhanced result object with only available platforms
   return { 
     platforms, 
     isLoading, 
     error,
-    // Helper function to get only available platforms
-    availablePlatforms: platforms.filter(platform => platform.isAvailable === true),
+    // Helper function to get only available platforms (already filtered during fetch)
+    availablePlatforms: platforms,
     // Flag indicating if any platforms are available
-    hasAvailablePlatforms: platforms.some(platform => platform.isAvailable === true)
+    hasAvailablePlatforms: platforms.length > 0
   };
 }
 

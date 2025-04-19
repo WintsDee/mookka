@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
@@ -111,8 +110,7 @@ export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabPr
       </div>
     );
   } else {
-    // For books and games, keep the original grouping by type
-    // Group platforms by type
+    // Pour les livres et jeux, conserver le regroupement par type
     const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
       const type = platform.type;
       if (!acc[type]) {

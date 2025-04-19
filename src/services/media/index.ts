@@ -5,7 +5,8 @@ export {
   addMediaToLibrary,
   getUserMediaLibrary,
   updateMediaStatus,
-  removeMediaFromLibrary
+  removeMediaFromLibrary,
+  updateMediaNotes
 } from './operations';
 export { filterAdultContent } from './filters';
 export { getSocialShareSettings, updateSocialShareSettings } from './social-service';

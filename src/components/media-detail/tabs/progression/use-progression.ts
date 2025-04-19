@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { updateMediaNotes } from "@/services/media";
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,26 +14,30 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       case 'film':
         return {
           status: 'to-watch',
-          watched_time: 0
+          watched_time: 0,
+          notes: ''
         };
       case 'serie':
         return {
           status: 'to-watch',
           watched_episodes: {},
           watched_count: 0,
-          total_episodes: 0
+          total_episodes: 0,
+          notes: ''
         };
       case 'book':
         return {
           status: 'to-read',
           current_page: 0,
-          total_pages: mediaDetails?.page_count || 0
+          total_pages: mediaDetails?.page_count || 0,
+          notes: ''
         };
       case 'game':
         return {
           status: 'to-play',
           completion_percentage: 0,
-          playtime: 0
+          playtime: 0,
+          notes: ''
         };
       default:
         return {};
@@ -88,6 +93,11 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       const { data: user } = await supabase.auth.getUser();
       
       if (!user.user) return;
+      
+      // Mettre à jour les notes dans user_media si elles existent
+      if (progressionData.notes !== undefined) {
+        await updateMediaNotes(mediaId, progressionData.notes);
+      }
       
       const { data: existingProgression } = await supabase
         .from('media_progressions')

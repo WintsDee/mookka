@@ -1,24 +1,15 @@
 
-import { useState, useEffect, useRef } from "react";
-
-interface GameProgressionData {
-  completion_percentage: number;
-  playtime: number;
-  status: 'to-play' | 'playing' | 'completed';
-}
+import { useState, useEffect } from "react";
+import { MediaStatus } from "@/types";
 
 export function useGameProgression(
   initialProgression: any,
   onProgressionUpdate: (progression: any) => void
 ) {
-  const [completionPercentage, setCompletionPercentage] = useState(
-    initialProgression?.completion_percentage || 0
-  );
+  const [completionPercentage, setCompletionPercentage] = useState(initialProgression?.completion_percentage || 0);
   const [playtime, setPlaytime] = useState(initialProgression?.playtime || 0);
-  const [status, setStatus] = useState(initialProgression?.status || 'to-play');
-  
-  // Use a debounce timer to avoid excessive updates
-  const updateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [status, setStatus] = useState<MediaStatus>(initialProgression?.status || 'to-play');
+  const [notes, setNotes] = useState<string>(initialProgression?.notes || '');
 
   useEffect(() => {
     // Update when external progression changes
@@ -26,106 +17,75 @@ export function useGameProgression(
       setCompletionPercentage(initialProgression.completion_percentage || 0);
       setPlaytime(initialProgression.playtime || 0);
       setStatus(initialProgression.status || 'to-play');
+      setNotes(initialProgression.notes || '');
     }
   }, [initialProgression]);
 
-  const updateCompletionPercentage = (value: number[]) => {
-    const newPercentage = value[0];
-    setCompletionPercentage(newPercentage);
+  const updateCompletionPercentage = (percentage: number) => {
+    setCompletionPercentage(percentage);
     
-    let newStatus = status;
-    if (newPercentage === 0) {
+    let newStatus: MediaStatus = status;
+    
+    if (percentage === 0) {
       newStatus = 'to-play';
-    } else if (newPercentage === 100) {
+    } else if (percentage === 100) {
       newStatus = 'completed';
     } else {
       newStatus = 'playing';
     }
     
     setStatus(newStatus);
-    
-    // Clear any existing timer
-    if (updateTimerRef.current) {
-      clearTimeout(updateTimerRef.current);
-    }
-    
-    // Set a new timer to update after 500ms of inactivity
-    updateTimerRef.current = setTimeout(() => {
-      updateProgression(newPercentage, playtime, newStatus);
-    }, 500);
+    updateProgression(percentage, playtime, newStatus, notes);
   };
 
-  const updatePlaytime = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPlaytime = parseInt(e.target.value) || 0;
-    setPlaytime(newPlaytime);
-    
-    let newStatus = status;
-    if (newPlaytime === 0 && completionPercentage === 0) {
-      newStatus = 'to-play';
-    } else if (completionPercentage === 100) {
-      newStatus = 'completed';
-    } else if (newPlaytime > 0 || completionPercentage > 0) {
-      newStatus = 'playing';
-    }
-    
-    setStatus(newStatus);
-    
-    // Clear any existing timer
-    if (updateTimerRef.current) {
-      clearTimeout(updateTimerRef.current);
-    }
-    
-    // Set a new timer to update after 500ms of inactivity
-    updateTimerRef.current = setTimeout(() => {
-      updateProgression(completionPercentage, newPlaytime, newStatus);
-    }, 500);
+  const updatePlaytime = (hours: number) => {
+    setPlaytime(hours);
+    updateProgression(completionPercentage, hours, status, notes);
   };
 
-  const updateStatus = (newStatus: 'to-play' | 'playing' | 'completed') => {
+  const updateStatus = (newStatus: MediaStatus) => {
     setStatus(newStatus);
     
-    let newCompletionPercentage = completionPercentage;
+    let newPercentage = completionPercentage;
     
     if (newStatus === 'completed') {
-      newCompletionPercentage = 100;
+      newPercentage = 100;
     } else if (newStatus === 'to-play') {
-      newCompletionPercentage = 0;
-    } else if (newStatus === 'playing' && completionPercentage === 0) {
-      newCompletionPercentage = 1;
+      newPercentage = 0;
     }
     
-    setCompletionPercentage(newCompletionPercentage);
-    updateProgression(newCompletionPercentage, playtime, newStatus);
+    setCompletionPercentage(newPercentage);
+    updateProgression(newPercentage, playtime, newStatus, notes);
+  };
+  
+  const updateNotes = (newNotes: string) => {
+    setNotes(newNotes);
+    updateProgression(completionPercentage, playtime, status, newNotes);
   };
 
   const updateProgression = (
     completion_percentage: number,
     playtime: number,
-    status: 'to-play' | 'playing' | 'completed'
+    status: MediaStatus,
+    notes: string
   ) => {
     onProgressionUpdate({
       ...initialProgression,
       completion_percentage,
       playtime,
-      status
+      status,
+      notes
     });
   };
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (updateTimerRef.current) {
-        clearTimeout(updateTimerRef.current);
-      }
-    };
-  }, []);
 
   return {
     completionPercentage,
     playtime,
     status,
+    notes,
     updateCompletionPercentage,
     updatePlaytime,
-    updateStatus
+    updateStatus,
+    updateNotes
   };
 }
