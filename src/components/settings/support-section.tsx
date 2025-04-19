@@ -23,8 +23,17 @@ export function SupportSection() {
         <HelpFeedback
           buttonText="Donner mon feedback"
           buttonIcon={true}
-          buttonVariant="outline"
+          buttonVariant="default"
           initialTab="feedback"
+          customButton={
+            <Button 
+              className="w-full gap-2 text-base font-medium py-6 bg-gradient-to-r from-secondary/80 to-secondary hover:from-secondary hover:to-secondary/80 transition-all shadow-lg shadow-secondary/20"
+              size="lg"
+            >
+              <MessageSquare className="w-5 h-5" />
+              Donner mon feedback
+            </Button>
+          }
         />
       </div>
     </div>

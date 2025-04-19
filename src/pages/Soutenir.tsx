@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MobileHeader } from "@/components/mobile-header";
 import { Button } from "@/components/ui/button";
-import { HandCoins, Heart, Rocket, Gift, Info, ArrowUp } from "lucide-react";
+import { HandCoins, Heart, Rocket, Gift, Info, ArrowUp, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Soutenir = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const navigate = useNavigate();
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -24,10 +25,15 @@ const Soutenir = () => {
 
   return (
     <Background>
-      <MobileHeader 
-        title="Soutenir Mookka" 
-        showBackButton={true}
-      />
+      <div className="fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
+        <h1 className="text-lg font-semibold">Soutenir Mookka</h1>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2 hover:bg-accent rounded-full transition-colors"
+        >
+          <X size={20} />
+        </button>
+      </div>
       
       <div className="pt-safe pb-24 mt-16 px-6 relative h-[calc(100vh-6rem)]">
         <ScrollArea className="w-full h-full scrollable-content" onScroll={handleScroll}>
