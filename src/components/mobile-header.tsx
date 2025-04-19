@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { User, Bell, ArrowLeft } from "lucide-react";
+import { User, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ interface MobileHeaderProps {
 const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderProps) => {
   const location = useLocation();
   const isProfileActive = location.pathname === "/profil";
-  const isNotificationsActive = location.pathname === "/notifications";
   const isSoutienPage = location.pathname === "/soutenir";
   
   const { profile } = useProfile();
@@ -48,14 +47,6 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
           <div className="hidden">
             <HelpFeedback data-help-feedback-trigger />
           </div>
-          
-          <Link to="/notifications" className={cn(
-            "relative transition-colors duration-200",
-            isNotificationsActive ? "text-primary" : "text-muted-foreground"
-          )}>
-            <Bell size={24} className={isNotificationsActive ? "animate-scale-in" : "transition-transform duration-200"} />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary"></span>
-          </Link>
           
           <Link
             to="/profil"
