@@ -99,12 +99,12 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           alt={formattedMedia.title} 
           className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4"
         />
-        <div className="flex-1 ml-4 mt-2">
-          <div className="flex items-center gap-2">
-            <h1 className={cn("text-2xl font-bold text-white drop-shadow-md", enhanceTextVisibility('strong'))}>
+        <div className="flex-1 ml-4 mt-2 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className={cn("text-2xl font-bold text-white drop-shadow-md truncate max-w-full", enhanceTextVisibility('strong'))}>
               {formattedMedia.title}
             </h1>
-            <Badge variant={type} className="capitalize shadow-md">
+            <Badge variant={type} className="capitalize shadow-md shrink-0">
               {type}
             </Badge>
           </div>

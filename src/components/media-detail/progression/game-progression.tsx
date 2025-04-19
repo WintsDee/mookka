@@ -37,14 +37,14 @@ export function GameProgression({ mediaDetails, progression, onUpdate }: GamePro
 
       <div className="bg-card/30 backdrop-blur-sm border border-border/40 rounded-lg p-4 space-y-5">
         <CompletionTracker
-          completionPercentage={completionPercentage}
-          onCompletionChange={updateCompletionPercentage}
+          value={completionPercentage}
+          onChange={(values: number[]) => updateCompletionPercentage(values[0])}
         />
         
         <PlaytimeTracker
-          playtime={playtime}
+          value={playtime}
           estimatedTime={estimatedCompletionTime}
-          onPlaytimeChange={updatePlaytime}
+          onChange={(e) => updatePlaytime(parseInt(e.target.value))}
         />
         
         <NotesTextarea 

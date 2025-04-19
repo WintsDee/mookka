@@ -34,7 +34,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
         <PageTracker
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={updateCurrentPage}
+          onChange={updateCurrentPage}
         />
         
         <NotesTextarea 

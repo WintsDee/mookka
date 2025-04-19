@@ -36,22 +36,21 @@ export function usePlatforms(mediaId: string, mediaType: MediaType, title: strin
         // Simulate API call with timeout protection
         const dataPromise = new Promise<Platform[]>((resolve) => {
           setTimeout(() => {
-            // Générer UNIQUEMENT des plateformes qui sont réellement disponibles
-            // Ne pas inclure de plateformes par défaut
-            const mockPlatforms = generatePlatformData(mediaId, mediaType, title);
+            // Generate all platform data
+            const allPlatforms = generatePlatformData(mediaId, mediaType, title);
             
-            // Filter out any platforms that are marked as not available
-            const availablePlatforms = mockPlatforms.filter(p => p.isAvailable === true);
+            // Filter out platforms that are marked as not available
+            const availablePlatforms = allPlatforms.filter(p => p.isAvailable === true);
             
             console.log(`Platform data generated for ${mediaType} ID:${mediaId}:`, 
               { 
-                total: mockPlatforms.length,
+                total: allPlatforms.length,
                 available: availablePlatforms.length,
                 platforms: availablePlatforms.map(p => p.name)
               }
             );
             
-            // Retourner uniquement les plateformes disponibles
+            // Return only available platforms
             resolve(availablePlatforms);
           }, 1000);
         });

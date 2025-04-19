@@ -52,12 +52,12 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
   return (
     <div className="space-y-6">
       <StatusSelector
-        status={status}
+        currentStatus={status}
         onStatusChange={handleStatusChange}
       />
 
       <ProgressHeader
-        watchedCount={watchedEpisodes}
+        currentCount={watchedEpisodes}
         totalCount={totalEpisodes}
       />
 

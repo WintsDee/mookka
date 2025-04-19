@@ -31,6 +31,17 @@ export function PlatformList({ type, category, platforms, mediaType, title }: Pl
             ? "Acheter"
             : "Louer";
     }
+  } else if (mediaType === "game") {
+    if (category === "store") {
+      typeLabel = "Plateformes de jeu";
+    } else {
+      typeLabel = 
+        type === "purchase" 
+          ? "Acheter"
+          : type === "subscription" 
+            ? "Services d'abonnement"
+            : "Plateformes";
+    }
   } else {
     typeLabel = 
       type === "streaming" 

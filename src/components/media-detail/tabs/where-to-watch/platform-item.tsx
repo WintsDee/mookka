@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ShoppingCart, Tv, Film, Store, Video, Ticket, DollarSign, Info } from "lucide-react";
+import { ExternalLink, ShoppingCart, Tv, Film, Store, Video, Ticket, DollarSign, Info, Gamepad2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MediaType } from "@/types";
 import { Platform } from "./types";
@@ -50,19 +50,24 @@ export function PlatformItem({ platform, mediaType, title }: PlatformItemProps) 
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-sm md:text-base">{platform.name}</span>
-            {platform.category === "subscription" && (
+            {mediaType !== "game" && platform.category === "subscription" && (
               <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full">
                 Abonnement
               </span>
             )}
-            {platform.category === "vod" && (
+            {mediaType !== "game" && platform.category === "vod" && (
               <span className="text-xs px-2 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-100 rounded-full">
                 VOD
               </span>
             )}
-            {platform.category === "free" && (
+            {mediaType !== "game" && platform.category === "free" && (
               <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-full">
                 Gratuit
+              </span>
+            )}
+            {mediaType === "game" && platform.category === "subscription" && (
+              <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full">
+                Abonnement
               </span>
             )}
           </div>
@@ -122,6 +127,10 @@ export function PlatformItem({ platform, mediaType, title }: PlatformItemProps) 
 }
 
 function PlatformIcon({ platform, mediaType }: { platform: Platform, mediaType: MediaType }) {
+  if (mediaType === "game") {
+    return <Gamepad2 className="h-5 w-5" />;
+  }
+  
   if (platform.category === "subscription") {
     return <Tv className="h-5 w-5" />;
   }
