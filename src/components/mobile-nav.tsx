@@ -16,9 +16,8 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F1524] border-t pb-safe z-50">
       <div className="grid grid-cols-5 gap-2 py-3 pb-6 px-4 relative">
         {navigationItems.map((item) => (
-          <Link 
+          <div 
             key={item.path} 
-            to={item.path}
             className={`flex flex-col items-center justify-center transition-all duration-200 ${
               item.special ? 'relative -mt-8' : ''
             }`}
@@ -33,7 +32,7 @@ export function MobileNav() {
                 isActive={location.pathname === item.path}
               />
             )}
-          </Link>
+          </div>
         ))}
       </div>
     </nav>

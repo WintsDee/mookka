@@ -11,7 +11,7 @@ interface NavItemProps {
 
 export const NavItem = ({ path, icon: Icon, label, isActive }: NavItemProps) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <Link to={path} className="flex flex-col items-center justify-center w-full">
       <Icon 
         size={22} 
         className={`transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
@@ -21,6 +21,6 @@ export const NavItem = ({ path, icon: Icon, label, isActive }: NavItemProps) => 
       >
         {label}
       </span>
-    </div>
+    </Link>
   );
 };

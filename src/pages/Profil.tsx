@@ -22,7 +22,6 @@ const Profil = () => {
   
   const { myCollections, loadingMyCollections } = useCollections();
   
-  // Fetch user library statistics from Supabase
   const { data: stats = { films: 0, series: 0, books: 0, games: 0, total: 0 }, isLoading: loadingStats } = useQuery({
     queryKey: ['library-stats', profile?.id],
     queryFn: async () => {
@@ -30,7 +29,6 @@ const Profil = () => {
         return { films: 0, series: 0, books: 0, games: 0, total: 0 };
       }
       
-      // Get counts from user media
       const { data: mediaData, error: mediaError } = await supabase
         .from('user_media')
         .select('media(type)')
@@ -52,7 +50,6 @@ const Profil = () => {
     enabled: !!profile?.id && isAuthenticated
   });
 
-  // Fetch user favorite media
   const { data: favoriteMedia = [], isLoading: loadingFavorites } = useQuery({
     queryKey: ['favorite-media', profile?.id],
     queryFn: async () => {
@@ -91,7 +88,7 @@ const Profil = () => {
   return (
     <Background>
       <MobileHeader title="Profil" />
-      <div className="pt-safe pb-24 mt-16">
+      <div className="pt-safe pb-24 mt-16 animate-fade-in">
         {loading ? (
           <ProfileSkeleton />
         ) : (

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -143,7 +144,7 @@ const Social = () => {
   return (
     <Background>
       <MobileHeader title="Social" />
-      <div className="pb-24 pt-safe mt-16">
+      <div className="pb-24 pt-safe mt-16 animate-fade-in">
         <header className="px-6 mb-6">
           <div className="mt-4">
             <Tabs defaultValue="activity" className="w-full">
