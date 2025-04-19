@@ -33,10 +33,24 @@ export function MediaDetailDialog({
     if (!open) {
       // Navigate back when dialog is closed
       if (location.state?.from) {
-        navigate(location.state.from, { 
-          replace: true,
-          state: location.state 
-        });
+        // When navigating back, preserve the search params
+        const previousPath = location.state.from;
+        const searchParams = location.state.search || "";
+        
+        if (searchParams) {
+          navigate({
+            pathname: previousPath,
+            search: searchParams
+          }, { 
+            replace: true,
+            state: location.state 
+          });
+        } else {
+          navigate(location.state.from, { 
+            replace: true,
+            state: location.state 
+          });
+        }
       } else {
         navigate(-1);
       }
