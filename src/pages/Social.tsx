@@ -1,40 +1,15 @@
+
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
-import { MobileHeader } from "@/components/mobile-header";
 import { Media, MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-
-interface Activity {
-  id: string;
-  user: {
-    id: string;
-    name: string;
-    avatar: string;
-  };
-  action: string;
-  media: {
-    id: string;
-    title: string;
-    type: MediaType;
-  };
-  timestamp: string;
-}
-
-interface UserProfile {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-}
+import { MobileHeader } from "@/components/mobile-header";
+import { Activity } from "@/components/social/types";
+import { ActivityFeed } from "@/components/social/activity-feed";
 
 const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -98,11 +73,7 @@ const Social = () => {
         
         const activitiesData = userMedia.map(item => {
           const mediaItem = mediaMap[item.media_id];
-          const profileItem = profilesMap[item.user_id] || {
-            id: item.user_id,
-            name: 'Utilisateur',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user_id}`
-          };
+          const profileItem = profilesMap[item.user_id];
 
           let action = 'a ajouté';
           switch (item.status) {
@@ -120,14 +91,14 @@ const Social = () => {
             id: item.id,
             user: {
               id: profileItem.id,
-              name: profileItem.name || profileItem.full_name || 'Utilisateur',
-              avatar: profileItem.avatar || profileItem.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileItem.id}`
+              name: profileItem.full_name || 'Utilisateur',
+              avatar: profileItem.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileItem.id}`
             },
             action,
             media: {
               id: item.media_id,
               title: mediaItem?.title || 'Titre inconnu',
-              type: mediaItem?.type as MediaType || 'film' as MediaType
+              type: mediaItem?.type || 'film'
             },
             timestamp: item.added_at
           };
@@ -170,128 +141,6 @@ const Social = () => {
     });
   };
 
-  const renderActivities = () => {
-    if (loading) {
-      return (
-        <div className="space-y-4 px-1">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-secondary/40 border-border/50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-muted animate-pulse rounded w-3/4 mb-2" />
-                    <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="w-16 h-24 bg-muted animate-pulse rounded-md" />
-                  <div className="flex-1">
-                    <div className="h-4 bg-muted animate-pulse rounded w-2/3 mb-2" />
-                    <div className="h-3 bg-muted animate-pulse rounded w-full mb-1" />
-                    <div className="h-3 bg-muted animate-pulse rounded w-4/5" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      );
-    }
-
-    if (activities.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-          <p className="text-muted-foreground mb-4">
-            Aucune activité pour le moment. Ajoutez des médias à votre bibliothèque pour les voir apparaître ici.
-          </p>
-          <Button asChild>
-            <Link to="/recherche">Découvrir des médias</Link>
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4 px-1">
-        {activities.map((activity) => {
-          const mediaItem = media[activity.media.id];
-          
-          return (
-            <Card key={activity.id} className="bg-secondary/40 border-border/50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={activity.user.avatar} 
-                    alt={activity.user.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm">
-                      <span className="font-medium">{activity.user.name}</span>{" "}
-                      {activity.action}{" "}
-                      <span className="font-medium">{activity.media.title}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(activity.timestamp), { 
-                        addSuffix: true,
-                        locale: fr
-                      })}
-                    </p>
-                  </div>
-                </div>
-                
-                {mediaItem && (
-                  <div className="mt-3 flex items-center gap-3">
-                    <Link to={`/media/${mediaItem.type}/${activity.media.id}`}>
-                      <img
-                        src={mediaItem.coverImage}
-                        alt={mediaItem.title}
-                        className="w-16 h-24 rounded-md object-cover"
-                      />
-                    </Link>
-                    <div>
-                      <Link to={`/media/${mediaItem.type}/${activity.media.id}`} className="hover:underline">
-                        <h3 className="font-medium text-sm">{mediaItem.title}</h3>
-                      </Link>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {mediaItem.description?.slice(0, 80)}...
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex justify-between mt-4">
-                  <button 
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                    onClick={() => handleLike(activity.id)}
-                  >
-                    <Heart size={14} />
-                    <span>J'aime</span>
-                  </button>
-                  <button 
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                    onClick={() => handleComment(activity.id)}
-                  >
-                    <MessageCircle size={14} />
-                    <span>Commenter</span>
-                  </button>
-                  <button 
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
-                    onClick={() => handleShare(activity.id)}
-                  >
-                    <Share2 size={14} />
-                    <span>Partager</span>
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <Background>
       <MobileHeader title="Social" />
@@ -307,7 +156,14 @@ const Social = () => {
               
               <TabsContent value="activity" className="mt-4">
                 <ScrollArea className="h-[calc(100vh-200px)]">
-                  {renderActivities()}
+                  <ActivityFeed
+                    activities={activities}
+                    media={media}
+                    loading={loading}
+                    onLike={handleLike}
+                    onComment={handleComment}
+                    onShare={handleShare}
+                  />
                 </ScrollArea>
               </TabsContent>
               
