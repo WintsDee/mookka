@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -8,7 +7,7 @@ import { Media, MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
-import { Activity } from "@/components/social/types";
+import { Activity, UserProfile } from "@/components/social/types";
 import { ActivityFeed } from "@/components/social/activity-feed";
 
 const Social = () => {
@@ -69,7 +68,7 @@ const Social = () => {
           };
         });
         
-        const profilesMap: Record<string, any> = { ...defaultProfiles };
+        const profilesMap: Record<string, UserProfile> = { ...defaultProfiles };
         
         const activitiesData = userMedia.map(item => {
           const mediaItem = mediaMap[item.media_id];
