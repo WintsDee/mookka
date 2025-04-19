@@ -25,7 +25,6 @@ const Background = ({
         className
       )}
       {...props}
-      data-component="background"
     >
       {children}
     </div>
@@ -33,3 +32,4 @@ const Background = ({
 };
 
 export { Background };
+
