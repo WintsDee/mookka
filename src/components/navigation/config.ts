@@ -2,7 +2,7 @@
 import { 
   Search, 
   MessagesSquare, 
-  Compass,
+  Settings,
   Bookmark,
   Library  
 } from 'lucide-react';
@@ -13,5 +13,5 @@ export const navigationItems: NavigationItem[] = [
   { path: '/collections', icon: Bookmark, label: 'Collections' },
   { path: '/recherche', icon: Search, label: 'Recherche', special: true },
   { path: '/social', icon: MessagesSquare, label: 'Social' },
-  { path: '/decouvrir', icon: Compass, label: 'Découvrir' },
+  { path: '/settings', icon: Settings, label: 'Paramètres' },
 ];

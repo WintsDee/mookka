@@ -1,46 +1,66 @@
 
-import React from "react";
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { LogOut } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ProfileActionsProps {
   isAuthenticated: boolean;
-  onLogout: () => Promise<void>;
+  onLogout: () => void;
 }
 
-export function ProfileActions({ isAuthenticated, onLogout }: ProfileActionsProps) {
-  const isMobile = useIsMobile();
+export const ProfileActions = ({ isAuthenticated, onLogout }: ProfileActionsProps) => {
+  if (!isAuthenticated) {
+    return (
+      <div className="mt-8 space-y-4">
+        <Link to="/soutenir" className="block">
+          <Button className="w-full" size="lg" variant="default">
+            Soutenir le projet
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
-  if (!isAuthenticated) return null;
-  
   return (
     <div className="mt-8 space-y-4">
-      <Link to="/soutenir">
-        <Button 
-          variant="outline" 
-          className={`w-full flex items-center justify-center gap-2 ${
-            isMobile ? 'text-sm py-2 px-3' : 'mb-4'
-          }`}
-        >
+      <Link to="/soutenir" className="block">
+        <Button className="w-full" size="lg" variant="default">
           Soutenir le projet
         </Button>
       </Link>
-      
-      <Separator className="my-4" />
-      
-      <Button 
-        variant="outline" 
-        className={`w-full flex items-center justify-center gap-2 text-destructive border-destructive/30 ${
-          isMobile ? 'text-sm py-2 px-3' : ''
-        }`}
-        onClick={onLogout}
-      >
-        <LogOut size={16} />
-        Se déconnecter
-      </Button>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="destructive" className="w-full" size="lg">
+            <LogOut className="mr-2 h-4 w-4" />
+            Se déconnecter
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Se déconnecter ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir vous déconnecter ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={onLogout}>Se déconnecter</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
