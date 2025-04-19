@@ -10,7 +10,7 @@ export function AboutSection() {
           Version 1.0.0
         </p>
         <p className="text-sm text-muted-foreground">
-          © 2024 Mookka. Tous droits réservés.
+          © 2025 Mookka. Tous droits réservés.
         </p>
       </div>
     </div>

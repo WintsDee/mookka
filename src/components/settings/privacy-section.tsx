@@ -58,11 +58,6 @@ export function PrivacySection() {
 
   const privacyOptions = [
     {
-      key: 'shareRatings' as keyof SocialShareSettings,
-      label: 'Partager mes notes',
-      description: 'Permettre aux autres utilisateurs de voir mes notes'
-    },
-    {
       key: 'shareReviews' as keyof SocialShareSettings,
       label: 'Partager mes avis',
       description: 'Permettre aux autres utilisateurs de voir mes avis'
