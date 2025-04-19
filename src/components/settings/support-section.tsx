@@ -19,18 +19,15 @@ export function SupportSection() {
         Soutenir le projet
       </Button>
       
-      <HelpFeedback
-        buttonText="Donner mon feedback"
-        buttonIcon={true}
-        buttonVariant="outline"
-        className="w-full"
-        initialTab="feedback"
-      >
-        <Button variant="outline" size="lg" className="w-full gap-2 text-base py-6">
-          <MessageSquare className="w-5 h-5" />
-          Donner mon feedback
-        </Button>
-      </HelpFeedback>
+      <div>
+        <HelpFeedback
+          buttonText="Donner mon feedback"
+          buttonIcon={true}
+          buttonVariant="outline"
+          className="w-full"
+          initialTab="feedback"
+        />
+      </div>
     </div>
   );
 }
