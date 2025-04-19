@@ -18,9 +18,10 @@ const Background = ({
   return (
     <div
       className={cn(
-        "min-h-screen w-full",
-        noScroll ? "" : "overflow-auto scrollbar-hide overscroll-none -webkit-overflow-scrolling-touch will-change-scroll",
+        "fixed inset-0 w-full h-full overflow-auto overscroll-none",
+        noScroll ? "overflow-hidden" : "",
         pattern ? "bg-pattern" : "bg-background",
+        "scrollbar-hide -webkit-overflow-scrolling-touch",
         className
       )}
       {...props}
@@ -31,3 +32,4 @@ const Background = ({
 };
 
 export { Background };
+
