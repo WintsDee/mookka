@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TypeField, TitleField, MessageField, ContactField } from "./form-fields";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { XCircle } from "lucide-react";
 
 const feedbackSchema = z.object({
   type: z.string({ required_error: "Veuillez sélectionner un type de retour" }),
@@ -24,6 +26,7 @@ interface FeedbackFormProps {
 
 export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FeedbackFormValues>({
@@ -38,6 +41,7 @@ export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
   
   async function onSubmit(values: FeedbackFormValues) {
     setIsSubmitting(true);
+    setError(null);
     
     try {
       // Appel de la fonction Supabase Edge pour créer l'issue GitHub
@@ -46,7 +50,7 @@ export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
       });
       
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message || "Une erreur est survenue lors de l'envoi du feedback");
       }
       
       console.log('Feedback envoyé avec succès:', data);
@@ -59,8 +63,11 @@ export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
       onSubmitSuccess();
       form.reset();
       
-    } catch (error) {
-      console.error('Erreur lors de l\'envoi du feedback:', error);
+    } catch (err) {
+      console.error('Erreur lors de l\'envoi du feedback:', err);
+      
+      setError("Une erreur est survenue lors de l'envoi du feedback. Veuillez réessayer.");
+      
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -74,6 +81,14 @@ export function FeedbackForm({ onSubmitSuccess }: FeedbackFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <XCircle className="h-4 w-4" />
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <TypeField control={form.control} />
         <TitleField control={form.control} />
         <MessageField control={form.control} />

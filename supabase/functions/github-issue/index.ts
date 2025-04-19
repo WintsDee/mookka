@@ -48,8 +48,12 @@ ${contact ? `## Contact Information\n${contact}` : ''}
 
     console.log(`Creating GitHub issue with title: ${issueTitle}`);
 
-    // Send request to GitHub API - Replace with your actual username/repo
-    const response = await fetch('https://api.github.com/repos/mookka/mookka-app/issues', {
+    // Utilisez votre propre nom d'utilisateur et repo GitHub ici
+    // Exemple: votreUsername/votreRepo
+    const repo = 'votre-username/votre-repo'; 
+
+    // Send request to GitHub API
+    const response = await fetch(`https://api.github.com/repos/${repo}/issues`, {
       method: 'POST',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
