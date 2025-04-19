@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookInfo } from "./book-info";
@@ -7,7 +6,7 @@ import { SerieInfo } from "./serie-info";
 import { GameInfo } from "./game-info";
 import { CommonInfo } from "./common-info";
 import { BadgesSection } from "./badges-section";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Award, Tag } from "lucide-react";
 
 export function MediaAdditionalInfoCard({
   mediaType,
@@ -63,10 +62,18 @@ export function MediaAdditionalInfoCard({
         />
         <TypeInfo />
         {props.awards && props.awards.length > 0 && (
-          <BadgesSection title="Récompenses" items={props.awards} />
+          <BadgesSection 
+            title="Récompenses" 
+            items={props.awards} 
+            icon={<Award className="h-4 w-4 text-muted-foreground" />}
+          />
         )}
         {props.tags && props.tags.length > 0 && (
-          <BadgesSection title="Tags" items={props.tags} />
+          <BadgesSection 
+            title="Tags" 
+            items={props.tags} 
+            icon={<Tag className="h-4 w-4 text-muted-foreground" />}
+          />
         )}
       </CardContent>
     </Card>
