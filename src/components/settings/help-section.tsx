@@ -2,7 +2,7 @@
 import React from "react";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { HelpFeedback } from "@/components/profile/help-feedback";
+import { HelpFeedback } from "@/components/profile/help-feedback/index";
 
 export function HelpSection() {
   return (
