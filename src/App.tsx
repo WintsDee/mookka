@@ -18,8 +18,19 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
+import { useAuth } from "./hooks/use-auth";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+};
 
 const App = () => {
   useVersionCheck();
@@ -38,17 +49,18 @@ const App = () => {
           )}
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/bibliotheque" element={<Bibliotheque />} />
-            <Route path="/recherche" element={<Recherche />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/decouvrir" element={<Decouvrir />} />
-            <Route path="/profil" element={<Profil />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/media/:type/:id" element={<MediaDetail />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:id" element={<CollectionDetail />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/bibliotheque" element={<ProtectedRoute><Bibliotheque /></ProtectedRoute>} />
+            <Route path="/recherche" element={<ProtectedRoute><Recherche /></ProtectedRoute>} />
+            <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
+            <Route path="/decouvrir" element={<ProtectedRoute><Decouvrir /></ProtectedRoute>} />
+            <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/media/:type/:id" element={<ProtectedRoute><MediaDetail /></ProtectedRoute>} />
+            <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+            <Route path="/collections/:id" element={<ProtectedRoute><CollectionDetail /></ProtectedRoute>} />
             <Route path="/soutenir" element={<Soutenir />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>
