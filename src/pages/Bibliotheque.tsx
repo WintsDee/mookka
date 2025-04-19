@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
@@ -8,12 +8,21 @@ import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MediaType } from "@/types";
+import { MediaType, Media } from "@/types";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
 import { LibraryFilters } from "@/components/library/library-filters";
+import { getUserMediaLibrary } from "@/services/media/operations";
+import { useQuery } from "@tanstack/react-query";
+
+// Define an extended Media type that includes properties from user_media
+interface UserMedia extends Media {
+  added_at?: string;
+  user_rating?: number;
+  status?: string;
+}
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -23,8 +32,14 @@ const Bibliotheque = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // Use React Query to fetch user's media library
+  const { data: userMedia = [], isLoading, error } = useQuery({
+    queryKey: ['userMediaLibrary'],
+    queryFn: getUserMediaLibrary
+  });
+
   // Filtrer les médias en fonction du type sélectionné, du terme de recherche et des filtres
-  const filteredMedia = mockMedia
+  const filteredMedia = userMedia
     .filter(media => filter === "all" || media.type === filter)
     .filter(media => showCompleted || media.status !== "completed")
     .filter(media => 
@@ -35,14 +50,22 @@ const Bibliotheque = () => {
       ))
     )
     .sort((a, b) => {
+      const mediaA = a as UserMedia;
+      const mediaB = b as UserMedia;
+      
       switch (sortBy) {
         case "title":
           return a.title.localeCompare(b.title);
         case "rating":
-          return (b.rating || 0) - (a.rating || 0);
+          return ((mediaB.user_rating || 0) - (mediaA.user_rating || 0));
         case "date":
         default:
-          return new Date(b.added_at || 0).getTime() - new Date(a.added_at || 0).getTime();
+          // Use year as a fallback if added_at is not available
+          if (mediaA.added_at && mediaB.added_at) {
+            return new Date(mediaB.added_at).getTime() - new Date(mediaA.added_at).getTime();
+          } else {
+            return (b.year || 0) - (a.year || 0);
+          }
       }
     });
 
@@ -56,7 +79,7 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 pt-safe mt-20">
+      <div className="pb-24 pt-safe mt-28">
         <header className="px-6">
           <div className="flex items-center gap-4">
             <LibrarySearch
@@ -121,19 +144,33 @@ const Bibliotheque = () => {
         </header>
         
         <ScrollArea className="h-[calc(100vh-220px)] px-6">
-          <div className="space-y-8 pb-24">
-            {filteredMedia.length === 0 && (
+          <div className="space-y-8 py-6">
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <p>Chargement de votre bibliothèque...</p>
+              </div>
+            ) : filteredMedia.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <p className="text-muted-foreground mb-4">
                   Votre bibliothèque est vide. Commencez à ajouter des médias !
                 </p>
                 <Button 
                   variant="outline" 
-                  onClick={() => navigate('/recherche')} // Navigate to recherche page
+                  onClick={() => navigate('/recherche')}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Ajouter un média
                 </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {filteredMedia.map((media) => (
+                  <MediaCard
+                    key={media.id}
+                    media={media}
+                    onClick={() => navigate(`/media/${media.id}`)}
+                  />
+                ))}
               </div>
             )}
           </div>
