@@ -1,6 +1,7 @@
 
 import React from "react";
 import { InfoItem } from "./info-item";
+import { Calendar, Clock, Languages, Award } from "lucide-react";
 
 export function CommonInfo({
   releaseDate,
@@ -13,16 +14,29 @@ export function CommonInfo({
   return (
     <div className="grid grid-cols-2 gap-3">
       {releaseDate && (
-        <InfoItem label="Date de sortie" value={releaseDate} />
+        <InfoItem 
+          icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
+          label="Date de sortie" 
+          value={releaseDate} 
+        />
       )}
       {duration && (
-        <InfoItem label="Durée" value={duration} />
+        <InfoItem 
+          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+          label="Durée" 
+          value={duration} 
+        />
       )}
       {language && (
-        <InfoItem label="Langue" value={language} />
+        <InfoItem 
+          icon={<Languages className="h-4 w-4 text-muted-foreground" />}
+          label="Langue" 
+          value={language} 
+        />
       )}
       {metacritic && (
         <InfoItem
+          icon={<Award className="h-4 w-4 text-muted-foreground" />}
           label="Metacritic"
           value={`${metacritic}/10`}
           valueClassName={

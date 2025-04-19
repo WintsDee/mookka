@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -8,7 +7,7 @@ import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MediaType, Media } from "@/types";
+import { MediaType, Media, MediaStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -18,10 +17,10 @@ import { getUserMediaLibrary } from "@/services/media/operations";
 import { useQuery } from "@tanstack/react-query";
 
 // Define an extended Media type that includes properties from user_media
-interface UserMedia extends Media {
+interface UserMedia extends Omit<Media, 'status'> {
   added_at?: string;
   user_rating?: number;
-  status?: string | undefined; // Make status compatible with Media interface
+  status?: MediaStatus | string; // Make it compatible with both MediaStatus and string
 }
 
 const Bibliotheque = () => {

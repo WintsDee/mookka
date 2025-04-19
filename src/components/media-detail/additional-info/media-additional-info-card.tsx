@@ -53,13 +53,20 @@ export function MediaAdditionalInfoCard({
   return (
     <Card className="bg-secondary/40 border-border">
       <CardContent className="p-4 space-y-6">
-        <CommonInfo {...props} renderWebsite={renderWebsite} />
+        <CommonInfo 
+          releaseDate={props.releaseDate}
+          duration={props.duration}
+          language={props.language}
+          metacritic={props.metacritic}
+          renderWebsite={renderWebsite}
+          website={props.website}
+        />
         <TypeInfo />
         {props.awards && props.awards.length > 0 && (
-          <BadgesSection title="Récompenses" badges={props.awards} />
+          <BadgesSection title="Récompenses" items={props.awards} />
         )}
         {props.tags && props.tags.length > 0 && (
-          <BadgesSection title="Tags" badges={props.tags} />
+          <BadgesSection title="Tags" items={props.tags} />
         )}
       </CardContent>
     </Card>
