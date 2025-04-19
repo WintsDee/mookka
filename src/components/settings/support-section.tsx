@@ -19,12 +19,11 @@ export function SupportSection() {
         Soutenir le projet
       </Button>
       
-      <div>
+      <div className="w-full">
         <HelpFeedback
           buttonText="Donner mon feedback"
           buttonIcon={true}
           buttonVariant="outline"
-          className="w-full"
           initialTab="feedback"
         />
       </div>
