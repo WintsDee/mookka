@@ -1,21 +1,16 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType, MediaStatus } from "@/types";
-import { formatLibraryMedia } from './formatters';
+import { Media, MediaType } from "@/types";
+import { formatLibraryMedia } from '../formatters';
 
-/**
- * Add media to user's library
- */
 export async function addMediaToLibrary(media: any, type: MediaType): Promise<Media> {
   try {
-    // Vérifier que l'utilisateur est connecté
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       throw new Error("Vous devez être connecté pour ajouter un média à votre bibliothèque");
     }
     
-    // Formater les données du média selon le type
     let formattedMedia: any = {
       external_id: media.id.toString() || '',
       title: '',
@@ -75,7 +70,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         break;
     }
 
-    // D'abord vérifier si le média existe déjà dans la base de données
+    // Check if media exists
     const { data: existingMedia, error: fetchError } = await supabase
       .from('media')
       .select('id')
@@ -83,18 +78,16 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       .eq('type', type)
       .maybeSingle();
 
-    let mediaId;
-
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 signifie "no rows returned"
+    if (fetchError && fetchError.code !== 'PGRST116') {
       console.error("Erreur lors de la vérification du média:", fetchError);
       throw fetchError;
     }
 
+    let mediaId;
+
     if (existingMedia) {
-      // Le média existe déjà, utiliser son ID
       mediaId = existingMedia.id;
     } else {
-      // Le média n'existe pas, l'insérer
       const { data: newMedia, error: insertError } = await supabase
         .from('media')
         .insert(formattedMedia)
@@ -109,7 +102,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       mediaId = newMedia.id;
     }
 
-    // Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
+    // Check if user already has this media
     const { data: existingUserMedia, error: userMediaCheckError } = await supabase
       .from('user_media')
       .select('id')
@@ -123,7 +116,6 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
     }
     
     if (existingUserMedia) {
-      // L'utilisateur a déjà ce média, renvoyer les détails
       return {
         id: mediaId,
         type: type,
@@ -142,7 +134,6 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       };
     }
 
-    // Ajouter l'entrée dans user_media
     const { data: userMedia, error: userMediaInsertError } = await supabase
       .from('user_media')
       .insert({
@@ -176,114 +167,6 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
     };
   } catch (error) {
     console.error("Erreur dans addMediaToLibrary:", error);
-    throw error;
-  }
-}
-
-/**
- * Récupérer les médias de la bibliothèque de l'utilisateur
- */
-export async function getUserMediaLibrary(): Promise<Media[]> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      return [];
-    }
-    
-    const { data, error } = await supabase
-      .from('user_media')
-      .select(`
-        id,
-        status,
-        added_at,
-        user_rating,
-        notes,
-        media:media_id (
-          id,
-          title,
-          type,
-          year,
-          rating,
-          genres,
-          description,
-          cover_image,
-          duration,
-          director,
-          author,
-          publisher,
-          platform
-        )
-      `)
-      .eq('user_id', user.user.id)
-      .order('added_at', { ascending: false });
-      
-    if (error) {
-      console.error("Erreur lors de la récupération de la bibliothèque:", error);
-      throw error;
-    }
-    
-    if (!data || data.length === 0) {
-      return [];
-    }
-    
-    return data.map(formatLibraryMedia);
-  } catch (error) {
-    console.error("Erreur dans getUserMediaLibrary:", error);
-    throw error;
-  }
-}
-
-/**
- * Mettre à jour le statut d'un média dans la bibliothèque
- */
-export async function updateMediaStatus(mediaId: string, status: MediaStatus): Promise<void> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      throw new Error("Utilisateur non connecté");
-    }
-    
-    const { error } = await supabase
-      .from('user_media')
-      .update({ status })
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId);
-      
-    if (error) {
-      console.error("Erreur lors de la mise à jour du statut:", error);
-      throw error;
-    }
-  } catch (error) {
-    console.error("Erreur dans updateMediaStatus:", error);
-    throw error;
-  }
-}
-
-/**
- * Supprimer un média de la bibliothèque
- */
-export async function removeMediaFromLibrary(mediaId: string): Promise<void> {
-  try {
-    const { data: user } = await supabase.auth.getUser();
-    
-    if (!user.user) {
-      throw new Error("Utilisateur non connecté");
-    }
-    
-    const { error } = await supabase
-      .from('user_media')
-      .delete()
-      .eq('user_id', user.user.id)
-      .eq('media_id', mediaId);
-      
-    if (error) {
-      console.error("Erreur lors de la suppression du média:", error);
-      throw error;
-    }
-  } catch (error) {
-    console.error("Erreur dans removeMediaFromLibrary:", error);
     throw error;
   }
 }
