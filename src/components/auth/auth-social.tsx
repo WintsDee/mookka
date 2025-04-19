@@ -23,14 +23,13 @@ export function AuthSocial({ isLoading, setIsLoading, onSuccess }: AuthSocialPro
       });
       
       if (error) throw error;
-      onSuccess();
+      // La gestion du succès sera désormais gérée par le callback onAuthStateChange
     } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

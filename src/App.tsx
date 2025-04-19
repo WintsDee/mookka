@@ -1,8 +1,9 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useVersionCheck } from "@/hooks/use-version-check";
 import { useOffline } from "@/hooks/use-offline";
 import Index from "./pages/Index";
@@ -20,7 +21,6 @@ import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/use-auth";
-import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +50,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/connexion" element={<Navigate to="/auth" replace />} />
             <Route path="/bibliotheque" element={<ProtectedRoute><Bibliotheque /></ProtectedRoute>} />
             <Route path="/recherche" element={<ProtectedRoute><Recherche /></ProtectedRoute>} />
             <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
