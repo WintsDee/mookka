@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -10,12 +9,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { Activity, UserProfile } from "@/components/social/types";
 import { ActivityFeed } from "@/components/social/activity-feed";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [media, setMedia] = useState<Record<string, Media>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -144,18 +145,18 @@ const Social = () => {
   return (
     <Background>
       <MobileHeader title="Social" />
-      <div className="pb-24 pt-safe mt-16 animate-fade-in">
+      <div className="pb-24 pt-safe mt-16 animate-fade-in transition-opacity duration-300 ease-in-out">
         <header className="px-6 mb-6">
           <div className="mt-4">
             <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-3 mb-2">
                 <TabsTrigger value="activity">Activité</TabsTrigger>
                 <TabsTrigger value="friends">Amis</TabsTrigger>
                 <TabsTrigger value="discover">Découvrir</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="activity" className="mt-4">
-                <ScrollArea className="h-[calc(100vh-200px)]">
+              <TabsContent value="activity" className="mt-4 animate-fade-in">
+                <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'}`}>
                   <ActivityFeed
                     activities={activities}
                     media={media}
@@ -167,7 +168,7 @@ const Social = () => {
                 </ScrollArea>
               </TabsContent>
               
-              <TabsContent value="friends">
+              <TabsContent value="friends" className="animate-fade-in">
                 <div className="flex flex-col items-center justify-center h-40 text-center px-6">
                   <p className="text-muted-foreground">
                     Fonctionnalité à venir dans la prochaine mise à jour
@@ -175,7 +176,7 @@ const Social = () => {
                 </div>
               </TabsContent>
               
-              <TabsContent value="discover">
+              <TabsContent value="discover" className="animate-fade-in">
                 <div className="flex flex-col items-center justify-center h-40 text-center px-6">
                   <p className="text-muted-foreground">
                     Fonctionnalité à venir dans la prochaine mise à jour

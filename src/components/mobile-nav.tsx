@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { SearchButton } from './navigation/SearchButton';
 import { NavItem } from './navigation/NavItem';
 import { navigationItems } from './navigation/config';
@@ -18,7 +18,7 @@ export function MobileNav() {
         {navigationItems.map((item) => (
           <div 
             key={item.path} 
-            className={`flex flex-col items-center justify-center transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center transition-all duration-300 ease-in-out ${
               item.special ? 'relative -mt-8' : ''
             }`}
           >
