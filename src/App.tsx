@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useVersionCheck } from "@/hooks/use-version-check";
+import { useOffline } from "@/hooks/use-offline";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
@@ -22,6 +23,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   useVersionCheck();
+  const isOffline = useOffline();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,6 +31,11 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          {isOffline && (
+            <div className="fixed bottom-0 left-0 right-0 bg-yellow-500 text-black py-2 px-4 text-center z-50">
+              Mode hors ligne - Certaines fonctionnalités ne sont pas disponibles
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/bibliotheque" element={<Bibliotheque />} />
