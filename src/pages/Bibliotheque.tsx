@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -17,11 +16,10 @@ import { LibraryFilters } from "@/components/library/library-filters";
 import { getUserMediaLibrary } from "@/services/media/operations";
 import { useQuery } from "@tanstack/react-query";
 
-// Define an extended Media type that includes properties from user_media
 interface UserMedia extends Omit<Media, 'status'> {
   added_at?: string;
   user_rating?: number;
-  status?: MediaStatus | string; // Make it compatible with both MediaStatus and string
+  status?: MediaStatus | string;
 }
 
 const Bibliotheque = () => {
@@ -32,13 +30,11 @@ const Bibliotheque = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Use React Query to fetch user's media library
   const { data: userMedia = [], isLoading, error } = useQuery({
     queryKey: ['userMediaLibrary'],
     queryFn: getUserMediaLibrary
   });
 
-  // Filtrer les médias en fonction du type sélectionné, du terme de recherche et des filtres
   const filteredMedia = userMedia
     .filter(media => filter === "all" || media.type === filter)
     .filter(media => showCompleted || media.status !== "completed")
@@ -60,7 +56,6 @@ const Bibliotheque = () => {
           return ((mediaB.user_rating || 0) - (mediaA.user_rating || 0));
         case "date":
         default:
-          // Use year as a fallback if added_at is not available
           if (mediaA.added_at && mediaB.added_at) {
             return new Date(mediaB.added_at).getTime() - new Date(mediaA.added_at).getTime();
           } else {
@@ -69,7 +64,6 @@ const Bibliotheque = () => {
       }
     });
 
-  // Gérer la redirection vers la recherche globale si aucun résultat n'est trouvé
   const handleEmptyResults = () => {
     if (searchTerm && filteredMedia.length === 0) {
       navigate(`/recherche?q=${encodeURIComponent(searchTerm)}&type=${filter === "all" ? "" : filter}`);
@@ -79,9 +73,9 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 pt-safe mt-28">
+      <div className="pb-24 pt-safe mt-16">
         <header className="px-6">
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex items-center gap-4 mt-2">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => {
@@ -182,4 +176,3 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
-
