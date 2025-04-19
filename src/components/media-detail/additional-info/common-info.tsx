@@ -1,33 +1,38 @@
 
 import React from "react";
-import { Calendar, Clock } from "lucide-react";
 import { InfoItem } from "./info-item";
 
-interface CommonInfoProps {
-  releaseDate?: string;
-  duration?: string;
-}
-
-export function CommonInfo({ releaseDate, duration }: CommonInfoProps) {
-  if (!releaseDate && !duration) return null;
-  
+export function CommonInfo({
+  releaseDate,
+  duration,
+  language,
+  metacritic,
+  renderWebsite,
+  website,
+}) {
   return (
-    <>
+    <div className="grid grid-cols-2 gap-3">
       {releaseDate && (
-        <InfoItem 
-          icon={<Calendar className="h-4 w-4 text-muted-foreground" />}
-          label="Date de sortie" 
-          value={releaseDate} 
-        />
+        <InfoItem label="Date de sortie" value={releaseDate} />
       )}
-      
       {duration && (
-        <InfoItem 
-          icon={<Clock className="h-4 w-4 text-muted-foreground" />}
-          label="Durée" 
-          value={duration} 
+        <InfoItem label="Durée" value={duration} />
+      )}
+      {language && (
+        <InfoItem label="Langue" value={language} />
+      )}
+      {metacritic && (
+        <InfoItem
+          label="Metacritic"
+          value={`${metacritic}/10`}
+          valueClassName={
+            metacritic >= 8 ? "text-green-500" :
+            metacritic >= 6 ? "text-yellow-500" :
+            "text-red-500"
+          }
         />
       )}
-    </>
+      {website && renderWebsite && renderWebsite()}
+    </div>
   );
 }

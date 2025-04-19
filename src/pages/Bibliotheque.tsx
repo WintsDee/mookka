@@ -21,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 interface UserMedia extends Media {
   added_at?: string;
   user_rating?: number;
-  status?: string;
+  status?: string | undefined; // Make status compatible with Media interface
 }
 
 const Bibliotheque = () => {
@@ -168,7 +168,6 @@ const Bibliotheque = () => {
                   <MediaCard
                     key={media.id}
                     media={media}
-                    onClick={() => navigate(`/media/${media.id}`)}
                   />
                 ))}
               </div>

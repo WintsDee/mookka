@@ -1,116 +1,65 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { MediaType } from "@/types";
-import { CommonInfo } from "./common-info";
+import { BookInfo } from "./book-info";
 import { FilmInfo } from "./film-info";
 import { SerieInfo } from "./serie-info";
-import { BookInfo } from "./book-info";
 import { GameInfo } from "./game-info";
+import { CommonInfo } from "./common-info";
+import { BadgesSection } from "./badges-section";
+import { ExternalLink } from "lucide-react";
 
-interface MediaAdditionalInfoCardProps {
-  mediaType: string;
-  releaseDate?: string;
-  duration?: string;
-  director?: string;
-  cast?: string[];
-  studio?: string;
-  publisher?: string;
-  developer?: string;
-  author?: string;
-  pages?: number;
-  seasons?: number;
-  episodes?: number;
-  platform?: string;
-  awards?: string[];
-  originalTitle?: string;
-  language?: string;
-  budget?: string;
-  revenue?: string;
-  productionCountries?: string;
-  creators?: string;
-  status?: string;
-  networks?: string;
-  nextEpisode?: string;
-  isbn?: string;
-  isbn10?: string;
-  printType?: string;
-  maturityRating?: string;
-  publishDate?: string;
-  esrbRating?: string;
-  metacritic?: number;
-  genres?: string;
-  website?: string;
-  tags?: string[];
-}
+export function MediaAdditionalInfoCard({
+  mediaType,
+  ...props
+}) {
+  // Get type-specific info component
+  const TypeInfo = () => {
+    switch (mediaType) {
+      case 'film':
+        return <FilmInfo {...props} />;
+      case 'serie':
+        return <SerieInfo {...props} />;
+      case 'book':
+        return <BookInfo {...props} />;
+      case 'game':
+        return <GameInfo {...props} />;
+      default:
+        return null;
+    }
+  };
 
-export function MediaAdditionalInfoCard(props: MediaAdditionalInfoCardProps) {
-  const { mediaType } = props;
-  
+  // Convert website URLs to clickable links
+  const renderWebsite = () => {
+    if (props.website) {
+      return (
+        <div className="info-item">
+          <span className="text-sm font-medium">Site web</span>
+          <a 
+            href={props.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary flex items-center gap-1"
+          >
+            {props.website.replace(/^https?:\/\/(www\.)?/, '')}
+            <ExternalLink size={12} />
+          </a>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="bg-secondary/40 border-border">
-      <CardContent className="p-4 space-y-3">
-        <CommonInfo 
-          releaseDate={props.releaseDate} 
-          duration={props.duration} 
-        />
-        
-        {mediaType === 'film' && (
-          <FilmInfo 
-            director={props.director}
-            studio={props.studio}
-            originalTitle={props.originalTitle}
-            language={props.language}
-            budget={props.budget}
-            revenue={props.revenue}
-            productionCountries={props.productionCountries}
-            cast={props.cast}
-            awards={props.awards}
-          />
+      <CardContent className="p-4 space-y-6">
+        <CommonInfo {...props} renderWebsite={renderWebsite} />
+        <TypeInfo />
+        {props.awards && props.awards.length > 0 && (
+          <BadgesSection title="Récompenses" badges={props.awards} />
         )}
-        
-        {mediaType === 'serie' && (
-          <SerieInfo 
-            creators={props.creators}
-            seasons={props.seasons}
-            episodes={props.episodes}
-            status={props.status}
-            networks={props.networks}
-            originalTitle={props.originalTitle}
-            language={props.language}
-            nextEpisode={props.nextEpisode}
-            cast={props.cast}
-            awards={props.awards}
-          />
-        )}
-        
-        {mediaType === 'book' && (
-          <BookInfo 
-            author={props.author}
-            publisher={props.publisher}
-            pages={props.pages}
-            isbn={props.isbn}
-            isbn10={props.isbn10}
-            language={props.language}
-            printType={props.printType}
-            maturityRating={props.maturityRating}
-            publishDate={props.publishDate}
-            awards={props.awards}
-          />
-        )}
-        
-        {mediaType === 'game' && (
-          <GameInfo 
-            developer={props.developer}
-            publisher={props.publisher}
-            platform={props.platform}
-            esrbRating={props.esrbRating}
-            metacritic={props.metacritic}
-            genres={props.genres}
-            website={props.website}
-            tags={props.tags}
-            awards={props.awards}
-          />
+        {props.tags && props.tags.length > 0 && (
+          <BadgesSection title="Tags" badges={props.tags} />
         )}
       </CardContent>
     </Card>
