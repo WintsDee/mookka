@@ -89,14 +89,23 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     return type as "film" | "serie" | "book" | "game";
   };
 
-  // Ensure we're using the correct media type for the URL
+  // Ensure we're using the correct media type and ID for the URL
   const mediaType = type || "film";
-  const mediaId = id?.toString() || "";
+  // Ensure ID is always a string, and for externalId cases, use that ID
+  const mediaId = media.externalId?.toString() || id?.toString() || "";
+  
+  // Create a safe state object with search params if from is provided
+  const fromState = from 
+    ? { 
+        from: from,
+        search: window.location.search
+      } 
+    : undefined;
 
   return (
     <Link 
       to={`/media/${mediaType}/${mediaId}`} 
-      state={from ? { from } : undefined}
+      state={fromState}
       className="block animate-fade-in"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>

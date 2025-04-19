@@ -71,7 +71,7 @@ export const SearchResults = ({
               key={media.id} 
               media={media} 
               size="medium" 
-              from={location.pathname + searchParams}
+              from={from}
             />
           ))}
         </div>

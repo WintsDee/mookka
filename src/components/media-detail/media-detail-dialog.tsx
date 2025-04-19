@@ -42,13 +42,11 @@ export function MediaDetailDialog({
             pathname: previousPath,
             search: searchParams
           }, { 
-            replace: true,
-            state: location.state 
+            replace: true
           });
         } else {
-          navigate(location.state.from, { 
-            replace: true,
-            state: location.state 
+          navigate(previousPath, { 
+            replace: true
           });
         }
       } else {

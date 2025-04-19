@@ -23,6 +23,7 @@ const MediaDetail = () => {
       if (type && id) {
         setIsLoading(true);
         try {
+          console.log(`Fetching media details for ${type}/${id}`);
           const mediaData = await getMediaById(type as MediaType, id);
           
           if (mediaData && mediaData.description) {
@@ -35,6 +36,7 @@ const MediaDetail = () => {
             };
           }
           
+          console.log("Media data received:", mediaData);
           setMedia(mediaData);
         } catch (error) {
           console.error("Erreur lors de la récupération du média:", error);
@@ -68,7 +70,12 @@ const MediaDetail = () => {
       <Background>
         <div className="flex flex-col items-center justify-center h-screen">
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
-          <button onClick={() => navigate(-1)}>Retour</button>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Retour
+          </button>
         </div>
       </Background>
     );
