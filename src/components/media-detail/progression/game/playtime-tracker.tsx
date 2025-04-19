@@ -5,10 +5,15 @@ import { Timer } from "lucide-react";
 
 interface PlaytimeTrackerProps {
   playtime: number;
-  onPlaytimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  estimatedTime?: number | null;
 }
 
-export function PlaytimeTracker({ playtime, onPlaytimeChange }: PlaytimeTrackerProps) {
+export function PlaytimeTracker({ 
+  playtime, 
+  onChange,
+  estimatedTime
+}: PlaytimeTrackerProps) {
   return (
     <div>
       <label htmlFor="playtime" className="block text-sm text-muted-foreground mb-1">
@@ -20,11 +25,16 @@ export function PlaytimeTracker({ playtime, onPlaytimeChange }: PlaytimeTrackerP
           type="number"
           min={0}
           value={playtime}
-          onChange={onPlaytimeChange}
+          onChange={onChange}
           className="w-full"
         />
         <Timer className="h-4 w-4 ml-2 text-muted-foreground" />
       </div>
+      {estimatedTime && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Temps estimé pour terminer le jeu: {estimatedTime} heures
+        </p>
+      )}
     </div>
   );
 }

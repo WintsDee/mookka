@@ -6,12 +6,12 @@ import { Trophy } from "lucide-react";
 
 interface CompletionTrackerProps {
   completionPercentage: number;
-  onCompletionChange: (value: number[]) => void;
+  onChange: (value: number[]) => void;
 }
 
 export function CompletionTracker({ 
   completionPercentage, 
-  onCompletionChange 
+  onChange 
 }: CompletionTrackerProps) {
   return (
     <div className="space-y-2">
@@ -30,7 +30,7 @@ export function CompletionTracker({
           value={[completionPercentage]}
           max={100}
           step={1}
-          onValueChange={onCompletionChange}
+          onValueChange={onChange}
           className="py-2"
         />
         

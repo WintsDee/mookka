@@ -7,20 +7,20 @@ import { Progress } from "@/components/ui/progress";
 interface PageTrackerProps {
   currentPage: number;
   totalPages: number;
-  onCurrentPageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onCurrentPageBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export function PageTracker({ 
   currentPage, 
   totalPages, 
-  onCurrentPageChange, 
-  onCurrentPageBlur 
+  onChange, 
+  onBlur 
 }: PageTrackerProps) {
   const progressPercentage = totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
 
   return (
-    <div className="bg-card/30 backdrop-blur-sm border border-border/40 rounded-lg p-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center mb-4">
         <BookOpen className="h-5 w-5 mr-2 text-primary" />
         <span className="font-medium">Progression de lecture</span>
@@ -37,8 +37,8 @@ export function PageTracker({
             min={0}
             max={totalPages}
             value={currentPage}
-            onChange={onCurrentPageChange}
-            onBlur={onCurrentPageBlur}
+            onChange={onChange}
+            onBlur={onBlur}
             className="w-full"
           />
         </div>

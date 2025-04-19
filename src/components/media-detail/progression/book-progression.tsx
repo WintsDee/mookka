@@ -23,6 +23,11 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
     updateNotes
   } = useBookProgression(progression, onUpdate, totalPages);
 
+  const handlePageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPage = parseInt(e.target.value);
+    updateCurrentPage(newPage);
+  };
+
   return (
     <div className="space-y-6">
       <BookStatusSelector
@@ -34,7 +39,7 @@ export function BookProgression({ mediaDetails, progression, onUpdate }: BookPro
         <PageTracker
           currentPage={currentPage}
           totalPages={totalPages}
-          onChange={updateCurrentPage}
+          onChange={handlePageChange}
         />
         
         <NotesTextarea 

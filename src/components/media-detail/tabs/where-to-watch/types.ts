@@ -1,6 +1,6 @@
 
 export type PlatformType = "streaming" | "purchase" | "rent";
-export type PlatformCategory = "subscription" | "vod" | "free";
+export type PlatformCategory = "subscription" | "vod" | "free" | "store";
 export type PricingType = "subscription" | "pay-per-view" | "freemium";
 
 export interface PlatformPricing {
