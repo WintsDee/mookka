@@ -48,9 +48,8 @@ ${contact ? `## Contact Information\n${contact}` : ''}
 
     console.log(`Creating GitHub issue with title: ${issueTitle}`);
 
-    // Utilisez votre propre nom d'utilisateur et repo GitHub ici
-    // Exemple: votreUsername/votreRepo
-    const repo = 'votre-username/votre-repo'; 
+    // Remplacez cette ligne avec votre nom d'utilisateur et repo GitHub réels
+    const repo = 'mookka/feedback'; 
 
     // Send request to GitHub API
     const response = await fetch(`https://api.github.com/repos/${repo}/issues`, {
