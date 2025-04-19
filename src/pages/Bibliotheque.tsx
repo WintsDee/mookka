@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -80,7 +81,7 @@ const Bibliotheque = () => {
       <MobileHeader title="Ma Bibliothèque" />
       <div className="pb-24 pt-safe mt-28">
         <header className="px-6">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mt-4">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => {
@@ -181,3 +182,4 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
+
