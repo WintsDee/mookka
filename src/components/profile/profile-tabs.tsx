@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -6,7 +5,7 @@ import { CollectionGrid } from "@/components/collections/collection-grid";
 import { MediaCard } from "@/components/media-card";
 import { Collection } from "@/types/collection";
 import { Media } from "@/types";
-import { BookmarkCheck, MessageSquare, Star } from "lucide-react";
+import { BookmarkCheck, MessageSquare, Heart } from "lucide-react";
 
 interface ProfileTabsProps {
   collections: Collection[];
@@ -26,9 +25,9 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
           <MessageSquare size={14} />
           <span>Critiques</span>
         </TabsTrigger>
-        <TabsTrigger value="favorites" className="flex gap-1 items-center justify-center">
-          <Star size={14} />
-          <span>Favoris</span>
+        <TabsTrigger value="likes" className="flex gap-1 items-center justify-center">
+          <Heart size={14} />
+          <span>J'aime</span>
         </TabsTrigger>
       </TabsList>
       
@@ -64,10 +63,10 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
         </ScrollArea>
       </TabsContent>
       
-      <TabsContent value="favorites">
+      <TabsContent value="likes">
         <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Star size={18} className="text-primary" />
-          Récemment ajoutés
+          <Heart size={18} className="text-primary" />
+          Médias que j'aime
         </h3>
         <ScrollArea className="h-[calc(100vh-450px)] overflow-y-auto pr-2">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 pb-6">
@@ -78,7 +77,7 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
             ) : (
               <div className="col-span-2 flex flex-col items-center justify-center h-40 text-center px-6">
                 <p className="text-muted-foreground">
-                  Vous n'avez pas encore de médias favoris.
+                  Vous n'avez pas encore aimé de médias.
                 </p>
               </div>
             )}
