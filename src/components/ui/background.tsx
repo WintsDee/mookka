@@ -10,7 +10,7 @@ interface BackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Background = ({
   children,
-  pattern = true,
+  pattern = false, // Changed default to false
   noScroll = false,
   className,
   ...props
