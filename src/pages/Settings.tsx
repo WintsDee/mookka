@@ -9,6 +9,7 @@ import { NotificationsSection } from "@/components/settings/notifications-sectio
 import { PrivacySection } from "@/components/settings/privacy-section";
 import { HelpSection } from "@/components/settings/help-section";
 import { AboutSection } from "@/components/settings/about-section";
+import { SupportSection } from "@/components/settings/support-section";
 
 const Settings = () => {
   return (
@@ -18,6 +19,11 @@ const Settings = () => {
         <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="px-6 py-4">
             <div className="space-y-6">
+              {/* Support & Feedback */}
+              <SupportSection />
+              
+              <Separator />
+              
               {/* Notifications */}
               <NotificationsSection />
               
