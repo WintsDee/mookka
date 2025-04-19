@@ -13,28 +13,28 @@ interface GameProgressionProps {
 
 export function GameProgression({ mediaDetails, progression, onUpdate }: GameProgressionProps) {
   const {
+    status,
     completionPercentage,
     playtime,
-    status,
+    updateStatus,
     updateCompletionPercentage,
-    updatePlaytime,
-    updateStatus
+    updatePlaytime
   } = useGameProgression(progression, onUpdate);
 
   return (
     <div className="space-y-6">
-      <GameStatusSelector
-        status={status}
-        onStatusChange={updateStatus}
+      <GameStatusSelector 
+        status={status} 
+        onStatusChange={updateStatus} 
       />
-
-      <div className="bg-card/30 backdrop-blur-sm border border-border/40 rounded-lg p-4 space-y-4">
-        <CompletionTracker
+      
+      <div className="bg-card/30 backdrop-blur-sm border border-border/40 rounded-lg p-4 space-y-6">
+        <CompletionTracker 
           completionPercentage={completionPercentage}
           onCompletionChange={updateCompletionPercentage}
         />
         
-        <PlaytimeTracker
+        <PlaytimeTracker 
           playtime={playtime}
           onPlaytimeChange={updatePlaytime}
         />
