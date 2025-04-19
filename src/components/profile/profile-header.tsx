@@ -3,7 +3,7 @@ import React from "react";
 import { Profile } from "@/hooks/use-profile";
 import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
 import { Separator } from "@/components/ui/separator";
-import { Users, Heart, Settings, Edit, Image } from "lucide-react";
+import { Users, Heart, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -74,19 +74,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
           </div>
         )}
         
-        {/* Settings button in top right */}
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          <Link to="/settings">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="bg-background/20 hover:bg-background/30 backdrop-blur-sm text-white"
-            >
-              <Settings size={isMobile ? 16 : 18} />
-            </Button>
-          </Link>
-        </div>
-        
         <div className="absolute bottom-0 left-0 transform translate-y-1/2 ml-6">
           <div 
             className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300 relative cursor-pointer"
@@ -104,7 +91,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
             {/* Edit Avatar overlay button */}
             {isAuthenticated && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-                <Edit size={18} className="text-white" />
+                <Image size={18} className="text-white" />
               </div>
             )}
           </div>
