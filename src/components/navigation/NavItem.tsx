@@ -14,10 +14,10 @@ export const NavItem = ({ path, icon: Icon, label, isActive }: NavItemProps) => 
     <div className="flex flex-col items-center justify-center w-full">
       <Icon 
         size={22} 
-        className={`transition-all duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+        className={`transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
       />
       <span 
-        className={`text-xs mt-1.5 transition-all duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
+        className={`text-xs mt-1.5 transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
       >
         {label}
       </span>

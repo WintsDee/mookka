@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -15,7 +14,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Activity type representing a user's interaction with media
 interface Activity {
   id: string;
   user: {
@@ -32,7 +30,6 @@ interface Activity {
   timestamp: string;
 }
 
-// Basic profile interface to handle user data
 interface UserProfile {
   id: string;
   full_name: string | null;
@@ -45,12 +42,10 @@ const Social = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Fetch recent user activity
   useEffect(() => {
     const fetchActivities = async () => {
       setLoading(true);
       try {
-        // First get recently added user media
         const { data: userMedia, error: userMediaError } = await supabase
           .from('user_media')
           .select('id, user_id, media_id, status, added_at')
@@ -65,7 +60,6 @@ const Social = () => {
           return;
         }
 
-        // Get media details
         const mediaIds = userMedia.map(item => item.media_id);
         const { data: mediaData, error: mediaError } = await supabase
           .from('media')
@@ -74,7 +68,6 @@ const Social = () => {
 
         if (mediaError) throw mediaError;
 
-        // Create a map of media by ID
         const mediaMap: Record<string, Media> = {};
         mediaData?.forEach(item => {
           mediaMap[item.id] = {
@@ -90,10 +83,8 @@ const Social = () => {
         });
         setMedia(mediaMap);
 
-        // Get user profiles
         const userIds = [...new Set(userMedia.map(item => item.user_id))];
         
-        // Create default profiles as fallback
         const defaultProfiles: Record<string, UserProfile> = {};
         userIds.forEach(id => {
           defaultProfiles[id] = {
@@ -103,10 +94,8 @@ const Social = () => {
           };
         });
         
-        // Create a map of profiles by ID using the default profiles
         const profilesMap: Record<string, any> = { ...defaultProfiles };
         
-        // Create activities from the data
         const activitiesData = userMedia.map(item => {
           const mediaItem = mediaMap[item.media_id];
           const profileItem = profilesMap[item.user_id] || {
@@ -304,7 +293,7 @@ const Social = () => {
   };
 
   return (
-    <Background className="animate-fade-in">
+    <Background>
       <MobileHeader title="Social" />
       <div className="pb-24 pt-safe mt-16">
         <header className="px-6 mb-6">

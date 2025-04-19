@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -90,7 +89,7 @@ const Profil = () => {
   };
 
   return (
-    <Background className="animate-fade-in">
+    <Background>
       <MobileHeader title="Profil" />
       <div className="pt-safe pb-24 mt-16">
         {loading ? (
