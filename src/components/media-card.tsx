@@ -89,9 +89,13 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     return type as "film" | "serie" | "book" | "game";
   };
 
+  // Ensure we're using the correct media type for the URL
+  const mediaType = type || "film";
+  const mediaId = id?.toString() || "";
+
   return (
     <Link 
-      to={`/media/${type}/${id}`} 
+      to={`/media/${mediaType}/${mediaId}`} 
       state={from ? { from } : undefined}
       className="block animate-fade-in"
     >

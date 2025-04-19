@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -99,24 +100,22 @@ const Profil = () => {
               onUpdateProfile={updateProfile} 
             />
             
-            <ScrollArea className="h-[calc(100vh-350px)]">
-              <div className="px-6 pb-6">
-                <UserStats stats={stats} />
-                
-                <div className="mt-6">
-                  <ProfileTabs 
-                    collections={myCollections} 
-                    loadingCollections={loadingMyCollections}
-                    favoriteMedia={favoriteMedia}
-                  />
-                </div>
-                
-                <ProfileActions 
-                  isAuthenticated={isAuthenticated} 
-                  onLogout={handleLogout} 
+            <div className="px-6 pb-24">
+              <UserStats stats={stats} />
+              
+              <div className="mt-6">
+                <ProfileTabs 
+                  collections={myCollections} 
+                  loadingCollections={loadingMyCollections}
+                  favoriteMedia={favoriteMedia}
                 />
               </div>
-            </ScrollArea>
+              
+              <ProfileActions 
+                isAuthenticated={isAuthenticated} 
+                onLogout={handleLogout} 
+              />
+            </div>
           </>
         )}
       </div>
