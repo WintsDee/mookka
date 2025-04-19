@@ -73,9 +73,9 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 pt-safe mt-16">
+      <div className="pb-24 pt-safe mt-20">
         <header className="px-6">
-          <div className="flex items-center gap-4 mt-2">
+          <div className="flex items-center gap-4 mt-3">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => {
