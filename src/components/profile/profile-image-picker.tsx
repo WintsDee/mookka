@@ -1,29 +1,14 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Upload, Check, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Upload, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Predefined Unsplash images that are free to use
-const UNSPLASH_IMAGES = [
-  "https://images.unsplash.com/photo-1579547621869-0f6d142906fc?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1601643157091-ce5c665179ab?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1569003339405-ea396a5a8a90?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1642479755015-20fa45ea1e2b?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1535930749574-1399327ce78f?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=500&auto=format&fit=crop",
-];
+import { UNSPLASH_IMAGES } from "./image-picker/constants";
+import { SearchTab } from "./image-picker/search-tab";
+import { GalleryTab } from "./image-picker/gallery-tab";
 
 interface ProfileImagePickerProps {
   value: string;
@@ -39,7 +24,6 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
 
-  // Simple search function filtering from predefined images
   const handleSearch = () => {
     if (!searchQuery.trim()) {
       setSearchResults(UNSPLASH_IMAGES);
@@ -53,21 +37,14 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
     setSearchResults(results.length ? results : UNSPLASH_IMAGES);
   };
 
-  // Mock function to check if image is appropriate
-  // In a real app, this would call an AI content moderation service
   const checkImageAppropriateness = async (imageUrl: string): Promise<boolean> => {
     setIsChecking(true);
     
     try {
-      // Simulate API call with a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For this example, we assume all predefined images are appropriate
-      // In a real app, use an API like Google Cloud Vision API or similar
       const isAppropriate = UNSPLASH_IMAGES.includes(imageUrl) || 
-                            imageUrl === DEFAULT_AVATAR || 
-                            imageUrl === DEFAULT_COVER;
-      
+                           imageUrl === DEFAULT_AVATAR || 
+                           imageUrl === DEFAULT_COVER;
       return isAppropriate;
     } catch (error) {
       console.error("Error checking image:", error);
@@ -75,10 +52,6 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
     } finally {
       setIsChecking(false);
     }
-  };
-
-  const handleImageSelect = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
   };
 
   const handleConfirmSelection = async () => {
@@ -142,71 +115,23 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
               <TabsTrigger value="search" className="flex-1">Rechercher</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="gallery" className="mt-4">
-              <ScrollArea className="h-[300px]">
-                <div className="grid grid-cols-2 gap-3">
-                  {UNSPLASH_IMAGES.map((img, idx) => (
-                    <div 
-                      key={idx}
-                      className={`
-                        relative aspect-square rounded-md overflow-hidden cursor-pointer
-                        ${selectedImage === img ? 'ring-2 ring-primary' : ''}
-                      `}
-                      onClick={() => handleImageSelect(img)}
-                    >
-                      <img 
-                        src={img}
-                        alt={`Image ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {selectedImage === img && (
-                        <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                          <Check size={16} className="text-white" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+            <TabsContent value="gallery">
+              <GalleryTab
+                images={UNSPLASH_IMAGES}
+                selectedImage={selectedImage}
+                onImageSelect={setSelectedImage}
+              />
             </TabsContent>
             
-            <TabsContent value="search" className="mt-4">
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Rechercher une image..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Button onClick={handleSearch}>
-                  <Search size={16} />
-                </Button>
-              </div>
-              
-              <ScrollArea className="h-[250px]">
-                <div className="grid grid-cols-2 gap-3">
-                  {searchResults.map((img, idx) => (
-                    <div 
-                      key={idx}
-                      className={`
-                        relative aspect-square rounded-md overflow-hidden cursor-pointer
-                        ${selectedImage === img ? 'ring-2 ring-primary' : ''}
-                      `}
-                      onClick={() => handleImageSelect(img)}
-                    >
-                      <img 
-                        src={img}
-                        alt={`Image ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {selectedImage === img && (
-                        <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                          <Check size={16} className="text-white" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+            <TabsContent value="search">
+              <SearchTab
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onSearch={handleSearch}
+                searchResults={searchResults}
+                selectedImage={selectedImage}
+                onImageSelect={setSelectedImage}
+              />
             </TabsContent>
           </Tabs>
           
