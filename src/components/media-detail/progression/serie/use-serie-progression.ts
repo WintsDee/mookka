@@ -28,10 +28,17 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
         acc + (season.episode_count || 0), 0);
       setTotalEpisodes(total);
       
-      // Fix for the first TypeScript error - ensure it's a number
-      const watched = Object.values(initialProgression?.watched_episodes || {})
-        .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
-      setWatchedEpisodes(watched);
+      // Calculate watched episodes count with proper type handling
+      const watchedEpisodesObj = initialProgression?.watched_episodes || {};
+      const watchedCount = Object.values(watchedEpisodesObj)
+        .reduce((acc: number, episodes: any) => {
+          // Ensure we're only adding the length if episodes is an array
+          const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
+          return acc + episodeCount;
+        }, 0);
+      
+      // Now we explicitly have a number
+      setWatchedEpisodes(watchedCount);
     }
   }, [mediaDetails, initialProgression]);
 
@@ -41,10 +48,17 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
     }
     setProgression(initialProgression || {});
     
-    // Fix for the second TypeScript error - ensure it's a number
-    const watched = Object.values(initialProgression?.watched_episodes || {})
-      .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
-    setWatchedEpisodes(watched);
+    // Calculate watched episodes count with proper type handling
+    const watchedEpisodesObj = initialProgression?.watched_episodes || {};
+    const watchedCount = Object.values(watchedEpisodesObj)
+      .reduce((acc: number, episodes: any) => {
+        // Ensure we're only adding the length if episodes is an array
+        const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
+        return acc + episodeCount;
+      }, 0);
+    
+    // Now we explicitly have a number
+    setWatchedEpisodes(watchedCount);
   }, [initialProgression]);
 
   const toggleSeason = (seasonNumber: number, episodeCount: number) => {
@@ -65,9 +79,13 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       );
     }
     
-    // Fix for the third TypeScript error - ensure it's a number
+    // Calculate the total watched count with proper type handling
     const totalWatchedCount = Object.values(newWatchedEpisodes)
-      .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
+      .reduce((acc: number, episodes: any) => {
+        // Ensure we're only adding the length if episodes is an array
+        const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
+        return acc + episodeCount;
+      }, 0);
     
     // Mise à jour du statut en fonction du nombre d'épisodes regardés
     let newStatus = status;
