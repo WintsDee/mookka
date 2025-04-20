@@ -1,4 +1,6 @@
-export const DEFAULT_AVATARS = [
+
+// Define the base set of default avatars
+const BASE_AVATARS = [
   // Films & Cinéma
   "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&auto=format&fit=crop", // Popcorn
   "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=500&auto=format&fit=crop", // Cinéma
@@ -180,7 +182,7 @@ export const DEFAULT_AVATARS = [
   "https://images.unsplash.com/photo-1603665185348-6d7c36b34e95?w=500&auto=format&fit=crop", // Digital art
 ];
 
-// Automatically generate the additional avatars by adding more diverse, high-quality images
+// Automatically generate additional avatars by adding more diverse, high-quality images
 // from Unsplash that match the app's entertainment and cultural themes
 const generateAdditionalAvatars = () => {
   const additionalAvatars = [];
@@ -203,8 +205,14 @@ const generateAdditionalAvatars = () => {
   return additionalAvatars;
 };
 
-// Combine the predefined and generated avatars
-export const DEFAULT_AVATARS = [
-  ...DEFAULT_AVATARS,
-  ...generateAdditionalAvatars()
-];
+// Generate the additional avatars and combine with the base avatars
+const additionalAvatars = generateAdditionalAvatars();
+
+// Export the full collection of default avatars
+export const DEFAULT_AVATARS = [...BASE_AVATARS, ...additionalAvatars];
+
+// Helper function to get a random avatar from the collection
+export const getRandomAvatar = () => {
+  const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
+  return DEFAULT_AVATARS[randomIndex];
+};
