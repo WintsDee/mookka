@@ -28,17 +28,7 @@ export function useProfile() {
   const { toast } = useToast();
   
   useEffect(() => {
-    // Vérifier s'il y a une session existante
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      if (data.session?.user) {
-        fetchProfile(data.session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-    
-    // Écouter les changements d'état d'authentification
+    // Configurer le listener d'authentification avant de vérifier la session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -50,6 +40,16 @@ export function useProfile() {
         }
       }
     );
+    
+    // Vérifier s'il y a une session existante
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session?.user) {
+        fetchProfile(data.session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
     
     return () => subscription.unsubscribe();
   }, []);
