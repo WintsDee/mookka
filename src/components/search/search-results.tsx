@@ -68,6 +68,7 @@ export const SearchResults = ({
               key={media.id} 
               media={media} 
               size="medium"
+              from={from}
             />
           ))}
         </div>

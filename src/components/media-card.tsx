@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
+  const location = useLocation();
   
   const sizeClasses = {
     small: "w-32 h-48",
@@ -95,7 +96,8 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   return (
     <Link 
-      to={`/media/${mediaType}/${mediaId}`} 
+      to={`/media/${mediaType}/${mediaId}`}
+      state={{ from: location.pathname, search: location.search }}
       className="block animate-fade-in"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
