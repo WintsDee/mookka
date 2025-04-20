@@ -21,6 +21,7 @@ const MediaDetail = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
@@ -31,34 +32,48 @@ const MediaDetail = () => {
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
-      if (type && id) {
-        setIsLoading(true);
-        try {
-          const mediaData = await getMediaById(type as MediaType, id);
-          
-          // Convertir les <br> en saut de ligne pour le détail du média
-          if (mediaData && mediaData.description) {
-            mediaData.description = mediaData.description.replace(/<br>/g, '\n');
-          }
-          
-          // Vérifier si la description est en anglais et tenter de trouver une version française
-          if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
-            mediaData.locale_descriptions = {
-              'fr': mediaData.description_raw // Utiliser la description brute comme fallback
-            };
-          }
-          
-          setMedia(mediaData);
-        } catch (error) {
-          console.error("Erreur lors de la récupération du média:", error);
-          toast({
-            title: "Erreur",
-            description: "Impossible de récupérer les détails du média",
-            variant: "destructive",
-          });
-        } finally {
-          setIsLoading(false);
+      if (!type || !id) {
+        setError("Type de média ou identifiant manquant");
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        console.log(`Fetching media details for ${type}/${id}`);
+        const mediaData = await getMediaById(type as MediaType, id);
+        
+        if (!mediaData) {
+          throw new Error("Média non trouvé");
         }
+        
+        console.log("Media data received:", mediaData);
+        
+        // Convertir les <br> en saut de ligne pour le détail du média
+        if (mediaData.description) {
+          mediaData.description = mediaData.description.replace(/<br>/g, '\n');
+        }
+        
+        // Vérifier si la description est en anglais et tenter de trouver une version française
+        if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
+          mediaData.locale_descriptions = {
+            'fr': mediaData.description_raw // Utiliser la description brute comme fallback
+          };
+        }
+        
+        setMedia(mediaData);
+      } catch (error) {
+        console.error("Erreur lors de la récupération du média:", error);
+        setError("Impossible de récupérer les détails du média");
+        toast({
+          title: "Erreur",
+          description: "Impossible de récupérer les détails du média",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -96,20 +111,26 @@ const MediaDetail = () => {
     );
   }
 
-  if (!media) {
+  if (error || !media) {
     return (
       <Background>
         <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
+          <p className="text-muted-foreground mb-4">{error || "Les détails de ce média ne sont pas disponibles."}</p>
           <Button onClick={handleGoBack}>Retour</Button>
         </div>
       </Background>
     );
   }
 
+  // Safe conversion with more detailed logging
+  console.log("About to format media details", { type, mediaObject: media });
   const formattedMedia = formatMediaDetails(media, type as MediaType);
+  console.log("Formatted media details", formattedMedia);
+  
   const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
+  console.log("Additional info", additionalInfo);
 
   return (
     <Background>

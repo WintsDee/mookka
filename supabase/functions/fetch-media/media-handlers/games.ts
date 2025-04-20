@@ -18,7 +18,26 @@ export const fetchTrendingGames = async (apiKey: string) => {
 }
 
 export const fetchGameById = async (apiKey: string, id: string) => {
-  const apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`
-  const response = await fetch(apiUrl)
-  return await response.json()
+  try {
+    const apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`
+    console.log(`Fetching game data from: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl)
+    
+    if (!response.ok) {
+      console.error(`API error: ${response.status} ${response.statusText}`);
+      throw new Error(`API responded with status ${response.status}`);
+    }
+    
+    const data = await response.json()
+    console.log(`Game data received successfully for ID ${id}`, { 
+      hasId: !!data.id, 
+      name: data.name 
+    });
+    
+    return data;
+  } catch (error) {
+    console.error(`Error fetching game with ID ${id}:`, error);
+    throw error;
+  }
 }

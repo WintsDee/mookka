@@ -1,14 +1,25 @@
-
 import { MediaType } from "@/types";
 
 export function formatMediaDetails(media: any, type: MediaType): any {
   let formattedMedia: any = {};
   
+  // Check if media is null or undefined before accessing its properties
+  if (!media) {
+    console.error('Media object is undefined or null in formatMediaDetails');
+    return {
+      id: '',
+      title: 'Média non disponible',
+      coverImage: '/placeholder.svg',
+      type: type,
+      description: 'Informations non disponibles'
+    };
+  }
+  
   switch (type) {
     case 'film':
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.title || media.original_title,
+        id: media.id ? media.id.toString() : '',
+        title: media.title || media.original_title || 'Sans titre',
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.release_date ? media.release_date.substring(0, 4) : null,
         rating: normalizeRating(media.vote_average, 10),
@@ -21,8 +32,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       break;
     case 'serie':
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.name || media.original_name,
+        id: media.id ? media.id.toString() : '',
+        title: media.name || media.original_name || 'Sans titre',
         coverImage: media.poster_path ? `https://image.tmdb.org/t/p/original${media.poster_path}` : '/placeholder.svg',
         year: media.first_air_date ? media.first_air_date.substring(0, 4) : null,
         rating: normalizeRating(media.vote_average, 10),
@@ -34,8 +45,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       break;
     case 'book':
       formattedMedia = {
-        id: media.id,
-        title: media.volumeInfo?.title,
+        id: media.id ? media.id.toString() : '',
+        title: media.volumeInfo?.title || 'Sans titre',
         coverImage: media.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
         year: media.volumeInfo?.publishedDate ? media.volumeInfo.publishedDate.substring(0, 4) : null,
         genres: media.volumeInfo?.categories || [],
@@ -55,8 +66,8 @@ export function formatMediaDetails(media: any, type: MediaType): any {
       }
       
       formattedMedia = {
-        id: media.id.toString(),
-        title: media.name,
+        id: media.id ? media.id.toString() : '',
+        title: media.name || 'Sans titre',
         coverImage: media.background_image || '/placeholder.svg',
         year: media.released ? media.released.substring(0, 4) : null,
         rating: normalizeRating(media.rating, 5), // RAWG uses rating out of 5
@@ -88,6 +99,12 @@ function normalizeRating(rating: number | undefined, sourceScale: number): numbe
 }
 
 export function getAdditionalMediaInfo(media: any, formattedMedia: any, type: MediaType): any {
+  // Early return if media or formattedMedia is missing
+  if (!media || !formattedMedia) {
+    console.error('Media or formattedMedia is undefined in getAdditionalMediaInfo');
+    return {};
+  }
+
   const info: any = {
     mediaType: type,
     releaseDate: formattedMedia.year ? `${formattedMedia.year}` : undefined,
