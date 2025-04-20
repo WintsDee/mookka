@@ -28,11 +28,12 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
         acc + (season.episode_count || 0), 0);
       setTotalEpisodes(total);
       
+      // Fix for the first TypeScript error - ensure it's a number
       const watched = Object.values(initialProgression?.watched_episodes || {})
-        .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
+        .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
       setWatchedEpisodes(watched);
     }
-  }, [mediaDetails]);
+  }, [mediaDetails, initialProgression]);
 
   useEffect(() => {
     if (initialProgression?.status) {
@@ -40,8 +41,9 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
     }
     setProgression(initialProgression || {});
     
+    // Fix for the second TypeScript error - ensure it's a number
     const watched = Object.values(initialProgression?.watched_episodes || {})
-      .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
+      .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
     setWatchedEpisodes(watched);
   }, [initialProgression]);
 
@@ -63,8 +65,9 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       );
     }
     
+    // Fix for the third TypeScript error - ensure it's a number
     const totalWatchedCount = Object.values(newWatchedEpisodes)
-      .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
+      .reduce((acc: number, episodes: any) => acc + (Array.isArray(episodes) ? episodes.length : 0), 0);
     
     // Mise à jour du statut en fonction du nombre d'épisodes regardés
     let newStatus = status;
