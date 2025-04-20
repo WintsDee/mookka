@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { MediaType, MediaStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
 
   // Create a default progression based on media type
   const createDefaultProgression = (type: MediaType) => {
-    // Define default statuses based on media type
+    // Define initial statuses based on media type
     let defaultStatus: MediaStatus;
     
     switch (type) {
