@@ -14,6 +14,7 @@ const MediaDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [media, setMedia] = useState<any>(null);
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,6 +32,12 @@ const MediaDetail = () => {
           
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
+          }
+          
+          if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
+            mediaData.locale_descriptions = {
+              'fr': mediaData.description_raw
+            };
           }
           
           console.log("Media data received:", mediaData);
@@ -53,15 +60,11 @@ const MediaDetail = () => {
     fetchMediaDetails();
   }, [type, id, toast, navigate]);
 
-  const handleClose = () => {
-    // Check if we came from somewhere specific
-    if (location.state && location.state.from) {
-      navigate(location.state.from, { 
-        state: {}, 
-        replace: true 
-      });
-    } else {
-      navigate(-1);
+  // Handle dialog closing
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      // If we close the dialog, navigate back (handled by the dialog component)
     }
   };
 
@@ -97,17 +100,15 @@ const MediaDetail = () => {
 
   return (
     <Background>
-      <div className="h-full">
-        <MediaDetailDialog
-          open={true}
-          onOpenChange={() => handleClose()}
-          media={media}
-          formattedMedia={formattedMedia}
-          type={type as MediaType}
-          id={id!}
-          additionalInfo={additionalInfo}
-        />
-      </div>
+      <MediaDetailDialog
+        open={dialogOpen}
+        onOpenChange={handleDialogOpenChange}
+        media={media}
+        formattedMedia={formattedMedia}
+        type={type as MediaType}
+        id={id!}
+        additionalInfo={additionalInfo}
+      />
     </Background>
   );
 };

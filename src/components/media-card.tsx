@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +25,6 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
-  const location = useLocation();
   
   const sizeClasses = {
     small: "w-32 h-48",
@@ -92,12 +91,23 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   // Ensure we're using the correct media type and ID for the URL
   const mediaType = type || "film";
-  const mediaId = id?.toString() || "";
+  // Use id as a string, external ID if available
+  const mediaId = media.externalId || id?.toString() || "";
+  
+  // Create state object with current location for back navigation
+  const currentPath = window.location.pathname;
+  const currentSearch = window.location.search;
+  
+  // Create a state object with the current path for back navigation
+  const fromState = { 
+    from: from || currentPath,
+    search: currentSearch
+  };
 
   return (
     <Link 
-      to={`/media/${mediaType}/${mediaId}`}
-      state={{ from: location.pathname, search: location.search }}
+      to={`/media/${mediaType}/${mediaId}`} 
+      state={fromState}
       className="block animate-fade-in"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
