@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
-import { getMediaById } from "@/services/media";
+import { getMediaById } from "@/services/media"; // Updated import path
 import { MediaType } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { Button } from "@/components/ui/button";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
@@ -25,6 +26,7 @@ const MediaDetail = () => {
   const { toast } = useToast();
   const { addMediaToCollection, isAddingToCollection } = useCollections();
 
+  // Store the previous path and search parameters to navigate back correctly
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
 
@@ -50,24 +52,21 @@ const MediaDetail = () => {
         
         console.log("Media data received:", mediaData);
         
+        // Vérifier si les données sont bien présentes
         if (!mediaData.id) {
           console.error("Les données du média n'ont pas d'ID", mediaData);
           throw new Error("Données de média incorrectes");
         }
         
+        // Convertir les <br> en saut de ligne pour le détail du média
         if (mediaData.description) {
           mediaData.description = mediaData.description.replace(/<br>/g, '\n');
         }
         
-        if (type === 'book' && !mediaData.author && mediaData.authors) {
-          mediaData.author = Array.isArray(mediaData.authors) 
-            ? mediaData.authors.join(', ')
-            : mediaData.authors;
-        }
-        
+        // Vérifier si la description est en anglais et tenter de trouver une version française
         if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
           mediaData.locale_descriptions = {
-            'fr': mediaData.description_raw
+            'fr': mediaData.description_raw // Utiliser la description brute comme fallback
           };
         }
         
@@ -97,6 +96,7 @@ const MediaDetail = () => {
   };
 
   const handleGoBack = () => {
+    // Navigate back to the previous page preserving state and search params
     if (previousPath === "/recherche" && searchParams) {
       navigate({
         pathname: previousPath,
@@ -132,7 +132,9 @@ const MediaDetail = () => {
     );
   }
 
+  // Utiliser un try-catch pour éviter que l'application ne plante complètement
   try {
+    // Safe conversion with more detailed logging
     console.log("About to format media details", { type, mediaObject: media });
     const formattedMedia = formatMediaDetails(media, type as MediaType);
     console.log("Formatted media details", formattedMedia);
