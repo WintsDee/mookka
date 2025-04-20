@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -73,7 +74,7 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24">
+      <div className="pb-24 h-full overflow-hidden">
         <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-6 pt-4 pb-2">
           <div className="flex items-center gap-4">
             <LibrarySearch
@@ -137,7 +138,7 @@ const Bibliotheque = () => {
           </div>
         </header>
         
-        <ScrollArea className="h-[calc(100vh-220px)] px-6 mt-32">
+        <div className="mt-32 px-6 pb-16 overflow-y-auto h-[calc(100vh-220px)] -webkit-overflow-scrolling-touch">
           <div className="space-y-8 py-6">
             {isLoading ? (
               <div className="flex justify-center py-12">
@@ -167,7 +168,7 @@ const Bibliotheque = () => {
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </div>
       
       <MobileNav />
