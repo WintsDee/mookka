@@ -22,7 +22,7 @@ const ProfileSetup = () => {
 
   if (profileLoading) {
     return (
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
         <div className="absolute inset-0 z-0">
           <img 
             src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
@@ -37,8 +37,8 @@ const ProfileSetup = () => {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center p-4">
-      <div className="fixed inset-0 z-0">
+    <div className="min-h-screen relative">
+      <div className="fixed inset-0">
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
@@ -46,10 +46,12 @@ const ProfileSetup = () => {
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
-
-      <div className="w-full max-w-md flex flex-col items-center rounded-xl z-10 mb-8">
-        <MookkaHeader />
-        <ProfileSetupForm onSubmit={updateProfile} />
+      
+      <div className="relative z-10 min-h-screen flex flex-col items-center py-8 px-4 overflow-y-auto">
+        <div className="w-full max-w-md space-y-6">
+          <MookkaHeader />
+          <ProfileSetupForm onSubmit={updateProfile} />
+        </div>
       </div>
     </div>
   );
