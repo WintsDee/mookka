@@ -12,7 +12,7 @@ const ActionButtons: React.FC = () => {
         </Button>
       </Link>
       
-      <Link to="/connexion" className="w-full sm:w-auto">
+      <Link to="/auth" className="w-full sm:w-auto">
         <Button 
           variant="outline" 
           size="lg" 
