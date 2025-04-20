@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 type UploadError = {
   message: string;
-  code?: string;
+  statusCode?: string;
   details?: string;
 };
 
@@ -68,7 +68,7 @@ export const useImageUpload = (type: 'avatar' | 'cover', onChange: (url: string)
       if (uploadError) {
         throw {
           message: "Erreur lors de l'upload",
-          code: uploadError.code,
+          statusCode: uploadError.message,
           details: uploadError.message
         };
       }
@@ -90,7 +90,7 @@ export const useImageUpload = (type: 'avatar' | 'cover', onChange: (url: string)
     } catch (error: any) {
       const errorMessage = {
         message: error.message || "Erreur lors de l'upload",
-        code: error.code,
+        statusCode: error.statusCode,
         details: error.details
       };
 
