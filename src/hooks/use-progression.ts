@@ -11,6 +11,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
 
   // Create a default progression based on media type
   const createDefaultProgression = (type: MediaType) => {
+    // Define default statuses based on media type
     let defaultStatus: MediaStatus;
     
     switch (type) {
