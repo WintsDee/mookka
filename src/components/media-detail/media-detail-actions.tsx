@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Heart, BookmarkPlus, FolderPlus, Share, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MediaType } from "@/types";
-import { addMediaToLibrary } from "@/services/media-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AddMediaDialog } from "./AddMediaDialog";
@@ -18,8 +17,7 @@ interface MediaDetailActionsProps {
 
 export function MediaDetailActions({ media, type, onAddToCollection }: MediaDetailActionsProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
-  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useProfile();
@@ -37,21 +35,9 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
       return;
     }
 
-    setIsAddingToLibrary(true);
-    try {
-      await addMediaToLibrary(media, type);
-      setShowRatingDialog(true);
-    } catch (error) {
-      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAddingToLibrary(false);
-    }
-  }, [media, type, isAuthenticated, toast]);
+    // Afficher le dialogue d'ajout
+    setShowAddDialog(true);
+  }, [media, isAuthenticated, toast]);
 
   const handleActionClick = useCallback((action: () => void) => {
     if (!isAuthenticated) {
@@ -89,13 +75,8 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
           size="sm" 
           className="flex items-center gap-1.5 h-auto py-1.5 px-2"
           onClick={handleAddToLibrary}
-          disabled={isAddingToLibrary}
         >
-          {isAddingToLibrary ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <BookmarkPlus className="h-4 w-4" />
-          )}
+          <BookmarkPlus className="h-4 w-4" />
           <span className="text-xs">Ajouter</span>
         </Button>
         
@@ -133,8 +114,8 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
       </div>
 
       <AddMediaDialog
-        isOpen={showRatingDialog}
-        onOpenChange={setShowRatingDialog}
+        isOpen={showAddDialog}
+        onOpenChange={setShowAddDialog}
         mediaId={media.id}
         mediaType={type}
         mediaTitle={media.title || media.name}

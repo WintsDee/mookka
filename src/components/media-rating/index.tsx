@@ -1,131 +1,109 @@
 
-import React, { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Form, FormField } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { useMediaRating, MediaRatingData } from "@/hooks/use-media-rating";
+import { useMediaRating } from "@/hooks/use-media-rating";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
-import { MediaType } from "@/types";
+import { NotLoggedInCard } from "./not-logged-in-card";
 import { useProfile } from "@/hooks/use-profile";
+import { Loader2 } from "lucide-react";
+import { NotesTextarea } from "../media-detail/progression/notes-textarea";
 
 interface MediaRatingProps {
   mediaId: string;
-  mediaType: MediaType;
-  initialRating?: number;
-  initialReview?: string;
+  mediaType: string;
+  initialNotes?: string;
   onRatingComplete?: () => void;
 }
 
 export function MediaRating({ 
   mediaId, 
   mediaType, 
-  initialRating = 0, 
-  initialReview = "",
-  onRatingComplete
+  initialNotes = "", 
+  onRatingComplete 
 }: MediaRatingProps) {
-  const {
-    isLoading,
-    isSubmitting,
-    userRating,
-    userReview,
-    saveRating
+  const { isAuthenticated } = useProfile();
+  const [rating, setRating] = useState<number | null>(null);
+  const [review, setReview] = useState("");
+  const [notes, setNotes] = useState(initialNotes);
+  
+  const { 
+    submitRating, 
+    isSubmitting, 
+    userRating, 
+    userReview 
   } = useMediaRating(mediaId, mediaType);
   
-  const { isAuthenticated } = useProfile();
-  
-  const form = useForm<MediaRatingData>({
-    defaultValues: {
-      rating: initialRating || 0,
-      review: initialReview || ""
-    }
-  });
-  
-  // Update form values when data is loaded
   useEffect(() => {
-    if (userRating || userReview) {
-      form.reset({
-        rating: userRating || 0,
-        review: userReview || ""
+    if (userRating) {
+      setRating(userRating);
+    }
+    
+    if (userReview) {
+      setReview(userReview);
+    }
+  }, [userRating, userReview]);
+  
+  const handleSubmitRating = async () => {
+    if (rating === null) return;
+    
+    try {
+      await submitRating({ 
+        rating, 
+        review,
+        notes,
+        status: 'completed'
       });
+      
+      if (onRatingComplete) {
+        onRatingComplete();
+      }
+    } catch (error) {
+      console.error("Error submitting rating:", error);
     }
-  }, [userRating, userReview, form]);
-
-  const onSubmit = async (values: MediaRatingData) => {
-    await saveRating(values);
-    if (onRatingComplete) {
-      onRatingComplete();
-    }
   };
-
-  // Save rating automatically when it changes
-  const handleRatingChange = async (newRating: number) => {
-    form.setValue("rating", newRating);
-    await form.handleSubmit(onSubmit)();
-  };
-
-  // Save review automatically when focus is lost
-  const handleReviewChange = async () => {
-    await form.handleSubmit(onSubmit)();
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  
+  if (!isAuthenticated) {
+    return <NotLoggedInCard />;
   }
-
+  
   return (
-    <div className="space-y-4">
-      <Card className="bg-secondary/40 border-border">
-        <CardContent className="p-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="rating"
-                render={() => (
-                  <RatingSlider 
-                    form={form} 
-                    userRating={form.watch("rating")} 
-                    onRatingChange={handleRatingChange} 
-                  />
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="review"
-                render={() => (
-                  <ReviewTextarea 
-                    form={form} 
-                    onReviewChange={handleReviewChange} 
-                  />
-                )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enregistrement...
-                  </>
-                ) : (
-                  "Enregistrer ma critique"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Votre note</h3>
+          <RatingSlider 
+            rating={rating} 
+            onChange={setRating} 
+          />
+        </div>
+        
+        <ReviewTextarea 
+          review={review} 
+          onChange={setReview} 
+        />
+        
+        <NotesTextarea 
+          notes={notes} 
+          onNotesChange={setNotes} 
+        />
+      </div>
+      
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleSubmitRating} 
+          disabled={rating === null || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enregistrement...
+            </>
+          ) : (
+            "Ajouter à ma bibliothèque"
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Media, MediaType } from "@/types";
+import { Media, MediaType, MediaStatus } from "@/types";
 import { formatLibraryMedia } from '../formatters';
 
-export async function addMediaToLibrary(media: any, type: MediaType): Promise<Media> {
+export async function addMediaToLibrary(
+  media: any, 
+  type: MediaType, 
+  status?: MediaStatus,
+  notes?: string
+): Promise<Media> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -133,11 +138,17 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       throw userMediaCheckError;
     }
     
-    // Store the user rating temporarily - it's not part of the return type
-    const userRating = existingUserMedia?.user_rating;
-    
     if (existingUserMedia) {
-      // Si le média existe déjà, retourner ses données actuelles
+      // Si le média existe déjà, mettre à jour son statut et ses notes
+      await supabase
+        .from('user_media')
+        .update({
+          status: status || existingUserMedia.status,
+          notes: notes !== undefined ? notes : existingUserMedia.notes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingUserMedia.id);
+      
       return {
         id: mediaId,
         type: type,
@@ -147,7 +158,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         rating: formattedMedia.rating,
         genres: formattedMedia.genres,
         description: formattedMedia.description,
-        status: existingUserMedia.status as any || 'to-watch',
+        status: status || existingUserMedia.status as any,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
@@ -156,13 +167,14 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       };
     }
 
-    // Ajouter le média à la bibliothèque de l'utilisateur avec status 'to-watch' par défaut
+    // Ajouter le média à la bibliothèque de l'utilisateur avec le statut spécifié
     const { data: userMedia, error: userMediaInsertError } = await supabase
       .from('user_media')
       .insert({
         user_id: user.id,
         media_id: mediaId,
-        status: 'to-watch',
+        status: status || getDefaultStatusForType(type),
+        notes: notes || '',
         added_at: new Date().toISOString()
       })
       .select('*')
@@ -193,5 +205,20 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
   } catch (error) {
     console.error("Erreur dans addMediaToLibrary:", error);
     throw error;
+  }
+}
+
+// Fonction utilitaire pour obtenir le statut par défaut selon le type de média
+function getDefaultStatusForType(type: MediaType): MediaStatus {
+  switch (type) {
+    case 'film':
+    case 'serie':
+      return 'to-watch';
+    case 'book':
+      return 'to-read';
+    case 'game':
+      return 'to-play';
+    default:
+      return 'to-watch';
   }
 }

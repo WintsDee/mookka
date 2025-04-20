@@ -1,145 +1,137 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/use-profile";
-import { MediaType } from "@/types";
+import { MediaStatus } from "@/types";
 
-export interface MediaRatingData {
+interface RatingSubmission {
   rating: number;
-  review: string;
+  review?: string;
+  notes?: string;
+  status?: MediaStatus;
 }
 
-export function useMediaRating(mediaId: string, mediaType?: MediaType) {
+export function useMediaRating(mediaId: string, mediaType: string) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userRating, setUserRating] = useState(0);
-  const [userReview, setUserReview] = useState("");
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [userReview, setUserReview] = useState<string | null>(null);
   const { toast } = useToast();
-  const { isAuthenticated } = useProfile();
 
-  const fetchRating = useCallback(async () => {
-    // Only fetch if we have a mediaId and user is authenticated
-    if (!mediaId || !isAuthenticated) {
-      setIsLoading(false);
-      return;
-    }
-    
+  const fetchUserRating = async () => {
     try {
-      setIsLoading(true);
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) {
-        setIsLoading(false);
-        return;
-      }
-      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { data, error } = await supabase
         .from('user_media')
-        .select('user_rating, notes')
+        .select('user_rating, review')
+        .eq('user_id', user.id)
         .eq('media_id', mediaId)
-        .eq('user_id', user.user.id)
         .maybeSingle();
-        
+
       if (error && error.code !== 'PGRST116') {
-        console.error("Erreur lors de la récupération de la note:", error);
+        console.error("Error fetching user rating:", error);
         return;
       }
-      
+
       if (data) {
-        const rating = data.user_rating || 0;
-        setUserRating(rating);
-        setUserReview(data.notes || '');
+        setUserRating(data.user_rating);
+        setUserReview(data.review || null);
       }
     } catch (error) {
-      console.error("Erreur lors de la récupération de la note:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error in fetchUserRating:", error);
     }
-  }, [mediaId, isAuthenticated]);
-  
-  useEffect(() => {
-    fetchRating();
-  }, [fetchRating]);
+  };
 
-  const saveRating = async (values: MediaRatingData) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour noter un média",
-        variant: "destructive",
-      });
-      return;
+  useEffect(() => {
+    if (mediaId) {
+      fetchUserRating();
     }
-    
+  }, [mediaId]);
+
+  const submitRating = async ({ rating, review = "", notes = "", status }: RatingSubmission) => {
     setIsSubmitting(true);
-    
     try {
-      const { data: user } = await supabase.auth.getUser();
-      
-      if (!user.user) {
-        throw new Error("Utilisateur non connecté");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour noter ce média",
+          variant: "destructive",
+        });
+        return;
       }
-      
-      // Check if the media already exists in the user's library
-      const { data: existingMedia } = await supabase
+
+      // Check if the user already has this media in their library
+      const { data: existingUserMedia, error: checkError } = await supabase
         .from('user_media')
         .select('id')
+        .eq('user_id', user.id)
         .eq('media_id', mediaId)
-        .eq('user_id', user.user.id)
         .maybeSingle();
-      
-      if (existingMedia) {
-        // Update existing rating
-        const { error } = await supabase
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingUserMedia) {
+        // Update the existing entry
+        const { error: updateError } = await supabase
           .from('user_media')
           .update({
-            user_rating: values.rating,
-            notes: values.review,
+            user_rating: rating,
+            review: review,
+            notes: notes,
+            ...(status && { status }),
             updated_at: new Date().toISOString()
           })
-          .eq('id', existingMedia.id);
-          
-        if (error) throw error;
+          .eq('id', existingUserMedia.id);
+
+        if (updateError) throw updateError;
       } else {
-        // Create a new entry
-        const { error } = await supabase
+        // Insert a new entry
+        const { error: insertError } = await supabase
           .from('user_media')
           .insert({
-            user_id: user.user.id,
+            user_id: user.id,
             media_id: mediaId,
-            user_rating: values.rating,
-            notes: values.review,
-            status: 'completed'
+            user_rating: rating,
+            review: review,
+            notes: notes,
+            status: status || 'completed',
+            added_at: new Date().toISOString()
           });
-          
-        if (error) throw error;
+
+        if (insertError) throw insertError;
       }
-      
-      setUserRating(values.rating);
-      setUserReview(values.review);
-      
+
+      // Update state
+      setUserRating(rating);
+      setUserReview(review);
+
       toast({
-        title: "Critique enregistrée",
-        description: `Votre critique a été enregistrée`,
+        title: "Évaluation enregistrée",
+        description: "Votre note a bien été enregistrée",
       });
+
+      return true;
     } catch (error: any) {
-      console.error("Erreur lors de l'enregistrement de la note:", error);
+      console.error("Error submitting rating:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer votre critique",
+        description: "Impossible d'enregistrer votre note",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    isLoading,
+    submitRating,
     isSubmitting,
     userRating,
     userReview,
-    saveRating,
   };
 }
