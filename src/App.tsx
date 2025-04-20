@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useVersionCheck } from "@/hooks/use-version-check";
 import { useOffline } from "@/hooks/use-offline";
 import Index from "./pages/Index";
@@ -19,18 +18,8 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
-import Auth from "./pages/Auth";
-import { useAuth } from "./hooks/use-auth";
 
 const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) return null;
-  if (!user) return <Navigate to="/auth" replace />;
-  return <>{children}</>;
-};
 
 const App = () => {
   useVersionCheck();
@@ -49,19 +38,17 @@ const App = () => {
           )}
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/connexion" element={<Navigate to="/auth" replace />} />
-            <Route path="/bibliotheque" element={<ProtectedRoute><Bibliotheque /></ProtectedRoute>} />
-            <Route path="/recherche" element={<ProtectedRoute><Recherche /></ProtectedRoute>} />
-            <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
-            <Route path="/decouvrir" element={<ProtectedRoute><Decouvrir /></ProtectedRoute>} />
-            <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-            <Route path="/media/:type/:id" element={<ProtectedRoute><MediaDetail /></ProtectedRoute>} />
-            <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
-            <Route path="/collections/:id" element={<ProtectedRoute><CollectionDetail /></ProtectedRoute>} />
+            <Route path="/bibliotheque" element={<Bibliotheque />} />
+            <Route path="/recherche" element={<Recherche />} />
+            <Route path="/social" element={<Social />} />
+            <Route path="/decouvrir" element={<Decouvrir />} />
+            <Route path="/profil" element={<Profil />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/media/:type/:id" element={<MediaDetail />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/collections/:id" element={<CollectionDetail />} />
             <Route path="/soutenir" element={<Soutenir />} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

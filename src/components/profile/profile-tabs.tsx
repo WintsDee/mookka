@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,7 +36,7 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
           <BookmarkCheck size={18} className="text-primary" />
           Mes collections
         </h3>
-        <div className="max-h-[400px] overflow-y-auto pr-2">
+        <ScrollArea className="h-[calc(100vh-450px)] overflow-y-auto pr-2">
           <div className="pb-6">
             <CollectionGrid
               collections={collections}
@@ -47,7 +46,7 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
               cardSize="small"
             />
           </div>
-        </div>
+        </ScrollArea>
       </TabsContent>
       
       <TabsContent value="reviews">
@@ -55,13 +54,13 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
           <MessageSquare size={18} className="text-primary" />
           Mes critiques
         </h3>
-        <div className="max-h-[400px] overflow-y-auto pr-2">
+        <ScrollArea className="h-[calc(100vh-450px)] overflow-y-auto pr-2">
           <div className="flex flex-col items-center justify-center h-40 text-center px-6 pb-6">
             <p className="text-muted-foreground">
               Vos critiques apparaîtront ici.
             </p>
           </div>
-        </div>
+        </ScrollArea>
       </TabsContent>
       
       <TabsContent value="likes">
@@ -69,7 +68,7 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
           <Heart size={18} className="text-primary" />
           Médias que j'aime
         </h3>
-        <div className="max-h-[400px] overflow-y-auto pr-2">
+        <ScrollArea className="h-[calc(100vh-450px)] overflow-y-auto pr-2">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 pb-6">
             {favoriteMedia.length > 0 ? (
               favoriteMedia.map((media) => (
@@ -83,7 +82,7 @@ export function ProfileTabs({ collections, loadingCollections, favoriteMedia }: 
               </div>
             )}
           </div>
-        </div>
+        </ScrollArea>
       </TabsContent>
     </Tabs>
   );

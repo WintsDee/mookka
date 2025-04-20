@@ -3,44 +3,51 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
-import { getMediaById } from "@/services/media";
+import { getMediaById } from "@/services/media"; // Updated import path
 import { MediaType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { MobileHeader } from "@/components/mobile-header";
+import { Button } from "@/components/ui/button";
+import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
+import { useCollections } from "@/hooks/use-collections";
 import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-detail/media-formatter";
-import { MediaDetailDialog } from "@/components/media-detail/media-detail-dialog";
+import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
+import { MediaContent } from "@/components/media-detail/media-content";
+import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [media, setMedia] = useState<any>(null);
-  const { toast } = useToast();
-  const [dialogOpen, setDialogOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [media, setMedia] = useState<any>(null);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
+  const { toast } = useToast();
+  const { addMediaToCollection, isAddingToCollection } = useCollections();
+
+  // Store the previous path and search parameters to navigate back correctly
+  const previousPath = location.state?.from || "/recherche";
+  const searchParams = location.state?.search || "";
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
       if (type && id) {
         setIsLoading(true);
         try {
-          console.log(`Fetching media details for ${type}/${id}`);
           const mediaData = await getMediaById(type as MediaType, id);
           
-          if (!mediaData) {
-            throw new Error("Média non trouvé");
-          }
-          
+          // Convertir les <br> en saut de ligne pour le détail du média
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
           }
           
+          // Vérifier si la description est en anglais et tenter de trouver une version française
           if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
             mediaData.locale_descriptions = {
-              'fr': mediaData.description_raw
+              'fr': mediaData.description_raw // Utiliser la description brute comme fallback
             };
           }
           
-          console.log("Media data received:", mediaData);
           setMedia(mediaData);
         } catch (error) {
           console.error("Erreur lors de la récupération du média:", error);
@@ -49,8 +56,6 @@ const MediaDetail = () => {
             description: "Impossible de récupérer les détails du média",
             variant: "destructive",
           });
-          // Navigate back if media can't be loaded
-          setTimeout(() => navigate(-1), 1500);
         } finally {
           setIsLoading(false);
         }
@@ -58,19 +63,31 @@ const MediaDetail = () => {
     };
 
     fetchMediaDetails();
-  }, [type, id, toast, navigate]);
+  }, [type, id, toast]);
 
-  // Handle dialog closing
-  const handleDialogOpenChange = (open: boolean) => {
-    setDialogOpen(open);
-    if (!open) {
-      // If we close the dialog, navigate back (handled by the dialog component)
+  const handleAddToCollection = (collectionId: string) => {
+    if (!id) return;
+    
+    addMediaToCollection({ collectionId, mediaId: id });
+    setAddToCollectionOpen(false);
+  };
+
+  const handleGoBack = () => {
+    // Navigate back to the previous page preserving state and search params
+    if (previousPath === "/recherche" && searchParams) {
+      navigate({
+        pathname: previousPath,
+        search: searchParams
+      }, { replace: true });
+    } else {
+      navigate(previousPath, { replace: true });
     }
   };
 
   if (isLoading) {
     return (
       <Background>
+        <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <Loader2 className="h-12 w-12 text-primary animate-spin" />
           <p className="mt-4 text-lg">Chargement en cours...</p>
@@ -82,14 +99,10 @@ const MediaDetail = () => {
   if (!media) {
     return (
       <Background>
+        <MobileHeader />
         <div className="flex flex-col items-center justify-center h-screen">
           <h1 className="text-2xl font-bold mb-4">Média non trouvé</h1>
-          <button 
-            onClick={() => navigate(-1)} 
-            className="px-4 py-2 bg-primary text-white rounded-md"
-          >
-            Retour
-          </button>
+          <Button onClick={handleGoBack}>Retour</Button>
         </div>
       </Background>
     );
@@ -100,17 +113,39 @@ const MediaDetail = () => {
 
   return (
     <Background>
-      <MediaDetailDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogOpenChange}
-        media={media}
-        formattedMedia={formattedMedia}
-        type={type as MediaType}
-        id={id!}
-        additionalInfo={additionalInfo}
+      <div className="relative flex flex-col h-screen pt-safe">
+        <MediaDetailHeader 
+          media={media} 
+          formattedMedia={formattedMedia} 
+          type={type as MediaType}
+          onAddToCollection={() => setAddToCollectionOpen(true)}
+        />
+        
+        <div className="flex-1 overflow-hidden">
+          <MediaContent 
+            id={id!} 
+            type={type as MediaType} 
+            formattedMedia={formattedMedia} 
+            additionalInfo={additionalInfo} 
+          />
+        </div>
+        
+        <MediaDetailActions 
+          media={media} 
+          type={type as MediaType} 
+          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        />
+      </div>
+      
+      <AddToCollectionDialog
+        open={addToCollectionOpen}
+        onOpenChange={setAddToCollectionOpen}
+        mediaId={id!}
+        onAddToCollection={handleAddToCollection}
+        isAddingToCollection={isAddingToCollection}
       />
     </Background>
   );
-};
+}
 
 export default MediaDetail;

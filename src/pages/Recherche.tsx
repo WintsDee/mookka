@@ -8,7 +8,7 @@ import { searchMedia } from "@/services/media";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchResults } from "@/components/search/search-results";
 import { 
@@ -19,31 +19,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Recherche = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
-  const initialType = searchParams.get("type") as MediaType || "film";
-  
-  const [selectedType, setSelectedType] = useState<MediaType | "">(initialType);
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [selectedType, setSelectedType] = useState<MediaType | "">("film");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
   const { toast } = useToast();
   const location = useLocation();
-  
-  // Update URL when search changes
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      setSearchParams({ 
-        q: debouncedSearchTerm, 
-        type: selectedType
-      });
-    } else if (selectedType) {
-      setSearchParams({ type: selectedType });
-    } else {
-      setSearchParams({});
-    }
-  }, [debouncedSearchTerm, selectedType, setSearchParams]);
   
   useEffect(() => {
     const fetchSearchResults = async () => {

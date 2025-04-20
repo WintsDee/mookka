@@ -21,7 +21,6 @@ export interface Media {
   author?: string; // Pour livres
   publisher?: string; // Pour jeux
   platform?: string; // Pour jeux
-  externalId?: string; // ID externe pour les APIs tierces
 }
 
 export interface User {

@@ -15,7 +15,6 @@ interface HelpFeedbackProps {
   buttonText?: string;
   buttonIcon?: boolean;
   'data-help-feedback-trigger'?: boolean;
-  customButton?: React.ReactNode;
 }
 
 export function HelpFeedback({ 
@@ -23,8 +22,7 @@ export function HelpFeedback({
   buttonVariant = 'ghost',
   buttonText = 'Aide et Feedback',
   buttonIcon = true,
-  'data-help-feedback-trigger': isTrigger,
-  customButton
+  'data-help-feedback-trigger': isTrigger
 }: HelpFeedbackProps) {
   const [activeTab, setActiveTab] = useState<'help' | 'feedback'>(initialTab);
   const [submitted, setSubmitted] = useState(false);
@@ -80,24 +78,20 @@ export function HelpFeedback({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {customButton ? (
-          customButton
-        ) : (
-          <Button 
-            variant={buttonVariant} 
-            size="sm" 
-            className={`flex items-center gap-1.5 ${
-              buttonVariant === 'ghost' ? 'text-muted-foreground hover:text-foreground' : ''
-            } ${
-              isMobile ? 'text-xs py-1 px-2 h-auto' : ''
-            }`}
-            data-help-feedback-trigger={isTrigger ? true : undefined}
-            ref={triggerRef}
-          >
-            {buttonIcon && <HelpCircle size={isMobile ? 14 : 16} />}
-            <span>{buttonText}</span>
-          </Button>
-        )}
+        <Button 
+          variant={buttonVariant} 
+          size="sm" 
+          className={`flex items-center gap-1.5 ${
+            buttonVariant === 'ghost' ? 'text-muted-foreground hover:text-foreground' : ''
+          } ${
+            isMobile ? 'text-xs py-1 px-2 h-auto' : ''
+          }`}
+          data-help-feedback-trigger={isTrigger ? true : undefined}
+          ref={triggerRef}
+        >
+          {buttonIcon && <HelpCircle size={isMobile ? 14 : 16} />}
+          <span>{buttonText}</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>

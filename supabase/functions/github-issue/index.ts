@@ -48,16 +48,8 @@ ${contact ? `## Contact Information\n${contact}` : ''}
 
     console.log(`Creating GitHub issue with title: ${issueTitle}`);
 
-    // Using a public repo as a temporary solution
-    // You should replace this with your actual repository when you have proper access
-    const owner = "github-feedback-demo"; // Replace with your GitHub username
-    const repo = "feedback"; // Replace with your repository name
-    
-    // For testing purposes, we'll log what we're trying to do
-    console.log(`Attempting to create issue in ${owner}/${repo}`);
-
-    // Send request to GitHub API
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
+    // Send request to GitHub API - Replace with your actual username/repo
+    const response = await fetch('https://api.github.com/repos/mookka/mookka-app/issues', {
       method: 'POST',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
@@ -72,9 +64,9 @@ ${contact ? `## Contact Information\n${contact}` : ''}
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('GitHub API error:', errorText);
-      throw new Error(`GitHub API error: ${response.status} - ${errorText}`);
+      const error = await response.text();
+      console.error('GitHub API error:', error);
+      throw new Error(`GitHub API error: ${response.status}`);
     }
 
     const data = await response.json();
