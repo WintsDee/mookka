@@ -12,7 +12,7 @@ export function UpcomingEpisodes({ episodes }: UpcomingEpisodesProps) {
     return null;
   }
 
-  // Format date in French
+  // Formater la date en français
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Date non confirmée';
     

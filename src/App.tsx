@@ -2,11 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useVersionCheck } from "@/hooks/use-version-check";
 import { useOffline } from "@/hooks/use-offline";
-import { RequireAuth } from "@/components/auth/RequireAuth";
-import { useAuthState } from "@/hooks/use-auth-state";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
@@ -25,36 +23,6 @@ import ProfileSetup from "./pages/ProfileSetup";
 
 const queryClient = new QueryClient();
 
-function RedirectBasedOnAuth() {
-  const { isAuthenticated, loading, profile } = useAuthState();
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // For unauthenticated users, always show the Index page with no redirects
-  if (!isAuthenticated) {
-    return <Index />;
-  }
-  
-  // Only redirect authenticated users with missing profile info to profile setup
-  if (isAuthenticated && !profile?.username) {
-    return <Navigate to="/profile-setup" replace />;
-  }
-  
-  // If authenticated with a complete profile, go to bibliotheque
-  if (isAuthenticated && profile?.username) {
-    return <Navigate to="/bibliotheque" replace />;
-  }
-  
-  // Fallback - should never reach here but just in case
-  return <Index />;
-}
-
 const App = () => {
   useVersionCheck();
   const isOffline = useOffline();
@@ -71,25 +39,20 @@ const App = () => {
             </div>
           )}
           <Routes>
-            {/* Routes publiques */}
-            <Route path="/" element={<RedirectBasedOnAuth />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/bibliotheque" element={<Bibliotheque />} />
+            <Route path="/recherche" element={<Recherche />} />
+            <Route path="/social" element={<Social />} />
+            <Route path="/decouvrir" element={<Decouvrir />} />
+            <Route path="/profil" element={<Profil />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/media/:type/:id" element={<MediaDetail />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/collections/:id" element={<CollectionDetail />} />
             <Route path="/soutenir" element={<Soutenir />} />
-
-            {/* Routes protégées */}
-            <Route path="/bibliotheque" element={<RequireAuth><Bibliotheque /></RequireAuth>} />
-            <Route path="/recherche" element={<RequireAuth><Recherche /></RequireAuth>} />
-            <Route path="/social" element={<RequireAuth><Social /></RequireAuth>} />
-            <Route path="/decouvrir" element={<RequireAuth><Decouvrir /></RequireAuth>} />
-            <Route path="/profil" element={<RequireAuth><Profil /></RequireAuth>} />
-            <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
-            <Route path="/media/:type/:id" element={<RequireAuth><MediaDetail /></RequireAuth>} />
-            <Route path="/collections" element={<RequireAuth><Collections /></RequireAuth>} />
-            <Route path="/collections/:id" element={<RequireAuth><CollectionDetail /></RequireAuth>} />
-            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
-            <Route path="/profile-setup" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
-            
-            {/* Page 404 - publique */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

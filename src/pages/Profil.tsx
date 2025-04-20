@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -16,8 +15,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { MediaType } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
 
 const Profil = () => {
   const { profile, loading, isAuthenticated, updateProfile } = useProfile();
@@ -102,8 +99,8 @@ const Profil = () => {
               onUpdateProfile={updateProfile} 
             />
             
-            <div className="h-[calc(100vh-350px)] overflow-auto">
-              <div className="px-6 pb-32">
+            <ScrollArea className="h-[calc(100vh-350px)]">
+              <div className="px-6 pb-6">
                 <UserStats stats={stats} />
                 
                 <div className="mt-6">
@@ -119,7 +116,7 @@ const Profil = () => {
                   onLogout={handleLogout} 
                 />
               </div>
-            </div>
+            </ScrollArea>
           </>
         )}
       </div>
