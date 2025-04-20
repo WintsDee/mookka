@@ -12,10 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Background } from "@/components/ui/background";
 import { useToast } from "@/components/ui/use-toast";
-import { MobileHeader } from "@/components/mobile-header";
 import { useProfile } from "@/hooks/use-profile";
+import MookkaHeader from "@/components/home/MookkaHeader";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -68,22 +67,35 @@ const Auth = () => {
   };
 
   return (
-    <Background>
-      <MobileHeader />
-      <div className="flex min-h-screen items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>{isSignUp ? "Créer un compte" : "Se connecter"}</CardTitle>
-            <CardDescription>
-              {isSignUp
-                ? "Créez votre compte pour commencer à utiliser l'application"
-                : "Connectez-vous pour accéder à votre bibliothèque"}
-            </CardDescription>
-          </CardHeader>
+    <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
+          alt="Mookka Background" 
+          className="w-full h-full object-cover fixed"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+      </div>
+
+      <div className="w-full max-w-md flex flex-col items-center rounded-xl p-6 animate-fade-in">
+        <MookkaHeader />
+        
+        <Card className="w-full mt-6 bg-black/20 backdrop-blur-sm border-white/20">
           <form onSubmit={handleAuth}>
+            <CardHeader>
+              <CardTitle className="text-white">
+                {isSignUp ? "Créer un compte" : "Se connecter"}
+              </CardTitle>
+              <CardDescription className="text-white/70">
+                {isSignUp
+                  ? "Créez votre compte pour commencer à utiliser l'application"
+                  : "Connectez-vous pour accéder à votre bibliothèque"}
+              </CardDescription>
+            </CardHeader>
+            
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="text-sm font-medium text-white">
                   Email
                 </label>
                 <Input
@@ -93,10 +105,11 @@ const Auth = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="votre@email.com"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">
+                <label htmlFor="password" className="text-sm font-medium text-white">
                   Mot de passe
                 </label>
                 <Input
@@ -106,17 +119,23 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  className="bg-white/10 border-white/20 text-white"
                 />
               </div>
             </CardContent>
+            
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full font-medium shadow-md hover:shadow-lg transition-all"
+                disabled={loading}
+              >
                 {loading ? "Chargement..." : isSignUp ? "S'inscrire" : "Se connecter"}
               </Button>
               <Button
                 type="button"
-                variant="ghost"
-                className="w-full"
+                variant="outline"
+                className="w-full bg-black/20 backdrop-blur-sm border-white/20 text-white hover:bg-white/10 hover:border-white/30 shadow-md hover:shadow-lg transition-all"
                 onClick={() => setIsSignUp(!isSignUp)}
               >
                 {isSignUp
@@ -127,7 +146,7 @@ const Auth = () => {
           </form>
         </Card>
       </div>
-    </Background>
+    </div>
   );
 };
 
