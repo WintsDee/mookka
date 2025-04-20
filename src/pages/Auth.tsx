@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +45,7 @@ const Auth = () => {
         toast({
           title: "Confirmation d'email requise",
           description: "Veuillez vérifier votre boîte de réception (et vos spams) pour confirmer votre adresse email.",
-          duration: 7000, // 7 seconds
+          duration: 7000,
           variant: "default"
         });
         setIsSignUp(false);
@@ -56,7 +55,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/bibliotheque");
+        navigate("/profile-setup");
       }
     } catch (error: any) {
       toast({
