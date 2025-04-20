@@ -1,11 +1,8 @@
 
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, ImageIcon } from "lucide-react";
-import { GalleryTab } from "./gallery-tab";
-import { UploadTab } from "./upload-tab";
+import { ImagePickerDialog } from "./image-picker-dialog";
 
 interface ProfileImagePickerProps {
   value: string;
@@ -55,55 +52,14 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
         </Button>
       </div>
       
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>
-              {type === 'avatar' ? 'Choisir un nouvel avatar' : 'Choisir une nouvelle bannière'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <Tabs defaultValue="gallery">
-            <TabsList className="w-full">
-              <TabsTrigger value="gallery" className="flex-1">Galerie</TabsTrigger>
-              <TabsTrigger value="upload" className="flex-1">Upload</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="gallery" className="mt-4">
-              <GalleryTab 
-                selectedImage={selectedImage}
-                onSelect={setSelectedImage}
-              />
-            </TabsContent>
-            
-            <TabsContent value="upload" className="mt-4">
-              <UploadTab
-                type={type}
-                onChange={(url) => {
-                  setSelectedImage(url);
-                  setOpen(false);
-                }}
-              />
-            </TabsContent>
-          </Tabs>
-          
-          <div className="flex justify-between mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setOpen(false)}
-            >
-              Annuler
-            </Button>
-            
-            <Button 
-              onClick={handleConfirmSelection}
-              disabled={!selectedImage}
-            >
-              Confirmer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ImagePickerDialog
+        open={open}
+        onOpenChange={setOpen}
+        type={type}
+        selectedImage={selectedImage}
+        onSelect={setSelectedImage}
+        onConfirm={handleConfirmSelection}
+      />
     </div>
   );
 }
