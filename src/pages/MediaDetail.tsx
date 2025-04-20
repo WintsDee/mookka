@@ -43,6 +43,26 @@ const MediaDetail = () => {
       
       try {
         console.log(`Fetching media details for ${type}/${id}`);
+        
+        // Vérifier si le média est déjà dans notre base
+        if (type === 'book') {
+          // Pour les livres, vérifier d'abord dans notre base de données
+          const { data: existingBook } = await supabase
+            .from('media')
+            .select('*')
+            .eq('external_id', id)
+            .eq('type', 'book')
+            .maybeSingle();
+            
+          console.log("Book DB check result:", existingBook);
+          
+          if (existingBook) {
+            setMedia(existingBook);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
         const mediaData = await getMediaById(type as MediaType, id);
         
         if (!mediaData) {

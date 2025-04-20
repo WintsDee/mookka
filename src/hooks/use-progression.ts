@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { MediaType } from "@/types";
+import { MediaType, MediaStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
@@ -9,28 +9,46 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
 
   // Create a default progression based on media type
   const createDefaultProgression = (type: MediaType) => {
+    // Assign correct default status based on media type
+    let defaultStatus: MediaStatus;
+    
+    switch (type) {
+      case 'film':
+      case 'serie':
+        defaultStatus = 'to-watch';
+        break;
+      case 'book':
+        defaultStatus = 'to-read';
+        break;
+      case 'game':
+        defaultStatus = 'to-play';
+        break;
+      default:
+        defaultStatus = 'to-watch';
+    }
+    
     switch (type) {
       case 'film':
         return {
-          status: 'to-watch',
+          status: defaultStatus,
           watched_time: 0
         };
       case 'serie':
         return {
-          status: 'to-watch',
+          status: defaultStatus,
           watched_episodes: {},
           watched_count: 0,
           total_episodes: 0
         };
       case 'book':
         return {
-          status: 'to-read',
+          status: defaultStatus,
           current_page: 0,
           total_pages: mediaDetails?.page_count || 0
         };
       case 'game':
         return {
-          status: 'to-play',
+          status: defaultStatus,
           completion_percentage: 0,
           playtime: 0
         };

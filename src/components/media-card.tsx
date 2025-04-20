@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
@@ -24,6 +25,9 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
+  
+  // Déterminer l'ID à utiliser pour la navigation (important pour les livres)
+  const navigationId = media.externalId && type === 'book' ? media.externalId : id;
   
   const sizeClasses = {
     small: "w-32 h-48",
@@ -89,7 +93,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   return (
     <Link 
-      to={`/media/${type}/${id}`} 
+      to={`/media/${type}/${navigationId}`} 
       state={from ? { from } : undefined}
       className="block animate-fade-in"
     >
