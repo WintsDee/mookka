@@ -1,8 +1,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UsernameField } from "./setup/username-field";
+import { FullNameField } from "./setup/full-name-field";
+import { BioField } from "./setup/bio-field";
 
 interface ProfileSetupFormProps {
   onSubmit: (formData: {
@@ -125,61 +126,26 @@ export function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
             />
           </div>
 
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium mb-2 text-white">
-              Nom d'utilisateur
-            </label>
-            <Input
-              id="username"
-              value={formData.username}
-              onChange={handleUsernameChange}
-              required
-              minLength={3}
-              maxLength={30}
-              className={`bg-white/10 border-white/20 text-white placeholder:text-white/50 ${
-                usernameExists ? "border-destructive" : ""
-              }`}
-            />
-            {checkingUsername && (
-              <p className="text-xs text-white/70 mt-1">Vérification en cours...</p>
-            )}
-            {usernameExists && !checkingUsername && (
-              <p className="text-xs text-destructive mt-1">Ce nom d'utilisateur est déjà pris</p>
-            )}
-            {!usernameExists && formData.username.length >= 3 && !checkingUsername && (
-              <p className="text-xs text-green-500 mt-1">Ce nom d'utilisateur est disponible</p>
-            )}
-          </div>
+          <UsernameField
+            username={formData.username}
+            onChange={handleUsernameChange}
+            checkingUsername={checkingUsername}
+            usernameExists={usernameExists}
+          />
 
-          <div>
-            <label htmlFor="full_name" className="block text-sm font-medium mb-2 text-white">
-              Nom complet
-            </label>
-            <Input
-              id="full_name"
-              value={formData.full_name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, full_name: e.target.value }))
-              }
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-            />
-          </div>
+          <FullNameField
+            fullName={formData.full_name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, full_name: e.target.value }))
+            }
+          />
 
-          <div>
-            <label htmlFor="bio" className="block text-sm font-medium mb-2 text-white">
-              Biographie
-            </label>
-            <Textarea
-              id="bio"
-              value={formData.bio}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, bio: e.target.value }))
-              }
-              placeholder="Parlez-nous un peu de vous..."
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              rows={4}
-            />
-          </div>
+          <BioField
+            bio={formData.bio}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, bio: e.target.value }))
+            }
+          />
         </CardContent>
         
         <CardFooter>
