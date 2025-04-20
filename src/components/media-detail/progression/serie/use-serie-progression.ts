@@ -1,17 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { formatSeasons } from "./utils/format-seasons";
-import { Season } from "./types/serie-progression";
-
-interface SerieProgressionResult {
-  seasons: Season[];
-  totalEpisodes: number;
-  watchedEpisodes: number;
-  status: string;
-  progression: any;
-  toggleSeason: (seasonNumber: number, episodeCount: number) => any;
-  updateStatus: (newStatus: string) => any;
-}
+import { Season, SerieProgressionResult } from "./types/serie-progression";
 
 export function useSerieProgression(mediaDetails: any, initialProgression: any): SerieProgressionResult {
   const [seasons, setSeasons] = useState<Season[]>([]);
@@ -19,13 +9,14 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
   const [watchedEpisodes, setWatchedEpisodes] = useState(0);
   const [status, setStatus] = useState(initialProgression?.status || 'to-watch');
   const [progression, setProgression] = useState(initialProgression || {});
+  const [upcomingEpisodes, setUpcomingEpisodes] = useState<any[]>([]);
 
   useEffect(() => {
     if (mediaDetails) {
       const formattedSeasons = formatSeasons(mediaDetails);
       setSeasons(formattedSeasons);
       
-      const total = formattedSeasons.reduce((acc, season) => 
+      const total = formattedSeasons.reduce((acc: number, season) => 
         acc + (season.episode_count || 0), 0);
       setTotalEpisodes(total);
       
@@ -40,7 +31,6 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
         }
       });
       
-      // Now we explicitly have a number
       setWatchedEpisodes(watchedCount);
     }
   }, [mediaDetails, initialProgression]);
@@ -62,9 +52,65 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       }
     });
     
-    // Now we explicitly have a number
     setWatchedEpisodes(watchedCount);
   }, [initialProgression]);
+
+  const toggleEpisode = (seasonNumber: number, episodeNumber: number) => {
+    const currentWatchedEpisodes = {...(progression.watched_episodes || {})};
+    const seasonEpisodes = currentWatchedEpisodes[seasonNumber] || [];
+    
+    // Check if episode is already watched
+    const isEpisodeWatched = Array.isArray(seasonEpisodes) && 
+      seasonEpisodes.includes(episodeNumber);
+    
+    let updatedSeasonEpisodes: number[];
+    
+    if (isEpisodeWatched) {
+      // Remove episode from watched
+      updatedSeasonEpisodes = seasonEpisodes.filter(ep => ep !== episodeNumber);
+    } else {
+      // Add episode to watched
+      updatedSeasonEpisodes = [...seasonEpisodes, episodeNumber];
+    }
+    
+    // Update watched episodes for season
+    const newWatchedEpisodes = {
+      ...currentWatchedEpisodes,
+      [seasonNumber]: updatedSeasonEpisodes
+    };
+    
+    // Calculate total watched count
+    let totalWatchedCount = 0;
+    Object.values(newWatchedEpisodes).forEach((episodes: any) => {
+      if (Array.isArray(episodes)) {
+        totalWatchedCount += episodes.length;
+      }
+    });
+    
+    // Update status based on watched episodes
+    let newStatus = status;
+    if (totalWatchedCount === 0) {
+      newStatus = 'to-watch';
+    } else if (totalWatchedCount === totalEpisodes) {
+      newStatus = 'completed';
+    } else {
+      newStatus = 'watching';
+    }
+    
+    const updatedProgression = {
+      ...progression,
+      watched_episodes: newWatchedEpisodes,
+      status: newStatus,
+      watched_count: totalWatchedCount,
+      total_episodes: totalEpisodes
+    };
+    
+    setProgression(updatedProgression);
+    setWatchedEpisodes(totalWatchedCount);
+    setStatus(newStatus);
+    
+    return updatedProgression;
+  };
 
   const toggleSeason = (seasonNumber: number, episodeCount: number) => {
     const currentWatchedEpisodes = progression.watched_episodes || {};
@@ -133,10 +179,12 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
 
   return {
     seasons,
+    upcomingEpisodes,
     totalEpisodes,
     watchedEpisodes,
     status,
     progression,
+    toggleEpisode,
     toggleSeason,
     updateStatus
   };

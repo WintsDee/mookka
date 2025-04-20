@@ -1,37 +1,39 @@
 
 import React from "react";
-import { 
-  Accordion, 
-  AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger 
-} from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-
-interface Season {
-  season_number: number;
-  name?: string;
-  episode_count: number;
-  air_date?: string;
-}
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Season } from "./types/serie-progression";
 
 interface SeasonAccordionProps {
-  seasons: Season[];
-  progression: any;
-  onToggleSeason: (seasonNumber: number, episodeCount: number) => void;
+  season: Season;
+  watchedEpisodes: number[];
+  onToggleSeason: () => void;
+  onExpandSeason: () => void;
+  expanded: boolean;
 }
 
 export function SeasonAccordion({ 
-  seasons, 
-  progression, 
-  onToggleSeason 
+  season,
+  watchedEpisodes,
+  onToggleSeason,
+  onExpandSeason,
+  expanded
 }: SeasonAccordionProps) {
-  if (!seasons || seasons.length === 0) {
+  if (!season) {
     return null;
   }
+  
+  const seasonNumber = season.season_number;
+  const episodeCount = season.episode_count;
+  const seasonName = season.name || `Saison ${seasonNumber}`;
+  const seasonDate = formatSeasonDate(season.air_date);
+  const isSeasonWatched = watchedEpisodes.length === episodeCount;
+  
+  const handleToggleSeason = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSeason();
+  };
 
   const formatSeasonDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -52,47 +54,43 @@ export function SeasonAccordion({
   };
 
   return (
-    <div className="space-y-2">
-      {seasons.map((season) => {
-        const seasonNumber = season.season_number;
-        const episodeCount = season.episode_count;
-        const seasonName = season.name || `Saison ${seasonNumber}`;
-        const seasonDate = formatSeasonDate(season.air_date);
-        const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
-        const isSeasonWatched = watchedEpisodesForSeason.length === episodeCount;
-        
-        return (
-          <div 
-            key={`season-${seasonNumber}`} 
-            className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-lg p-4"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={isSeasonWatched}
-                  onCheckedChange={() => onToggleSeason(seasonNumber, episodeCount)}
-                  className="h-5 w-5"
-                />
-                <div>
-                  <h3 className="text-base font-medium">{seasonName}</h3>
-                  {seasonDate && (
-                    <p className="text-sm text-muted-foreground">
-                      {seasonDate}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {watchedEpisodesForSeason.length}/{episodeCount} épisodes
-              </span>
-            </div>
-            <Progress 
-              value={(watchedEpisodesForSeason.length / episodeCount) * 100} 
-              className="h-1.5 mt-3 bg-secondary/30"
-            />
+    <div className="cursor-pointer" onClick={onExpandSeason}>
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          <Checkbox
+            checked={isSeasonWatched}
+            onCheckedChange={(checked) => {
+              if (checked !== 'indeterminate') {
+                onToggleSeason();
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="h-5 w-5"
+          />
+          <div>
+            <h3 className="text-base font-medium">{seasonName}</h3>
+            {seasonDate && (
+              <p className="text-sm text-muted-foreground">
+                {seasonDate}
+              </p>
+            )}
           </div>
-        );
-      })}
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">
+            {watchedEpisodes.length}/{episodeCount} épisodes
+          </span>
+          {expanded ? (
+            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
+      </div>
+      <Progress 
+        value={(watchedEpisodes.length / episodeCount) * 100} 
+        className="h-1.5 bg-secondary/30"
+      />
     </div>
   );
 }

@@ -1,97 +1,44 @@
+
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow, format, isAfter, isBefore, addDays } from 'date-fns';
-import { fr } from 'date-fns/locale';
-
-interface Episode {
-  number: number;
-  title?: string;
-  airDate?: string;
-}
+import { Season } from "./types/serie-progression";
 
 interface EpisodeListProps {
-  seasonNumber: number;
-  episodes: Episode[];
+  season: Season;
   watchedEpisodes: number[];
-  onToggleEpisode: (seasonNumber: number, episodeNumber: number) => void;
+  onToggleEpisode: (episodeNumber: number) => void;
 }
 
-export function EpisodeList({ 
-  seasonNumber, 
-  episodes, 
-  watchedEpisodes, 
-  onToggleEpisode 
-}: EpisodeListProps) {
-  const formatAirDate = (dateString?: string) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '';
-      
-      if (isAfter(date, new Date())) {
-        return formatDistanceToNow(date, { addSuffix: true, locale: fr });
-      }
-      
-      return format(date, 'dd/MM/yyyy', { locale: fr });
-    } catch (error) {
-      console.error("Erreur lors du formatage de la date:", error);
-      return '';
-    }
-  };
-  
-  const validWatchedEpisodes = Array.isArray(watchedEpisodes) ? watchedEpisodes : [];
-  
-  const twoWeeksAgo = addDays(new Date(), -14);
-  const today = new Date();
-  
+export function EpisodeList({ season, watchedEpisodes, onToggleEpisode }: EpisodeListProps) {
+  const episodes = Array.from({ length: season.episode_count }, (_, i) => ({
+    number: i + 1,
+    title: `Épisode ${i + 1}`,
+  }));
+
   return (
-    <div className="divide-y divide-border/20">
-      {episodes.map(episode => {
-        const episodeNumber = episode.number;
-        const isWatched = validWatchedEpisodes.includes(episodeNumber);
-        const airDate = episode.airDate ? new Date(episode.airDate) : null;
-        const isRecent = airDate && isAfter(airDate, twoWeeksAgo) && isBefore(airDate, today);
-        const isUpcoming = airDate && isAfter(airDate, today);
-        
-        return (
-          <div key={`s${seasonNumber}e${episodeNumber}`} className="flex items-center p-3 border-b last:border-b-0 border-border/30">
-            <Checkbox 
-              id={`s${seasonNumber}e${episodeNumber}`}
-              checked={isWatched}
-              onCheckedChange={() => onToggleEpisode(seasonNumber, episodeNumber)}
-              className="mr-3 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
-            />
-            <div className="flex-1">
-              <label 
-                htmlFor={`s${seasonNumber}e${episodeNumber}`}
-                className="flex-1 cursor-pointer font-medium"
-              >
-                Épisode {episodeNumber} {episode.title ? `- ${episode.title}` : ''}
-              </label>
-              
-              {episode.airDate && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  {formatAirDate(episode.airDate)}
-                </div>
-              )}
+    <div className="space-y-2 mt-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {episodes.map((episode) => {
+          const isWatched = watchedEpisodes.includes(episode.number);
+          
+          return (
+            <div 
+              key={`episode-${season.season_number}-${episode.number}`}
+              className={`
+                flex items-center gap-2 p-2 rounded-md border 
+                ${isWatched ? 'bg-primary/10 border-primary/20' : 'bg-card/50 border-border/40'}
+              `}
+            >
+              <Checkbox 
+                checked={isWatched}
+                onCheckedChange={() => onToggleEpisode(episode.number)}
+                className="h-4 w-4"
+              />
+              <span className="text-sm truncate">{episode.title}</span>
             </div>
-            
-            {isRecent && (
-              <Badge variant="outline" className="ml-2 bg-purple-500/10 text-purple-500 border-purple-500/20">
-                Nouveau
-              </Badge>
-            )}
-            
-            {isUpcoming && (
-              <Badge variant="outline" className="ml-2 bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                À venir
-              </Badge>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
