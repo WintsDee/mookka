@@ -1,14 +1,13 @@
-
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Upload, AlertTriangle } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
-import { UNSPLASH_IMAGES } from "./image-picker/constants";
-import { SearchTab } from "./image-picker/search-tab";
+import { THEMED_IMAGES } from "./image-picker/constants";
 import { GalleryTab } from "./image-picker/gallery-tab";
+import { UploadTab } from "./image-picker/search-tab";
 
 interface ProfileImagePickerProps {
   value: string;
@@ -18,55 +17,11 @@ interface ProfileImagePickerProps {
 
 export function ProfileImagePicker({ value, onChange, type }: ProfileImagePickerProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<string[]>(UNSPLASH_IMAGES);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setSearchResults(UNSPLASH_IMAGES);
-      return;
-    }
-    
-    const results = UNSPLASH_IMAGES.filter(
-      url => url.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    setSearchResults(results.length ? results : UNSPLASH_IMAGES);
-  };
-
-  const checkImageAppropriateness = async (imageUrl: string): Promise<boolean> => {
-    setIsChecking(true);
-    
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const isAppropriate = UNSPLASH_IMAGES.includes(imageUrl) || 
-                           imageUrl === DEFAULT_AVATAR || 
-                           imageUrl === DEFAULT_COVER;
-      return isAppropriate;
-    } catch (error) {
-      console.error("Error checking image:", error);
-      return false;
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const handleConfirmSelection = async () => {
+  const handleConfirmSelection = () => {
     if (!selectedImage) return;
-    
-    const isAppropriate = await checkImageAppropriateness(selectedImage);
-    
-    if (!isAppropriate) {
-      toast({
-        title: "Image inappropriée",
-        description: "Cette image ne peut pas être utilisée. Veuillez en choisir une autre.",
-        variant: "destructive"
-      });
-      return;
-    }
     
     onChange(selectedImage);
     setSearchOpen(false);
@@ -107,28 +62,27 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
             <DialogTitle>
               {type === 'avatar' ? 'Choisir un nouvel avatar' : 'Choisir une nouvelle bannière'}
             </DialogTitle>
+            <DialogDescription>
+              Sélectionnez une image de la galerie ou importez la vôtre
+            </DialogDescription>
           </DialogHeader>
           
           <Tabs defaultValue="gallery">
             <TabsList className="w-full">
               <TabsTrigger value="gallery" className="flex-1">Galerie</TabsTrigger>
-              <TabsTrigger value="search" className="flex-1">Rechercher</TabsTrigger>
+              <TabsTrigger value="upload" className="flex-1">Importer</TabsTrigger>
             </TabsList>
             
             <TabsContent value="gallery">
               <GalleryTab
-                images={UNSPLASH_IMAGES}
+                images={THEMED_IMAGES}
                 selectedImage={selectedImage}
                 onImageSelect={setSelectedImage}
               />
             </TabsContent>
             
-            <TabsContent value="search">
-              <SearchTab
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onSearch={handleSearch}
-                searchResults={searchResults}
+            <TabsContent value="upload">
+              <UploadTab
                 selectedImage={selectedImage}
                 onImageSelect={setSelectedImage}
               />
@@ -145,25 +99,10 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
             
             <Button 
               onClick={handleConfirmSelection}
-              disabled={!selectedImage || isChecking}
-              className="relative"
+              disabled={!selectedImage}
             >
-              {isChecking ? (
-                <>
-                  <span className="opacity-0">Confirmer</span>
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    Vérification...
-                  </span>
-                </>
-              ) : (
-                'Confirmer'
-              )}
+              Confirmer
             </Button>
-          </div>
-          
-          <div className="text-sm text-muted-foreground flex items-center mt-2">
-            <AlertTriangle size={14} className="mr-1" />
-            Les images sont vérifiées avant publication pour garantir qu'elles sont appropriées.
           </div>
         </DialogContent>
       </Dialog>

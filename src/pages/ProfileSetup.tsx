@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/use-profile";
@@ -37,8 +36,8 @@ const ProfileSetup = () => {
   }
 
   return (
-    <div className="min-h-screen relative">
-      <div className="fixed inset-0">
+    <div className="min-h-screen w-full relative flex flex-col">
+      <div className="fixed inset-0 z-0">
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
@@ -47,8 +46,8 @@ const ProfileSetup = () => {
         <div className="absolute inset-0 bg-black/50" />
       </div>
       
-      <div className="relative z-10 min-h-screen flex flex-col items-center py-8 px-4 overflow-y-auto">
-        <div className="w-full max-w-md space-y-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center py-8 px-4">
+        <div className="w-full max-w-md">
           <MookkaHeader />
           <ProfileSetupForm onSubmit={updateProfile} />
         </div>
