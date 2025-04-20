@@ -6,7 +6,6 @@ import { MediaType } from "@/types";
 import { SearchEmptyState } from "@/components/search/search-empty-states";
 import { Button } from "@/components/ui/button";
 import { SuggestMediaDialog } from "@/components/search/suggest-media-dialog";
-import { useLocation } from "react-router-dom";
 
 interface SearchResultsProps {
   results: any[];
@@ -24,8 +23,6 @@ export const SearchResults = ({
   from,
 }: SearchResultsProps) => {
   const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
-  const location = useLocation();
-  const searchParams = location.search;
 
   if (isLoading) {
     return (
@@ -70,8 +67,7 @@ export const SearchResults = ({
             <MediaCard 
               key={media.id} 
               media={media} 
-              size="medium" 
-              from={from}
+              size="medium"
             />
           ))}
         </div>

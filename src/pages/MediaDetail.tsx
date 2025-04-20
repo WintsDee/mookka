@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { Loader2 } from "lucide-react";
 import { getMediaById } from "@/services/media";
@@ -16,7 +16,6 @@ const MediaDetail = () => {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const fetchMediaDetails = async () => {
@@ -32,12 +31,6 @@ const MediaDetail = () => {
           
           if (mediaData && mediaData.description) {
             mediaData.description = mediaData.description.replace(/<br>/g, '\n');
-          }
-          
-          if (type === 'game' && mediaData.description_raw && !mediaData.locale_descriptions) {
-            mediaData.locale_descriptions = {
-              'fr': mediaData.description_raw
-            };
           }
           
           console.log("Media data received:", mediaData);
@@ -64,7 +57,8 @@ const MediaDetail = () => {
   const handleDialogOpenChange = (open: boolean) => {
     setDialogOpen(open);
     if (!open) {
-      // If we close the dialog, navigate back (handled by the dialog component)
+      // If we close the dialog, navigate back to previous page
+      navigate(-1);
     }
   };
 

@@ -91,23 +91,11 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   // Ensure we're using the correct media type and ID for the URL
   const mediaType = type || "film";
-  // Use id as a string, external ID if available
-  const mediaId = media.externalId || id?.toString() || "";
-  
-  // Create state object with current location for back navigation
-  const currentPath = window.location.pathname;
-  const currentSearch = window.location.search;
-  
-  // Create a state object with the current path for back navigation
-  const fromState = { 
-    from: from || currentPath,
-    search: currentSearch
-  };
+  const mediaId = id?.toString() || "";
 
   return (
     <Link 
       to={`/media/${mediaType}/${mediaId}`} 
-      state={fromState}
       className="block animate-fade-in"
     >
       <div className={cn("media-card relative", sizeClasses[size])}>
