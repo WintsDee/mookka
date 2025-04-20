@@ -13,7 +13,7 @@ interface SerieProgressionResult {
 }
 
 export function useSerieProgression(mediaDetails: any, initialProgression: any): SerieProgressionResult {
-  const [seasons, setSeasons] = useState([]);
+  const [seasons, setSeasons] = useState<any[]>([]);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState(0);
   const [status, setStatus] = useState(initialProgression?.status || 'to-watch');
