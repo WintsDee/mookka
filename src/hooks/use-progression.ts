@@ -49,7 +49,9 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
         };
       default:
         defaultStatus = 'to-watch' as MediaStatus;
-        return {};
+        return {
+          status: defaultStatus
+        };
     }
   };
   
