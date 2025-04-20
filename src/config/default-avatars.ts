@@ -182,6 +182,12 @@ const BASE_AVATARS = [
   "https://images.unsplash.com/photo-1603665185348-6d7c36b34e95?w=500&auto=format&fit=crop", // Digital art
 ];
 
+// Helper function to get a random avatar from the collection
+export const getRandomAvatar = () => {
+  const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
+  return DEFAULT_AVATARS[randomIndex];
+};
+
 // Automatically generate additional avatars by adding more diverse, high-quality images
 // from Unsplash that match the app's entertainment and cultural themes
 const generateAdditionalAvatars = () => {
@@ -211,8 +217,6 @@ const additionalAvatars = generateAdditionalAvatars();
 // Export the full collection of default avatars
 export const DEFAULT_AVATARS = [...BASE_AVATARS, ...additionalAvatars];
 
-// Helper function to get a random avatar from the collection
-export const getRandomAvatar = () => {
-  const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
-  return DEFAULT_AVATARS[randomIndex];
-};
+// Export a default avatar and cover image for the profile
+export const DEFAULT_AVATAR = DEFAULT_AVATARS[0];
+export const DEFAULT_COVER = "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&auto=format&fit=crop";
