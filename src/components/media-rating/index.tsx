@@ -13,6 +13,8 @@ interface MediaRatingProps {
   mediaId: string;
   mediaType: string;
   initialNotes?: string;
+  initialRating?: number;
+  initialReview?: string;
   onRatingComplete?: () => void;
 }
 
@@ -20,12 +22,14 @@ export function MediaRating({
   mediaId, 
   mediaType, 
   initialNotes = "", 
+  initialRating = 0,
+  initialReview = "",
   onRatingComplete 
 }: MediaRatingProps) {
   const { isAuthenticated } = useProfile();
-  const [rating, setRating] = useState<number | null>(null);
-  const [review, setReview] = useState("");
-  const [notes, setNotes] = useState(initialNotes);
+  const [rating, setRating] = useState<number>(initialRating);
+  const [review, setReview] = useState(initialReview || "");
+  const [notes, setNotes] = useState(initialNotes || "");
   
   const { 
     submitRating, 
@@ -35,7 +39,7 @@ export function MediaRating({
   } = useMediaRating(mediaId, mediaType);
   
   useEffect(() => {
-    if (userRating) {
+    if (userRating !== null) {
       setRating(userRating);
     }
     
@@ -45,8 +49,6 @@ export function MediaRating({
   }, [userRating, userReview]);
   
   const handleSubmitRating = async () => {
-    if (rating === null) return;
-    
     try {
       await submitRating({ 
         rating, 
@@ -73,14 +75,14 @@ export function MediaRating({
         <div>
           <h3 className="text-lg font-semibold mb-2">Votre note</h3>
           <RatingSlider 
-            rating={rating} 
-            onChange={setRating} 
+            userRating={rating} 
+            onRatingChange={setRating} 
           />
         </div>
         
         <ReviewTextarea 
-          review={review} 
-          onChange={setReview} 
+          userReview={review} 
+          onReviewChange={setReview} 
         />
         
         <NotesTextarea 
@@ -92,7 +94,7 @@ export function MediaRating({
       <div className="flex justify-end">
         <Button 
           onClick={handleSubmitRating} 
-          disabled={rating === null || isSubmitting}
+          disabled={rating === 0 || isSubmitting}
         >
           {isSubmitting ? (
             <>

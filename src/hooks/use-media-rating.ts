@@ -4,6 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaStatus } from "@/types";
 
+// Define the MediaRatingData type
+export interface MediaRatingData {
+  rating: number;
+  review?: string;
+  notes?: string;
+  status?: MediaStatus;
+}
+
 interface RatingSubmission {
   rating: number;
   review?: string;
@@ -24,7 +32,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       const { data, error } = await supabase
         .from('user_media')
-        .select('user_rating, review')
+        .select('user_rating, notes')
         .eq('user_id', user.id)
         .eq('media_id', mediaId)
         .maybeSingle();
@@ -36,7 +44,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       if (data) {
         setUserRating(data.user_rating);
-        setUserReview(data.review || null);
+        setUserReview(data.notes || null);
       }
     } catch (error) {
       console.error("Error in fetchUserRating:", error);
@@ -80,7 +88,6 @@ export function useMediaRating(mediaId: string, mediaType: string) {
           .from('user_media')
           .update({
             user_rating: rating,
-            review: review,
             notes: notes,
             ...(status && { status }),
             updated_at: new Date().toISOString()
@@ -96,7 +103,6 @@ export function useMediaRating(mediaId: string, mediaType: string) {
             user_id: user.id,
             media_id: mediaId,
             user_rating: rating,
-            review: review,
             notes: notes,
             status: status || 'completed',
             added_at: new Date().toISOString()
@@ -107,7 +113,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       // Update state
       setUserRating(rating);
-      setUserReview(review);
+      setUserReview(notes);
 
       toast({
         title: "Évaluation enregistrée",

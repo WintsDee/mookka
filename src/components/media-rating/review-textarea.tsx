@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Textarea } from "@/components/ui/textarea";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { MessageCircle, EyeOff, PenSquare, Check } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { MediaRatingData } from "@/hooks/use-media-rating";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,15 +27,14 @@ const spoilerStyles = `
 `;
 
 interface ReviewTextareaProps {
-  form: UseFormReturn<MediaRatingData>;
-  onReviewChange: () => void;
+  userReview: string;
+  onReviewChange: (review: string) => void;
 }
 
-export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
+export function ReviewTextarea({ userReview, onReviewChange }: ReviewTextareaProps) {
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [spoilerActive, setSpoilerActive] = useState(false);
-  
-  const review = form.watch("review") || "";
+  const [review, setReview] = useState(userReview || "");
   
   // Add the styles to the document head when the component mounts
   useEffect(() => {
@@ -50,6 +47,11 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
       document.head.removeChild(styleEl);
     };
   }, []);
+
+  // Update the review when the prop changes
+  useEffect(() => {
+    setReview(userReview || "");
+  }, [userReview]);
   
   const handleSpoilerToggle = () => {
     setSpoilerActive(!spoilerActive);
@@ -62,12 +64,13 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
         if (selection && selection.toString()) {
           const selectedText = selection.toString();
           const newText = review.replace(selectedText, `[SPOILER]${selectedText}[/SPOILER]`);
-          form.setValue("review", newText);
-          onReviewChange();
+          setReview(newText);
+          onReviewChange(newText);
         } else {
           // Si aucun texte n'est sélectionné, ajouter les balises à la fin
-          form.setValue("review", review + " [SPOILER]Écrivez votre spoiler ici[/SPOILER]");
-          onReviewChange();
+          const newText = review + " [SPOILER]Écrivez votre spoiler ici[/SPOILER]";
+          setReview(newText);
+          onReviewChange(newText);
         }
       }
     }
@@ -84,6 +87,12 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
     
     // Convertir les sauts de ligne en <br>
     return formattedText.replace(/\n/g, '<br>');
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setReview(newValue);
+    onReviewChange(newValue);
   };
 
   return (
@@ -112,17 +121,10 @@ export function ReviewTextarea({ form, onReviewChange }: ReviewTextareaProps) {
         <div className="space-y-2">
           <FormControl>
             <Textarea
+              value={review}
               placeholder="Partagez votre critique de ce média..."
               className="resize-none bg-background/60 min-h-32"
-              {...form.register("review")}
-              onChange={(e) => {
-                form.setValue("review", e.target.value);
-                // Attendre un peu avant d'enregistrer pour éviter trop de requêtes
-                const debounceTimer = setTimeout(() => {
-                  onReviewChange();
-                }, 500);
-                return () => clearTimeout(debounceTimer);
-              }}
+              onChange={handleReviewChange}
             />
           </FormControl>
           

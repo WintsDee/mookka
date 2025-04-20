@@ -3,16 +3,13 @@ import React from 'react';
 import { Slider } from "@/components/ui/slider";
 import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { UseFormReturn } from "react-hook-form";
-import { MediaRatingData } from "@/hooks/use-media-rating";
 
 interface RatingSliderProps {
-  form: UseFormReturn<MediaRatingData>;
   userRating: number;
   onRatingChange: (rating: number) => void;
 }
 
-export function RatingSlider({ form, userRating, onRatingChange }: RatingSliderProps) {
+export function RatingSlider({ userRating, onRatingChange }: RatingSliderProps) {
   return (
     <FormItem>
       <div className="flex items-center justify-between mb-2">
@@ -32,7 +29,6 @@ export function RatingSlider({ form, userRating, onRatingChange }: RatingSliderP
           max={10}
           step={1}
           onValueChange={(vals) => {
-            form.setValue("rating", vals[0]);
             onRatingChange(vals[0]);
           }}
           className="py-4"
