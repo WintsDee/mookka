@@ -14,6 +14,7 @@ import { formatMediaDetails, getAdditionalMediaInfo } from "@/components/media-d
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
+import { supabase } from "@/integrations/supabase/client";
 
 const MediaDetail = () => {
   const { type, id } = useParams();
