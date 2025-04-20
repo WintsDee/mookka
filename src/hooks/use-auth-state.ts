@@ -37,34 +37,49 @@ export function useAuthState() {
   }
   
   useEffect(() => {
+    let mounted = true;
+    
     // Mettre en place l'écouteur d'événements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
-        setLoading(false);
-        
-        // Récupérer le profil utilisateur si connecté
-        if (session?.user) {
-          // Utiliser setTimeout pour éviter les problèmes de deadlock
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
+        if (mounted) {
+          setSession(session);
+          
+          // Récupérer le profil utilisateur si connecté
+          if (session?.user) {
+            // Utiliser setTimeout pour éviter les problèmes de deadlock
+            setTimeout(() => {
+              if (mounted) {
+                fetchProfile(session.user.id);
+              }
+            }, 0);
+          } else {
+            setProfile(null);
+          }
+          
+          setLoading(false);
         }
       }
     );
     
     // Vérifier si une session existe déjà
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-      
-      // Récupérer le profil si connecté
-      if (data.session?.user) {
-        fetchProfile(data.session.user.id);
+      if (mounted) {
+        setSession(data.session);
+        
+        // Récupérer le profil si connecté
+        if (data.session?.user) {
+          fetchProfile(data.session.user.id);
+        }
+        
+        setLoading(false);
       }
     });
     
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    }
   }, []);
 
   return {

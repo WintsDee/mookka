@@ -37,17 +37,17 @@ const ProfileSetup = () => {
   }
 
   return (
-    <div className="relative z-10 min-h-screen flex flex-col items-center p-4 overflow-auto">
-      <div className="absolute inset-0 z-0">
+    <div className="relative min-h-screen flex flex-col items-center p-4">
+      <div className="fixed inset-0 z-0">
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
-          className="w-full h-full object-cover fixed"
+          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
 
-      <div className="w-full max-w-md flex flex-col items-center rounded-xl">
+      <div className="w-full max-w-md flex flex-col items-center rounded-xl z-10 mb-8">
         <MookkaHeader />
         <ProfileSetupForm onSubmit={updateProfile} />
       </div>
