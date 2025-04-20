@@ -1,24 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Upload, Check, AlertTriangle } from "lucide-react";
+import { Upload, Check, AlertTriangle, ImageIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Predefined Unsplash images that are free to use
-const UNSPLASH_IMAGES = [
-  "https://images.unsplash.com/photo-1500673922987-e212871fec22?q=80&w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1518495973542-4542c06a5843?q=80&w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?q=80&w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1557682224-5b8590cd9ec5?q=80&w=500&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1614851099481-32d60e99cd3a?q=80&w=500&auto=format&fit=crop",
-];
+import { DEFAULT_AVATARS } from "@/config/default-avatars";
 
 interface ProfileImagePickerProps {
   value: string;
@@ -27,77 +17,70 @@ interface ProfileImagePickerProps {
 }
 
 export function ProfileImagePicker({ value, onChange, type }: ProfileImagePickerProps) {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<string[]>(UNSPLASH_IMAGES);
+  const [open, setOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  // Simple search function filtering from predefined images
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setSearchResults(UNSPLASH_IMAGES);
-      return;
-    }
-    
-    const results = UNSPLASH_IMAGES.filter(
-      url => url.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    setSearchResults(results.length ? results : UNSPLASH_IMAGES);
-  };
-
-  // Mock function to check if image is appropriate
-  // In a real app, this would call an AI content moderation service
-  const checkImageAppropriateness = async (imageUrl: string): Promise<boolean> => {
-    setIsChecking(true);
-    
+  const uploadImage = async (file: File) => {
     try {
-      // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For this example, we assume all predefined images are appropriate
-      // In a real app, use an API like Google Cloud Vision API or similar
-      const isAppropriate = UNSPLASH_IMAGES.includes(imageUrl) || 
-                            imageUrl === DEFAULT_AVATAR || 
-                            imageUrl === DEFAULT_COVER;
-      
-      return isAppropriate;
-    } catch (error) {
-      console.error("Error checking image:", error);
-      return false;
+      setIsUploading(true);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${type === 'avatar' ? 'avatars' : 'covers'}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      if (data?.publicUrl) {
+        onChange(data.publicUrl);
+        setOpen(false);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur lors de l'upload",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
-      setIsChecking(false);
+      setIsUploading(false);
     }
   };
 
-  const handleImageSelect = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
-  };
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const handleConfirmSelection = async () => {
-    if (!selectedImage) return;
-    
-    const isAppropriate = await checkImageAppropriateness(selectedImage);
-    
-    if (!isAppropriate) {
+    if (file.size > 2 * 1024 * 1024) {
       toast({
-        title: "Image inappropriée",
-        description: "Cette image ne peut pas être utilisée. Veuillez en choisir une autre.",
-        variant: "destructive"
+        title: "Fichier trop volumineux",
+        description: "L'image ne doit pas dépasser 2Mo",
+        variant: "destructive",
       });
       return;
     }
-    
-    onChange(selectedImage);
-    setSearchOpen(false);
-    setSelectedImage(null);
-    
-    toast({
-      title: "Image sélectionnée",
-      description: type === 'avatar' ? "Votre avatar a été mis à jour." : "Votre bannière a été mise à jour."
-    });
+
+    uploadImage(file);
+  }, [toast, onChange]);
+
+  const handleDefaultSelection = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
+  const handleConfirmSelection = () => {
+    if (selectedImage) {
+      onChange(selectedImage);
+      setOpen(false);
+      setSelectedImage(null);
+    }
   };
 
   return (
@@ -106,24 +89,31 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
         className={`
           ${type === 'avatar' ? 'w-24 h-24 rounded-full mx-auto' : 'w-full h-32 rounded-lg'} 
           border-2 border-dashed border-muted-foreground/25 relative overflow-hidden
+          transition-all hover:border-primary/50
         `}
       >
-        <img 
-          src={value} 
-          alt={type === 'avatar' ? "Avatar" : "Bannière"}
-          className="w-full h-full object-cover"
-        />
+        {value ? (
+          <img 
+            src={value} 
+            alt={type === 'avatar' ? "Avatar" : "Bannière"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+          </div>
+        )}
         
         <Button 
           className="absolute inset-0 w-full h-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity"
           variant="ghost"
-          onClick={() => setSearchOpen(true)}
+          onClick={() => setOpen(true)}
         >
-          <Upload className="text-white" />
+          <Upload className="mr-2" /> Modifier
         </Button>
       </div>
       
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
@@ -134,24 +124,25 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
           <Tabs defaultValue="gallery">
             <TabsList className="w-full">
               <TabsTrigger value="gallery" className="flex-1">Galerie</TabsTrigger>
-              <TabsTrigger value="search" className="flex-1">Rechercher</TabsTrigger>
+              <TabsTrigger value="upload" className="flex-1">Upload</TabsTrigger>
             </TabsList>
             
             <TabsContent value="gallery" className="mt-4">
               <ScrollArea className="h-[300px]">
-                <div className="grid grid-cols-2 gap-3">
-                  {UNSPLASH_IMAGES.map((img, idx) => (
+                <div className="grid grid-cols-3 gap-3">
+                  {DEFAULT_AVATARS.map((img, idx) => (
                     <div 
                       key={idx}
                       className={`
                         relative aspect-square rounded-md overflow-hidden cursor-pointer
                         ${selectedImage === img ? 'ring-2 ring-primary' : ''}
+                        hover:ring-2 hover:ring-primary/50
                       `}
-                      onClick={() => handleImageSelect(img)}
+                      onClick={() => handleDefaultSelection(img)}
                     >
                       <img 
                         src={img}
-                        alt={`Image ${idx + 1}`}
+                        alt={`Avatar ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
                       {selectedImage === img && (
@@ -165,75 +156,49 @@ export function ProfileImagePicker({ value, onChange, type }: ProfileImagePicker
               </ScrollArea>
             </TabsContent>
             
-            <TabsContent value="search" className="mt-4">
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Rechercher une image..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Button onClick={handleSearch}>
-                  <Search size={16} />
-                </Button>
-              </div>
-              
-              <ScrollArea className="h-[250px]">
-                <div className="grid grid-cols-2 gap-3">
-                  {searchResults.map((img, idx) => (
-                    <div 
-                      key={idx}
-                      className={`
-                        relative aspect-square rounded-md overflow-hidden cursor-pointer
-                        ${selectedImage === img ? 'ring-2 ring-primary' : ''}
-                      `}
-                      onClick={() => handleImageSelect(img)}
-                    >
-                      <img 
-                        src={img}
-                        alt={`Image ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      {selectedImage === img && (
-                        <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
-                          <Check size={16} className="text-white" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            <TabsContent value="upload" className="mt-4">
+              <div className="space-y-4">
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-primary/50 transition-colors">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label 
+                    htmlFor="image-upload" 
+                    className="cursor-pointer flex flex-col items-center space-y-2"
+                  >
+                    <Upload className="w-8 h-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {isUploading ? 'Upload en cours...' : 'Cliquez pour choisir une image'}
+                    </span>
+                  </label>
                 </div>
-              </ScrollArea>
+                
+                <div className="text-sm text-muted-foreground flex items-center">
+                  <AlertTriangle size={14} className="mr-1" />
+                  Format accepté : JPG, PNG. Taille max : 2Mo
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
           
           <div className="flex justify-between mt-4">
             <Button 
               variant="outline" 
-              onClick={() => setSearchOpen(false)}
+              onClick={() => setOpen(false)}
             >
               Annuler
             </Button>
             
             <Button 
               onClick={handleConfirmSelection}
-              disabled={!selectedImage || isChecking}
-              className="relative"
+              disabled={!selectedImage || isUploading}
             >
-              {isChecking ? (
-                <>
-                  <span className="opacity-0">Confirmer</span>
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    Vérification...
-                  </span>
-                </>
-              ) : (
-                'Confirmer'
-              )}
+              {isUploading ? 'Upload en cours...' : 'Confirmer'}
             </Button>
-          </div>
-          
-          <div className="text-sm text-muted-foreground flex items-center mt-2">
-            <AlertTriangle size={14} className="mr-1" />
-            Les images sont vérifiées avant publication pour garantir qu'elles sont appropriées.
           </div>
         </DialogContent>
       </Dialog>
