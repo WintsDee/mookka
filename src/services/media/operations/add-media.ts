@@ -133,6 +133,9 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       throw userMediaCheckError;
     }
     
+    // Store the user rating temporarily - it's not part of the return type
+    const userRating = existingUserMedia?.user_rating;
+    
     if (existingUserMedia) {
       // Si le média existe déjà, retourner ses données actuelles
       return {
@@ -145,7 +148,6 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         genres: formattedMedia.genres,
         description: formattedMedia.description,
         status: existingUserMedia.status as any || 'to-watch',
-        userRating: existingUserMedia.user_rating,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
