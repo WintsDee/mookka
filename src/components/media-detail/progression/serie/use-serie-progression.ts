@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { formatSeasons } from "./utils/format-seasons";
+import { Season } from "./types/serie-progression";
 
 interface SerieProgressionResult {
-  seasons: any[];
+  seasons: Season[];
   totalEpisodes: number;
   watchedEpisodes: number;
   status: string;
@@ -13,7 +14,7 @@ interface SerieProgressionResult {
 }
 
 export function useSerieProgression(mediaDetails: any, initialProgression: any): SerieProgressionResult {
-  const [seasons, setSeasons] = useState<any[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState(0);
   const [status, setStatus] = useState(initialProgression?.status || 'to-watch');
@@ -30,12 +31,14 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       
       // Calculate watched episodes count with proper type handling
       const watchedEpisodesObj = initialProgression?.watched_episodes || {};
-      const watchedCount = Object.values(watchedEpisodesObj)
-        .reduce((acc: number, episodes: any) => {
-          // Ensure we're only adding the length if episodes is an array
-          const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
-          return acc + episodeCount;
-        }, 0);
+      let watchedCount = 0;
+      
+      // Safe calculation with explicit number conversion
+      Object.values(watchedEpisodesObj).forEach((episodes: any) => {
+        if (Array.isArray(episodes)) {
+          watchedCount += episodes.length;
+        }
+      });
       
       // Now we explicitly have a number
       setWatchedEpisodes(watchedCount);
@@ -50,12 +53,14 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
     
     // Calculate watched episodes count with proper type handling
     const watchedEpisodesObj = initialProgression?.watched_episodes || {};
-    const watchedCount = Object.values(watchedEpisodesObj)
-      .reduce((acc: number, episodes: any) => {
-        // Ensure we're only adding the length if episodes is an array
-        const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
-        return acc + episodeCount;
-      }, 0);
+    let watchedCount = 0;
+    
+    // Safe calculation with explicit number conversion
+    Object.values(watchedEpisodesObj).forEach((episodes: any) => {
+      if (Array.isArray(episodes)) {
+        watchedCount += episodes.length;
+      }
+    });
     
     // Now we explicitly have a number
     setWatchedEpisodes(watchedCount);
@@ -79,13 +84,15 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       );
     }
     
-    // Calculate the total watched count with proper type handling
-    const totalWatchedCount = Object.values(newWatchedEpisodes)
-      .reduce((acc: number, episodes: any) => {
-        // Ensure we're only adding the length if episodes is an array
-        const episodeCount = Array.isArray(episodes) ? episodes.length : 0;
-        return acc + episodeCount;
-      }, 0);
+    // Calculate the total watched count safely
+    let totalWatchedCount = 0;
+    
+    // Explicit iteration to ensure type safety
+    Object.values(newWatchedEpisodes).forEach((episodes: any) => {
+      if (Array.isArray(episodes)) {
+        totalWatchedCount += episodes.length;
+      }
+    });
     
     // Mise à jour du statut en fonction du nombre d'épisodes regardés
     let newStatus = status;
