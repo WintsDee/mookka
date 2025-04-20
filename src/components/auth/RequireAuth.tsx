@@ -1,10 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "@/hooks/use-profile";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useProfile();
+  const { isAuthenticated, loading } = useAuthState();
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 

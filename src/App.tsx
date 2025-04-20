@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useVersionCheck } from "@/hooks/use-version-check";
 import { useOffline } from "@/hooks/use-offline";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { useAuthState } from "@/hooks/use-auth-state";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Bibliotheque from "./pages/Bibliotheque";
@@ -25,6 +26,28 @@ import ProfileSetup from "./pages/ProfileSetup";
 
 const queryClient = new QueryClient();
 
+function RedirectBasedOnAuth() {
+  const { isAuthenticated, loading, profile } = useAuthState();
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    if (profile?.username) {
+      return <Navigate to="/bibliotheque" replace />;
+    } else {
+      return <Navigate to="/profile-setup" replace />;
+    }
+  }
+
+  return <Index />;
+}
+
 const App = () => {
   useVersionCheck();
   const isOffline = useOffline();
@@ -42,7 +65,7 @@ const App = () => {
           )}
           <Routes>
             {/* Routes publiques */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<RedirectBasedOnAuth />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/soutenir" element={<Soutenir />} />
 

@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { useProfile } from "@/hooks/use-profile";
+import { useAuthState } from "@/hooks/use-auth-state";
 import MookkaHeader from "@/components/home/MookkaHeader";
 
 const Auth = () => {
@@ -23,10 +23,10 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated, profile, loading: profileLoading } = useProfile();
+  const { isAuthenticated, profile, loading: authLoading } = useAuthState();
 
   useEffect(() => {
-    if (profileLoading) return;
+    if (authLoading) return;
     
     if (isAuthenticated) {
       if (profile?.username) {
@@ -35,7 +35,7 @@ const Auth = () => {
         navigate('/profile-setup', { replace: true });
       }
     }
-  }, [isAuthenticated, profile, navigate, profileLoading]);
+  }, [isAuthenticated, profile, navigate, authLoading]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
