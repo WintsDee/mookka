@@ -5,12 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Background } from "@/components/ui/background";
 import { useToast } from "@/components/ui/use-toast";
-import { MobileHeader } from "@/components/mobile-header";
 import { useProfile } from "@/hooks/use-profile";
 import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
 import { Skeleton } from "@/components/ui/skeleton";
+import MookkaHeader from "@/components/home/MookkaHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);
@@ -104,41 +111,60 @@ const ProfileSetup = () => {
 
   if (profileLoading) {
     return (
-      <Background>
-        <MobileHeader />
-        <div className="container max-w-2xl mx-auto px-4 py-8 mt-16">
-          <div className="space-y-6">
-            <Skeleton className="h-12 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-            <div className="space-y-4">
-              <Skeleton className="h-32 w-32 rounded-full mx-auto" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-            <Skeleton className="h-12 w-full" />
-          </div>
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
+            alt="Mookka Background" 
+            className="w-full h-full object-cover fixed"
+          />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
-      </Background>
+        <Card className="w-full max-w-md bg-black/20 backdrop-blur-sm border-white/20">
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <Skeleton className="h-12 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+              <div className="space-y-4">
+                <Skeleton className="h-32 w-32 rounded-full mx-auto" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <Skeleton className="h-12 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Background>
-      <MobileHeader />
-      <div className="container max-w-2xl mx-auto px-4 py-8 mt-16 animate-fade-in">
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold">Configurer votre profil</h1>
-            <p className="text-muted-foreground">
-              Personnalisez votre profil pour commencer
-            </p>
-          </div>
+    <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
+          alt="Mookka Background" 
+          className="w-full h-full object-cover fixed"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+      </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-4">
+      <div className="w-full max-w-md flex flex-col items-center rounded-xl p-6 animate-fade-in">
+        <MookkaHeader />
+        
+        <Card className="w-full mt-6 bg-black/20 backdrop-blur-sm border-white/20">
+          <form onSubmit={handleSubmit}>
+            <CardHeader>
+              <CardTitle className="text-white">Configurer votre profil</CardTitle>
+              <CardDescription className="text-white/70">
+                Personnalisez votre profil pour commencer à utiliser l'application
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-white">
                   Photo de profil
                 </label>
                 <ProfileImagePicker
@@ -151,7 +177,7 @@ const ProfileSetup = () => {
               </div>
 
               <div>
-                <label htmlFor="username" className="block text-sm font-medium mb-2">
+                <label htmlFor="username" className="block text-sm font-medium mb-2 text-white">
                   Nom d'utilisateur
                 </label>
                 <Input
@@ -161,10 +187,12 @@ const ProfileSetup = () => {
                   required
                   minLength={3}
                   maxLength={30}
-                  className={usernameExists ? "border-destructive" : ""}
+                  className={`bg-white/10 border-white/20 text-white placeholder:text-white/50 ${
+                    usernameExists ? "border-destructive" : ""
+                  }`}
                 />
                 {checkingUsername && (
-                  <p className="text-xs text-muted-foreground mt-1">Vérification en cours...</p>
+                  <p className="text-xs text-white/70 mt-1">Vérification en cours...</p>
                 )}
                 {usernameExists && !checkingUsername && (
                   <p className="text-xs text-destructive mt-1">Ce nom d'utilisateur est déjà pris</p>
@@ -175,7 +203,7 @@ const ProfileSetup = () => {
               </div>
 
               <div>
-                <label htmlFor="full_name" className="block text-sm font-medium mb-2">
+                <label htmlFor="full_name" className="block text-sm font-medium mb-2 text-white">
                   Nom complet
                 </label>
                 <Input
@@ -184,11 +212,12 @@ const ProfileSetup = () => {
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, full_name: e.target.value }))
                   }
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                 />
               </div>
 
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium mb-2">
+                <label htmlFor="bio" className="block text-sm font-medium mb-2 text-white">
                   Biographie
                 </label>
                 <Textarea
@@ -198,18 +227,25 @@ const ProfileSetup = () => {
                     setFormData((prev) => ({ ...prev, bio: e.target.value }))
                   }
                   placeholder="Parlez-nous un peu de vous..."
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
                   rows={4}
                 />
               </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading || usernameExists}>
-              {loading ? "Enregistrement..." : "Commencer à utiliser l'application"}
-            </Button>
+            </CardContent>
+            
+            <CardFooter>
+              <Button 
+                type="submit" 
+                className="w-full font-medium shadow-md hover:shadow-lg transition-all"
+                disabled={loading || usernameExists}
+              >
+                {loading ? "Enregistrement..." : "Commencer à utiliser l'application"}
+              </Button>
+            </CardFooter>
           </form>
-        </div>
+        </Card>
       </div>
-    </Background>
+    </div>
   );
 };
 
