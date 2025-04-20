@@ -42,9 +42,12 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
+        
         toast({
-          title: "Inscription réussie",
-          description: "Vous pouvez maintenant vous connecter.",
+          title: "Confirmation d'email requise",
+          description: "Veuillez vérifier votre boîte de réception (et vos spams) pour confirmer votre adresse email.",
+          duration: 7000, // 7 seconds
+          variant: "default"
         });
         setIsSignUp(false);
       } else {
