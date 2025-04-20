@@ -1,0 +1,24 @@
+
+import { filmAvatars, gamingAvatars, bookAvatars, tvSeriesAvatars } from './media-themed-avatars';
+import { artCultureAvatars, animationAvatars } from './culture-avatars';
+
+// Combine all avatar collections
+export const DEFAULT_AVATARS = [
+  ...filmAvatars,
+  ...gamingAvatars,
+  ...bookAvatars,
+  ...tvSeriesAvatars,
+  ...artCultureAvatars,
+  ...animationAvatars,
+];
+
+// Helper function to get a random avatar
+export const getRandomAvatar = () => {
+  const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
+  return DEFAULT_AVATARS[randomIndex];
+};
+
+// Default avatar and cover image
+export const DEFAULT_AVATAR = DEFAULT_AVATARS[0];
+export const DEFAULT_COVER = "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&auto=format&fit=crop";
+
