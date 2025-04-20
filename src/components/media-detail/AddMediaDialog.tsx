@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -44,7 +43,6 @@ export function AddMediaDialog({
   const [showRatingStep, setShowRatingStep] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
-  // Reset state when dialog is opened
   useEffect(() => {
     if (isOpen) {
       setSelectedStatus(null);
@@ -55,7 +53,6 @@ export function AddMediaDialog({
     }
   }, [isOpen]);
   
-  // Define status options based on media type
   const getStatusOptions = (type: MediaType): StatusOption[] => {
     switch (type) {
       case 'film':
@@ -108,26 +105,25 @@ export function AddMediaDialog({
     
     try {
       if (selectedStatus === 'completed') {
-        // Si le statut est "terminé", on affiche l'écran de notation
         setShowRatingStep(true);
         setIsAddingToLibrary(false);
-      } else {
-        // Sinon, on ajoute directement à la bibliothèque
-        await addMediaToLibrary(
-          { id: mediaId, title: mediaTitle },
-          mediaType,
-          selectedStatus,
-          notes
-        );
-        
-        toast({
-          title: "Média ajouté",
-          description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
-        });
-        
-        setIsComplete(true);
-        setIsAddingToLibrary(false);
+        return;
       }
+      
+      await addMediaToLibrary(
+        { id: mediaId, title: mediaTitle },
+        mediaType,
+        selectedStatus,
+        notes
+      );
+      
+      toast({
+        title: "Média ajouté",
+        description: `"${mediaTitle}" a été ajouté à votre bibliothèque."
+      });
+      
+      setIsComplete(true);
+      setIsAddingToLibrary(false);
     } catch (error) {
       console.error("Erreur lors de l'ajout à la bibliothèque:", error);
       toast({
@@ -143,7 +139,7 @@ export function AddMediaDialog({
     setIsComplete(true);
     toast({
       title: "Média ajouté",
-      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
+      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès."
     });
   };
   
