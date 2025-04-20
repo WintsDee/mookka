@@ -2,7 +2,7 @@
 import { useAuthState } from "./use-auth-state";
 import { useProfileData } from "./use-profile-data";
 import { useSocialActions } from "./use-social-actions";
-import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/config/default-avatars";
+import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/config/avatars/avatar-utils";
 
 export { DEFAULT_AVATAR, DEFAULT_COVER };
 export type { Profile } from "@/types/profile";

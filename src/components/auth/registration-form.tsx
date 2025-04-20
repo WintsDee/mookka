@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
-import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
-import { DEFAULT_AVATARS } from "@/config/default-avatars";
+import { ProfileImagePicker } from "@/components/profile/image-picker/profile-image-picker";
+import { DEFAULT_AVATARS } from "@/config/avatars/avatar-utils";
 
 const registrationSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -31,7 +30,6 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
   const { toast } = useToast();
   const { updateProfile } = useProfile();
 
-  // Get a random avatar from our collection
   const getRandomAvatar = () => {
     const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
     return DEFAULT_AVATARS[randomIndex];
@@ -43,14 +41,13 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
       email: "",
       password: "",
       username: "",
-      avatar_url: getRandomAvatar() // Set random avatar as default
+      avatar_url: getRandomAvatar()
     }
   });
 
   const onSubmit = async (values: RegistrationValues) => {
     setLoading(true);
     try {
-      // Vérifier si le pseudo existe déjà
       const { data: exists, error: checkError } = await supabase
         .rpc('check_username_exists', { username_to_check: values.username });
 
@@ -63,7 +60,6 @@ export function RegistrationForm({ onSuccess }: { onSuccess: () => void }) {
         return;
       }
 
-      // Créer le compte
       const { error: signUpError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Profile } from "@/hooks/use-profile";
 import { ProfileEditDialog } from "@/components/profile/profile-edit-dialog";
@@ -9,7 +8,7 @@ import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
+import { ProfileImagePicker } from "@/components/profile/image-picker/profile-image-picker";
 
 interface ProfileHeaderProps {
   profile: Profile | null;
@@ -22,7 +21,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
   const [editingImage, setEditingImage] = React.useState<'avatar' | 'cover' | null>(null);
   const [imageDialogOpen, setImageDialogOpen] = React.useState(false);
   
-  // Function to update just the avatar or cover image
   const updateSingleImage = async (type: 'avatar' | 'cover', value: string) => {
     if (!profile) return;
     
@@ -35,7 +33,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
     setImageDialogOpen(false);
   };
 
-  // Handle clicks on avatar or cover
   const handleImageClick = (type: 'avatar' | 'cover') => {
     if (isAuthenticated) {
       setEditingImage(type);
@@ -56,7 +53,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         
-        {/* Edit Cover Image button */}
         {isAuthenticated && (
           <div className="absolute bottom-2 right-2">
             <Button 
@@ -78,7 +74,7 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
           <div 
             className="w-20 h-20 rounded-full bg-background p-1 shadow-md transition-all duration-300 relative cursor-pointer"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent triggering cover image click
+              e.stopPropagation();
               isAuthenticated && handleImageClick('avatar');
             }}
           >
@@ -88,7 +84,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
               className="w-full h-full rounded-full object-cover"
             />
             
-            {/* Edit Avatar overlay button */}
             {isAuthenticated && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
                 <Image size={18} className="text-white" />
@@ -138,7 +133,6 @@ export function ProfileHeader({ profile, isAuthenticated, onUpdateProfile }: Pro
         <Separator className="my-4" />
       </div>
       
-      {/* Image Editing Dialog */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

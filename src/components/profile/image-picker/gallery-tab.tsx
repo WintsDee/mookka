@@ -1,7 +1,6 @@
-
 import { Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DEFAULT_AVATARS } from "@/config/default-avatars";
+import { DEFAULT_AVATARS } from "@/config/avatars/avatar-utils";
 
 interface GalleryTabProps {
   selectedImage: string | null;

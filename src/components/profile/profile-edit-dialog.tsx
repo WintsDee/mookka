@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Profile, DEFAULT_AVATAR, DEFAULT_COVER } from "@/hooks/use-profile";
-import { ProfileImagePicker } from "./profile-image-picker";
+import { ProfileImagePicker } from "@/components/profile/image-picker/profile-image-picker";
 
 const profileSchema = z.object({
   username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères"),

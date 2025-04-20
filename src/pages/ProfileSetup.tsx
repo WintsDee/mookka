@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,7 @@ import { Background } from "@/components/ui/background";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { useProfile } from "@/hooks/use-profile";
-import { ProfileImagePicker } from "@/components/profile/profile-image-picker";
+import { ProfileImagePicker } from "@/components/profile/image-picker/profile-image-picker";
 
 const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);

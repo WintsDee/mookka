@@ -21,4 +21,3 @@ export const getRandomAvatar = () => {
 // Default avatar and cover image
 export const DEFAULT_AVATAR = DEFAULT_AVATARS[0];
 export const DEFAULT_COVER = "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&auto=format&fit=crop";
-
