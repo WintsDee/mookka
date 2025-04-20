@@ -46,10 +46,17 @@ const MediaDetail = () => {
         const mediaData = await getMediaById(type as MediaType, id);
         
         if (!mediaData) {
+          console.error(`Aucune donnée trouvée pour ${type}/${id}`);
           throw new Error("Média non trouvé");
         }
         
         console.log("Media data received:", mediaData);
+        
+        // Vérifier si les données sont bien présentes
+        if (!mediaData.id) {
+          console.error("Les données du média n'ont pas d'ID", mediaData);
+          throw new Error("Données de média incorrectes");
+        }
         
         // Convertir les <br> en saut de ligne pour le détail du média
         if (mediaData.description) {
@@ -64,12 +71,13 @@ const MediaDetail = () => {
         }
         
         setMedia(mediaData);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Erreur lors de la récupération du média:", error);
-        setError("Impossible de récupérer les détails du média");
+        const errorMessage = error.message || "Impossible de récupérer les détails du média";
+        setError(errorMessage);
         toast({
           title: "Erreur",
-          description: "Impossible de récupérer les détails du média",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
@@ -124,49 +132,64 @@ const MediaDetail = () => {
     );
   }
 
-  // Safe conversion with more detailed logging
-  console.log("About to format media details", { type, mediaObject: media });
-  const formattedMedia = formatMediaDetails(media, type as MediaType);
-  console.log("Formatted media details", formattedMedia);
-  
-  const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
-  console.log("Additional info", additionalInfo);
+  // Utiliser un try-catch pour éviter que l'application ne plante complètement
+  try {
+    // Safe conversion with more detailed logging
+    console.log("About to format media details", { type, mediaObject: media });
+    const formattedMedia = formatMediaDetails(media, type as MediaType);
+    console.log("Formatted media details", formattedMedia);
+    
+    const additionalInfo = getAdditionalMediaInfo(media, formattedMedia, type as MediaType);
+    console.log("Additional info", additionalInfo);
 
-  return (
-    <Background>
-      <div className="relative flex flex-col h-screen pt-safe">
-        <MediaDetailHeader 
-          media={media} 
-          formattedMedia={formattedMedia} 
-          type={type as MediaType}
-          onAddToCollection={() => setAddToCollectionOpen(true)}
-        />
-        
-        <div className="flex-1 overflow-hidden">
-          <MediaContent 
-            id={id!} 
-            type={type as MediaType} 
+    return (
+      <Background>
+        <div className="relative flex flex-col h-screen pt-safe">
+          <MediaDetailHeader 
+            media={media} 
             formattedMedia={formattedMedia} 
-            additionalInfo={additionalInfo} 
+            type={type as MediaType}
+            onAddToCollection={() => setAddToCollectionOpen(true)}
+          />
+          
+          <div className="flex-1 overflow-hidden">
+            <MediaContent 
+              id={id!} 
+              type={type as MediaType} 
+              formattedMedia={formattedMedia} 
+              additionalInfo={additionalInfo} 
+            />
+          </div>
+          
+          <MediaDetailActions 
+            media={media} 
+            type={type as MediaType} 
+            onAddToCollection={() => setAddToCollectionOpen(true)} 
           />
         </div>
         
-        <MediaDetailActions 
-          media={media} 
-          type={type as MediaType} 
-          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        <AddToCollectionDialog
+          open={addToCollectionOpen}
+          onOpenChange={setAddToCollectionOpen}
+          mediaId={id!}
+          onAddToCollection={handleAddToCollection}
+          isAddingToCollection={isAddingToCollection}
         />
-      </div>
-      
-      <AddToCollectionDialog
-        open={addToCollectionOpen}
-        onOpenChange={setAddToCollectionOpen}
-        mediaId={id!}
-        onAddToCollection={handleAddToCollection}
-        isAddingToCollection={isAddingToCollection}
-      />
-    </Background>
-  );
+      </Background>
+    );
+  } catch (error: any) {
+    console.error("Erreur lors du rendu du média:", error);
+    return (
+      <Background>
+        <MobileHeader />
+        <div className="flex flex-col items-center justify-center h-screen">
+          <h1 className="text-2xl font-bold mb-4">Erreur d'affichage</h1>
+          <p className="text-muted-foreground mb-4">Une erreur s'est produite lors de l'affichage du média.</p>
+          <Button onClick={handleGoBack}>Retour</Button>
+        </div>
+      </Background>
+    );
+  }
 }
 
 export default MediaDetail;

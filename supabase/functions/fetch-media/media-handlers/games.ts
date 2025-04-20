@@ -19,25 +19,66 @@ export const fetchTrendingGames = async (apiKey: string) => {
 
 export const fetchGameById = async (apiKey: string, id: string) => {
   try {
-    const apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`
-    console.log(`Fetching game data from: ${apiUrl}`);
+    // Vérifier si l'ID est un UUID Supabase (format e338e2b4-e9d7-4b56-a7aa-af4e2ef63397)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
     
-    const response = await fetch(apiUrl)
-    
-    if (!response.ok) {
-      console.error(`API error: ${response.status} ${response.statusText}`);
-      throw new Error(`API responded with status ${response.status}`);
+    if (isUUID) {
+      console.log(`L'ID ${id} semble être un UUID Supabase et non un ID RAWG. Tentative de conversion...`);
+      
+      // Si c'est un UUID, essayons de récupérer d'abord l'ID externe depuis Supabase
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Variables d'environnement Supabase manquantes");
+      }
+      
+      const supabaseMediaResponse = await fetch(
+        `${supabaseUrl}/rest/v1/media?id=eq.${id}&select=external_id`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+          }
+        }
+      );
+      
+      if (!supabaseMediaResponse.ok) {
+        throw new Error(`Erreur lors de la récupération du média Supabase: ${supabaseMediaResponse.status}`);
+      }
+      
+      const supabaseMediaData = await supabaseMediaResponse.json();
+      
+      if (supabaseMediaData.length === 0 || !supabaseMediaData[0].external_id) {
+        throw new Error(`Aucun ID externe trouvé pour le média Supabase avec l'ID ${id}`);
+      }
+      
+      // Utiliser l'ID externe pour la requête RAWG
+      id = supabaseMediaData[0].external_id;
+      console.log(`ID externe RAWG récupéré: ${id}`);
     }
     
-    const data = await response.json()
-    console.log(`Game data received successfully for ID ${id}`, { 
+    // Maintenant que nous avons le bon ID, procédons à la requête RAWG
+    const apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`;
+    console.log(`Requête à l'API RAWG: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      console.error(`Erreur API RAWG: ${response.status} ${response.statusText}`);
+      throw new Error(`L'API a répondu avec le statut ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Données de jeu reçues avec succès pour l'ID ${id}`, { 
       hasId: !!data.id, 
       name: data.name 
     });
     
     return data;
   } catch (error) {
-    console.error(`Error fetching game with ID ${id}:`, error);
+    console.error(`Erreur lors de la récupération du jeu avec l'ID ${id}:`, error);
     throw error;
   }
 }
