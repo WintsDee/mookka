@@ -568,6 +568,10 @@ export type Database = {
         Args: { user_id1: string; user_id2: string }
         Returns: boolean
       }
+      check_username_exists: {
+        Args: { username_to_check: string }
+        Returns: boolean
+      }
       get_pending_friend_requests: {
         Args: { user_id: string }
         Returns: {

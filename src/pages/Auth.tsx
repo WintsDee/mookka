@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +15,7 @@ import { Background } from "@/components/ui/background";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { useProfile } from "@/hooks/use-profile";
+import { RegistrationForm } from "@/components/auth/registration-form";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -28,34 +28,23 @@ const Auth = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/profile-setup');
+      navigate("/bibliotheque");
     }
   }, [isAuthenticated, navigate]);
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({
-          title: "Inscription réussie",
-          description: "Vous pouvez maintenant vous connecter.",
-        });
-        setIsSignUp(false);
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        navigate("/bibliotheque");
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      navigate("/bibliotheque");
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -80,51 +69,63 @@ const Auth = () => {
                 : "Connectez-vous pour accéder à votre bibliothèque"}
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleAuth}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="votre@email.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">
-                  Mot de passe
-                </label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-              </div>
+
+          {isSignUp ? (
+            <CardContent>
+              <RegistrationForm
+                onSuccess={() => setIsSignUp(false)}
+              />
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Chargement..." : isSignUp ? "S'inscrire" : "Se connecter"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => setIsSignUp(!isSignUp)}
-              >
-                {isSignUp
-                  ? "Déjà un compte ? Se connecter"
-                  : "Pas de compte ? S'inscrire"}
-              </Button>
-            </CardFooter>
-          </form>
+          ) : (
+            <form onSubmit={handleLogin}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    Email
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="votre@email.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="password" className="text-sm font-medium">
+                    Mot de passe
+                  </label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col space-y-4">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Connexion..." : "Se connecter"}
+                </Button>
+              </CardFooter>
+            </form>
+          )}
+
+          <CardFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp
+                ? "Déjà un compte ? Se connecter"
+                : "Pas de compte ? S'inscrire"}
+            </Button>
+          </CardFooter>
         </Card>
       </div>
     </Background>

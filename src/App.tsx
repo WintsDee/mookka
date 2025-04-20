@@ -40,19 +40,19 @@ const App = () => {
           )}
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/bibliotheque" element={<Bibliotheque />} />
-            <Route path="/recherche" element={<Recherche />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/decouvrir" element={<Decouvrir />} />
-            <Route path="/profil" element={<Profil />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/media/:type/:id" element={<MediaDetail />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:id" element={<CollectionDetail />} />
+            <Route path="/bibliotheque" element={<RequireAuth><Bibliotheque /></RequireAuth>} />
+            <Route path="/recherche" element={<RequireAuth><Recherche /></RequireAuth>} />
+            <Route path="/social" element={<RequireAuth><Social /></RequireAuth>} />
+            <Route path="/decouvrir" element={<RequireAuth><Decouvrir /></RequireAuth>} />
+            <Route path="/profil" element={<RequireAuth><Profil /></RequireAuth>} />
+            <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
+            <Route path="/media/:type/:id" element={<RequireAuth><MediaDetail /></RequireAuth>} />
+            <Route path="/collections" element={<RequireAuth><Collections /></RequireAuth>} />
+            <Route path="/collections/:id" element={<RequireAuth><CollectionDetail /></RequireAuth>} />
             <Route path="/soutenir" element={<Soutenir />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/profile-setup" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>
