@@ -455,7 +455,10 @@ export type Database = {
           followers_count: number | null
           following_count: number | null
           full_name: string | null
+          genres_preferences: Json | null
           id: string
+          last_login: string | null
+          preferences: Json | null
           social_share_settings: Json | null
           updated_at: string | null
           username: string
@@ -468,7 +471,10 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
+          genres_preferences?: Json | null
           id: string
+          last_login?: string | null
+          preferences?: Json | null
           social_share_settings?: Json | null
           updated_at?: string | null
           username: string
@@ -481,7 +487,10 @@ export type Database = {
           followers_count?: number | null
           following_count?: number | null
           full_name?: string | null
+          genres_preferences?: Json | null
           id?: string
+          last_login?: string | null
+          preferences?: Json | null
           social_share_settings?: Json | null
           updated_at?: string | null
           username?: string

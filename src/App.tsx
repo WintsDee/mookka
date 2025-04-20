@@ -18,6 +18,8 @@ import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import Soutenir from "./pages/Soutenir";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
+import ProfileSetup from "./pages/ProfileSetup";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,8 @@ const App = () => {
             <Route path="/collections/:id" element={<CollectionDetail />} />
             <Route path="/soutenir" element={<Soutenir />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>
