@@ -106,14 +106,17 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           const progressionData = data.progression_data;
           
           // If we have a status from user_media and it's different from progression status, update progression
-          if (status && progressionData.status !== status) {
-            progressionData.status = status;
+          if (status && typeof progressionData === 'object' && progressionData !== null) {
+            // Check if progressionData has a status property and fix it if needed
+            if ('status' in progressionData && progressionData.status !== status) {
+              progressionData.status = status;
+            }
           }
           
           setProgression(progressionData);
         } else {
           // Use default progression if no data, but use status from user_media if available
-          if (status) {
+          if (status && defaultProgression && typeof defaultProgression === 'object') {
             defaultProgression.status = status;
           }
           setProgression(defaultProgression);
@@ -142,10 +145,11 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       
       if (!user.user) return;
       
-      // If status has changed from the user media status, update it in user_media
-      if (progressionData.status !== userMediaStatus) {
-        await updateMediaStatus(mediaId, progressionData.status);
-        setUserMediaStatus(progressionData.status);
+      // If progressionData has a status property and it's different from userMediaStatus
+      if (progressionData && 'status' in progressionData && progressionData.status !== userMediaStatus) {
+        const newStatus = progressionData.status as MediaStatus;
+        await updateMediaStatus(mediaId, newStatus);
+        setUserMediaStatus(newStatus);
       }
       
       const { data: existingProgression } = await supabase
