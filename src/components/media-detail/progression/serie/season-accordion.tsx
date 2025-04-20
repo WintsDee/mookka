@@ -13,6 +13,25 @@ interface SeasonAccordionProps {
   expanded: boolean;
 }
 
+// Helper function to format date
+const formatSeasonDate = (dateString?: string) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    
+    // Format en français
+    return new Intl.DateTimeFormat('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
+  } catch (error) {
+    return '';
+  }
+};
+
 export function SeasonAccordion({ 
   season,
   watchedEpisodes,
@@ -33,24 +52,6 @@ export function SeasonAccordion({
   const handleToggleSeason = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleSeason();
-  };
-
-  const formatSeasonDate = (dateString?: string) => {
-    if (!dateString) return '';
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '';
-      
-      // Format en français
-      return new Intl.DateTimeFormat('fr-FR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }).format(date);
-    } catch (error) {
-      return '';
-    }
   };
 
   return (
