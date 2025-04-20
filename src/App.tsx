@@ -37,15 +37,18 @@ function RedirectBasedOnAuth() {
     );
   }
 
-  if (isAuthenticated) {
-    if (profile?.username) {
-      return <Navigate to="/bibliotheque" replace />;
-    } else {
-      return <Navigate to="/profile-setup" replace />;
-    }
+  // Directly show the Index page if not authenticated
+  if (!isAuthenticated) {
+    return <Index />;
   }
 
-  return <Index />;
+  // If authenticated but no profile, redirect to profile setup
+  if (!profile?.username) {
+    return <Navigate to="/profile-setup" replace />;
+  }
+  
+  // If authenticated with a profile, redirect to bibliotheque
+  return <Navigate to="/bibliotheque" replace />;
 }
 
 const App = () => {
