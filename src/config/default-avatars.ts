@@ -1,4 +1,3 @@
-
 export const DEFAULT_AVATARS = [
   // Films & Cinéma
   "https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&auto=format&fit=crop", // Popcorn
@@ -143,5 +142,69 @@ export const DEFAULT_AVATARS = [
   "https://images.unsplash.com/photo-1616469829581-73993eb86b02?w=500&auto=format&fit=crop", // Culture
   "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=500&auto=format&fit=crop", // Digital
   "https://images.unsplash.com/photo-1616469828695-aa0c8c4384ac?w=500&auto=format&fit=crop", // Arts
+  
+  // Additional Film & Cinema Avatars
+  "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=500&auto=format&fit=crop", // Film reel
+  "https://images.unsplash.com/photo-1601643157091-5ddaad3c4339?w=500&auto=format&fit=crop", // Movie camera
+  "https://images.unsplash.com/photo-1478720962843-6ebe3478d7f4?w=500&auto=format&fit=crop", // Movie theater
+  "https://images.unsplash.com/photo-1515634928627-2a4e0462ecf0?w=500&auto=format&fit=crop", // Cinema seats
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop", // Projector
+  
+  // Gaming Avatars
+  "https://images.unsplash.com/photo-1580327332925-a10e6cb11baa?w=500&auto=format&fit=crop", // Gaming mouse
+  "https://images.unsplash.com/photo-1611078489935-0cb3706c4f4d?w=500&auto=format&fit=crop", // Gaming keyboard
+  "https://images.unsplash.com/photo-1677720359467-a676b54f0d7b?w=500&auto=format&fit=crop", // Gaming headset
+  "https://images.unsplash.com/photo-1580234815007-5cfbee4ed223?w=500&auto=format&fit=crop", // Retro console
+  
+  // Book & Reading Avatars
+  "https://images.unsplash.com/photo-1532012197267-55f5294ba709?w=500&auto=format&fit=crop", // Bookshelf
+  "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=500&auto=format&fit=crop", // Reading glasses
+  "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=500&auto=format&fit=crop", // Coffee and book
+  
+  // TV & Series Avatars
+  "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&auto=format&fit=crop", // Netflix logo
+  "https://images.unsplash.com/photo-1601643157091-5ddaad3c4339?w=500&auto=format&fit=crop", // TV setup
+  "https://images.unsplash.com/photo-1616363088594-3f997044f6cb?w=500&auto=format&fit=crop", // Streaming devices
+  
+  // Art & Culture Avatars
+  "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?w=500&auto=format&fit=crop", // Art piece
+  "https://images.unsplash.com/photo-1583209814005-04b3e7ca0ba4?w=500&auto=format&fit=crop", // Museum
+  "https://images.unsplash.com/photo-1579541652484-eff9d52aa0e7?w=500&auto=format&fit=crop", // Street art
+  
+  // Animation & Anime Avatars
+  "https://images.unsplash.com/photo-1608889476518-738c9b1dcb40?w=500&auto=format&fit=crop", // Comic style
+  "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop", // Animation
+  
+  // Pop Culture & Entertainment
+  "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&auto=format&fit=crop", // Music vibes
+  "https://images.unsplash.com/photo-1603665185348-6d7c36b34e95?w=500&auto=format&fit=crop", // Digital art
 ];
 
+// Automatically generate the additional avatars by adding more diverse, high-quality images
+// from Unsplash that match the app's entertainment and cultural themes
+const generateAdditionalAvatars = () => {
+  const additionalAvatars = [];
+  const themeGroups = [
+    { theme: 'Cinema', query: 'movie theater film cinema' },
+    { theme: 'Gaming', query: 'video game console gaming' },
+    { theme: 'Books', query: 'library reading book' },
+    { theme: 'TV Series', query: 'television streaming series' },
+    { theme: 'Art', query: 'art museum culture' },
+    { theme: 'Pop Culture', query: 'entertainment music' }
+  ];
+
+  themeGroups.forEach(group => {
+    for (let i = 0; i < 80; i++) {
+      const url = `https://source.unsplash.com/500x500/?${group.query}&sig=${Math.random()}`;
+      additionalAvatars.push(url);
+    }
+  });
+
+  return additionalAvatars;
+};
+
+// Combine the predefined and generated avatars
+export const DEFAULT_AVATARS = [
+  ...DEFAULT_AVATARS,
+  ...generateAdditionalAvatars()
+];
