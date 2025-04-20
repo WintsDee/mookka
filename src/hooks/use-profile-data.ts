@@ -2,14 +2,18 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "./use-profile";
+import { useToast } from "@/components/ui/use-toast";
 
 export function useProfileData(userId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (userId) {
       fetchProfile(userId);
+    } else {
+      setLoading(false);
     }
   }, [userId]);
 

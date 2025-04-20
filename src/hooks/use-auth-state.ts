@@ -8,20 +8,18 @@ export function useAuthState() {
   const [session, setSession] = useState<{ user: User } | null>(null);
   
   useEffect(() => {
+    // Mettre en place l'écouteur d'événements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
-        if (!session?.user) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     );
     
+    // Vérifier si une session existe déjà
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (!data.session?.user) {
-        setLoading(false);
-      }
+      setLoading(false);
     });
     
     return () => subscription.unsubscribe();

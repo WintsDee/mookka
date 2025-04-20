@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,13 +23,19 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated } = useProfile();
+  const { isAuthenticated, profile, loading: profileLoading } = useProfile();
 
   useEffect(() => {
+    if (profileLoading) return;
+    
     if (isAuthenticated) {
-      navigate('/profile-setup');
+      if (profile?.username) {
+        navigate('/bibliotheque');
+      } else {
+        navigate('/profile-setup');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, profile, navigate, profileLoading]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +62,8 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/profile-setup");
+        
+        // La redirection sera gérée par l'effet useEffect ci-dessus
       }
     } catch (error: any) {
       toast({
