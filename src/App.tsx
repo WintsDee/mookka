@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,18 +36,23 @@ function RedirectBasedOnAuth() {
     );
   }
 
-  // Directly show the Index page if not authenticated
+  // For unauthenticated users, always show the Index page with no redirects
   if (!isAuthenticated) {
     return <Index />;
   }
-
-  // If authenticated but no profile, redirect to profile setup
-  if (!profile?.username) {
+  
+  // Only redirect authenticated users with missing profile info to profile setup
+  if (isAuthenticated && !profile?.username) {
     return <Navigate to="/profile-setup" replace />;
   }
   
-  // If authenticated with a profile, redirect to bibliotheque
-  return <Navigate to="/bibliotheque" replace />;
+  // If authenticated with a complete profile, go to bibliotheque
+  if (isAuthenticated && profile?.username) {
+    return <Navigate to="/bibliotheque" replace />;
+  }
+  
+  // Fallback - should never reach here but just in case
+  return <Index />;
 }
 
 const App = () => {
