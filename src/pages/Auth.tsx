@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useProfile } from "@/hooks/use-profile";
 import { RegistrationForm } from "@/components/auth/registration-form";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -24,6 +25,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated } = useProfile();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,17 +68,19 @@ const Auth = () => {
         <div className="absolute inset-0 bg-black/50" />
       </div>
 
-      <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md flex flex-col items-center p-4 sm:p-6">
+      <div className="min-h-screen w-full py-8 px-4 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md flex flex-col items-center">
           <img 
             src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
             alt="Mookka Logo" 
-            className="w-32 h-32 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
+            className={`${isMobile ? 'w-24 h-24' : 'w-32 h-32 sm:w-40 sm:h-40'} mb-4 animate-scale-in drop-shadow-lg`}
           />
           
-          <Card className="w-full bg-background/80 backdrop-blur-md border-border/20">
-            <CardHeader>
-              <CardTitle>{isSignUp ? "Créer un compte" : "Se connecter"}</CardTitle>
+          <Card className="w-full bg-background/80 backdrop-blur-md border-border/20 my-4">
+            <CardHeader className={`${isMobile ? 'px-4 py-3' : ''}`}>
+              <CardTitle className={`${isMobile ? 'text-xl' : ''}`}>
+                {isSignUp ? "Créer un compte" : "Se connecter"}
+              </CardTitle>
               <CardDescription>
                 {isSignUp
                   ? "Créez votre compte pour commencer à utiliser l'application"
@@ -85,14 +89,14 @@ const Auth = () => {
             </CardHeader>
 
             {isSignUp ? (
-              <CardContent>
+              <CardContent className={`${isMobile ? 'px-4 pt-0' : ''}`}>
                 <RegistrationForm
                   onSuccess={() => setIsSignUp(false)}
                 />
               </CardContent>
             ) : (
               <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4">
+                <CardContent className={`space-y-4 ${isMobile ? 'px-4 pt-0' : ''}`}>
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">
                       Email
@@ -104,6 +108,7 @@ const Auth = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="votre@email.com"
+                      className="text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -117,10 +122,11 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
+                      className="text-sm"
                     />
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col space-y-4">
+                <CardFooter className={`flex flex-col space-y-4 ${isMobile ? 'px-4 pb-4' : ''}`}>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Connexion..." : "Se connecter"}
                   </Button>
@@ -128,11 +134,11 @@ const Auth = () => {
               </form>
             )}
 
-            <CardFooter>
+            <CardFooter className={`flex-col space-y-4 ${isMobile ? 'px-4 pb-4 pt-0' : ''}`}>
               <Button
                 type="button"
                 variant="ghost"
-                className="w-full"
+                className="w-full text-sm"
                 onClick={() => setIsSignUp(!isSignUp)}
               >
                 {isSignUp
@@ -148,4 +154,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
