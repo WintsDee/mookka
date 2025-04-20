@@ -1,6 +1,10 @@
 
 import { filmAvatars, gamingAvatars, bookAvatars, tvSeriesAvatars } from './media-themed-avatars';
 import { artCultureAvatars, animationAvatars } from './culture-avatars';
+import { natureAvatars } from './nature-avatars';
+import { animalAvatars } from './animal-avatars';
+import { techAvatars } from './tech-avatars';
+import { abstractAvatars } from './abstract-avatars';
 
 // Combine all avatar collections
 export const DEFAULT_AVATARS = [
@@ -10,6 +14,10 @@ export const DEFAULT_AVATARS = [
   ...tvSeriesAvatars,
   ...artCultureAvatars,
   ...animationAvatars,
+  ...natureAvatars,
+  ...animalAvatars,
+  ...techAvatars,
+  ...abstractAvatars,
 ];
 
 // Helper function to get a random avatar
