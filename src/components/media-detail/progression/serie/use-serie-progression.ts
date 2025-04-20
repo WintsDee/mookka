@@ -1,13 +1,19 @@
 
 import { useState, useEffect } from "react";
-import { SerieProgressionResult } from "./types/serie-progression";
 import { formatSeasons } from "./utils/format-seasons";
-import { generateUpcomingEpisodes } from "./utils/generate-upcoming";
-import { updateEpisodeProgress, updateSeasonProgress } from "./utils/progression-updates";
+
+interface SerieProgressionResult {
+  seasons: any[];
+  totalEpisodes: number;
+  watchedEpisodes: number;
+  status: string;
+  progression: any;
+  toggleSeason: (seasonNumber: number, episodeCount: number) => any;
+  updateStatus: (newStatus: string) => any;
+}
 
 export function useSerieProgression(mediaDetails: any, initialProgression: any): SerieProgressionResult {
   const [seasons, setSeasons] = useState([]);
-  const [upcomingEpisodes, setUpcomingEpisodes] = useState([]);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
   const [watchedEpisodes, setWatchedEpisodes] = useState(0);
   const [status, setStatus] = useState(initialProgression?.status || 'to-watch');
@@ -15,8 +21,6 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
 
   useEffect(() => {
     if (mediaDetails) {
-      console.log("Media details seasons:", mediaDetails.seasons);
-      
       const formattedSeasons = formatSeasons(mediaDetails);
       setSeasons(formattedSeasons);
       
@@ -24,11 +28,9 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
         acc + (season.episode_count || 0), 0);
       setTotalEpisodes(total);
       
-      const watched = Object.values(initialProgression?.watched_episodes || {}).flat().length;
+      const watched = Object.values(initialProgression?.watched_episodes || {})
+        .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
       setWatchedEpisodes(watched);
-      
-      const upcoming = generateUpcomingEpisodes(mediaDetails, formattedSeasons);
-      setUpcomingEpisodes(upcoming);
     }
   }, [mediaDetails]);
 
@@ -38,35 +40,54 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
     }
     setProgression(initialProgression || {});
     
-    const watched = Object.values(initialProgression?.watched_episodes || {}).flat().length;
+    const watched = Object.values(initialProgression?.watched_episodes || {})
+      .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
     setWatchedEpisodes(watched);
   }, [initialProgression]);
 
-  const toggleEpisode = (seasonNumber: number, episodeNumber: number) => {
-    const updatedProgress = updateEpisodeProgress(progression, seasonNumber, episodeNumber, totalEpisodes);
-    setWatchedEpisodes(updatedProgress.watched_count);
-    setStatus(updatedProgress.status);
-    
-    const updatedProgression = {
-      ...progression,
-      ...updatedProgress
-    };
-    
-    setProgression(updatedProgression);
-    return updatedProgression;
-  };
-
   const toggleSeason = (seasonNumber: number, episodeCount: number) => {
-    const updatedProgress = updateSeasonProgress(progression, seasonNumber, episodeCount, totalEpisodes);
-    setWatchedEpisodes(updatedProgress.watched_count);
-    setStatus(updatedProgress.status);
+    const currentWatchedEpisodes = progression.watched_episodes || {};
+    const isSeasonWatched = 
+      (currentWatchedEpisodes[seasonNumber] || []).length === episodeCount;
+    
+    const newWatchedEpisodes = { ...currentWatchedEpisodes };
+    
+    if (isSeasonWatched) {
+      // Si la saison était complètement regardée, on la vide
+      newWatchedEpisodes[seasonNumber] = [];
+    } else {
+      // Sinon on la marque comme complètement regardée
+      newWatchedEpisodes[seasonNumber] = Array.from(
+        { length: episodeCount }, 
+        (_, i) => i + 1
+      );
+    }
+    
+    const totalWatchedCount = Object.values(newWatchedEpisodes)
+      .reduce((acc: any, episodes: any) => acc + episodes.length, 0);
+    
+    // Mise à jour du statut en fonction du nombre d'épisodes regardés
+    let newStatus = status;
+    if (totalWatchedCount === 0) {
+      newStatus = 'to-watch';
+    } else if (totalWatchedCount === totalEpisodes) {
+      newStatus = 'completed';
+    } else {
+      newStatus = 'watching';
+    }
     
     const updatedProgression = {
       ...progression,
-      ...updatedProgress
+      watched_episodes: newWatchedEpisodes,
+      status: newStatus,
+      watched_count: totalWatchedCount,
+      total_episodes: totalEpisodes
     };
     
     setProgression(updatedProgression);
+    setWatchedEpisodes(totalWatchedCount);
+    setStatus(newStatus);
+    
     return updatedProgression;
   };
 
@@ -84,12 +105,10 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
 
   return {
     seasons,
-    upcomingEpisodes,
     totalEpisodes,
     watchedEpisodes,
     status,
     progression,
-    toggleEpisode,
     toggleSeason,
     updateStatus
   };

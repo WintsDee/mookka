@@ -8,31 +8,25 @@ import {
 } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { EpisodeList } from "./episode-list";
+import { Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Season {
   season_number: number;
   name?: string;
   episode_count: number;
   air_date?: string;
-  episodes?: Array<{
-    number: number;
-    title?: string;
-    airDate?: string;
-  }>;
 }
 
 interface SeasonAccordionProps {
   seasons: Season[];
   progression: any;
-  onToggleEpisode: (seasonNumber: number, episodeNumber: number) => void;
   onToggleSeason: (seasonNumber: number, episodeCount: number) => void;
 }
 
 export function SeasonAccordion({ 
   seasons, 
   progression, 
-  onToggleEpisode, 
   onToggleSeason 
 }: SeasonAccordionProps) {
   if (!seasons || seasons.length === 0) {
@@ -46,86 +40,59 @@ export function SeasonAccordion({
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
       
-      // Format year only
-      return date.getFullYear().toString();
+      // Format en français
+      return new Intl.DateTimeFormat('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }).format(date);
     } catch (error) {
       return '';
     }
   };
 
   return (
-    <Accordion type="multiple" className="w-full space-y-4">
+    <div className="space-y-2">
       {seasons.map((season) => {
         const seasonNumber = season.season_number;
         const episodeCount = season.episode_count;
         const seasonName = season.name || `Saison ${seasonNumber}`;
         const seasonDate = formatSeasonDate(season.air_date);
         const watchedEpisodesForSeason = progression?.watched_episodes?.[seasonNumber] || [];
-        const seasonProgress = episodeCount > 0 ? (watchedEpisodesForSeason.length / episodeCount) * 100 : 0;
-        
-        // Ensure we have correct episode data for this season
-        const seasonEpisodes = season.episodes || 
-          Array.from({ length: episodeCount }, (_, i) => ({
-            number: i + 1,
-            title: `Épisode ${i + 1}`,
-            airDate: undefined
-          }));
-        
-        // Déterminer le texte du bouton en fonction de l'état actuel
-        const isAllWatched = watchedEpisodesForSeason.length === episodeCount;
-        const toggleButtonText = isAllWatched ? 'Tout décocher' : 'Tout cocher';
+        const isSeasonWatched = watchedEpisodesForSeason.length === episodeCount;
         
         return (
-          <AccordionItem 
+          <div 
             key={`season-${seasonNumber}`} 
-            value={`season-${seasonNumber}`}
-            className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-lg overflow-hidden"
+            className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-lg p-4"
           >
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex flex-col w-full">
-                <div className="flex justify-between items-center w-full">
-                  <div>
-                    <span className="text-xl font-semibold">{seasonName}</span>
-                    {seasonDate && (
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        ({seasonDate})
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {watchedEpisodesForSeason.length}/{episodeCount} épisodes
-                    </span>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      className="h-8 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSeason(seasonNumber, episodeCount);
-                      }}
-                    >
-                      {toggleButtonText}
-                    </Button>
-                  </div>
-                </div>
-                <Progress 
-                  value={seasonProgress} 
-                  className="h-1.5 mt-2 bg-secondary/30"
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={isSeasonWatched}
+                  onCheckedChange={() => onToggleSeason(seasonNumber, episodeCount)}
+                  className="h-5 w-5"
                 />
+                <div>
+                  <h3 className="text-base font-medium">{seasonName}</h3>
+                  {seasonDate && (
+                    <p className="text-sm text-muted-foreground">
+                      {seasonDate}
+                    </p>
+                  )}
+                </div>
               </div>
-            </AccordionTrigger>
-            <AccordionContent className="border-t border-border/30">
-              <EpisodeList 
-                seasonNumber={seasonNumber} 
-                episodes={seasonEpisodes} 
-                watchedEpisodes={watchedEpisodesForSeason} 
-                onToggleEpisode={onToggleEpisode} 
-              />
-            </AccordionContent>
-          </AccordionItem>
+              <span className="text-sm text-muted-foreground">
+                {watchedEpisodesForSeason.length}/{episodeCount} épisodes
+              </span>
+            </div>
+            <Progress 
+              value={(watchedEpisodesForSeason.length / episodeCount) * 100} 
+              className="h-1.5 mt-3 bg-secondary/30"
+            />
+          </div>
         );
       })}
-    </Accordion>
+    </div>
   );
 }
