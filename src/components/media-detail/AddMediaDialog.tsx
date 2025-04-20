@@ -277,6 +277,7 @@ export function AddMediaDialog({
     }
     
     if (showRatingStep) {
+      console.log("Showing rating step for", mediaId, mediaType);
       return (
         <MediaRating 
           mediaId={mediaId} 
