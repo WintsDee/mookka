@@ -15,6 +15,15 @@ import {
 import { UsernameField } from "./setup/username-field";
 import { FullNameField } from "./setup/full-name-field";
 import { BioField } from "./setup/bio-field";
+import { MediaPreferences } from "./setup/media-preferences";
+
+// Images thématiques pour l'avatar
+const THEMED_IMAGES = [
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=60", // Cinéma
+  "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60", // Bibliothèque
+  "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=500&auto=format&fit=crop&q=60", // Gaming
+  "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=500&auto=format&fit=crop&q=60", // TV/Séries
+];
 
 interface ProfileSetupFormProps {
   onSubmit: (formData: {
@@ -22,6 +31,7 @@ interface ProfileSetupFormProps {
     full_name: string;
     bio: string;
     avatar_url: string;
+    genres_preferences: string[];
   }) => Promise<void>;
 }
 
@@ -33,7 +43,8 @@ export function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
     username: "",
     full_name: "",
     bio: "",
-    avatar_url: "",
+    avatar_url: THEMED_IMAGES[Math.floor(Math.random() * THEMED_IMAGES.length)],
+    genres_preferences: [] as string[],
   });
   
   const { toast } = useToast();
@@ -103,7 +114,7 @@ export function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
   };
 
   return (
-    <Card className="w-full mt-6 bg-black/20 backdrop-blur-sm border-white/20">
+    <Card className="w-full mt-6 bg-black/20 backdrop-blur-sm border-white/20 overflow-y-auto max-h-[80vh]">
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle className="text-white">Configurer votre profil</CardTitle>
@@ -112,23 +123,31 @@ export function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-2 text-white">
               Photo de profil
             </label>
-            <ProfileImagePicker
-              value={formData.avatar_url}
-              onChange={(url) =>
-                setFormData((prev) => ({ ...prev, avatar_url: url }))
-              }
-              type="avatar"
-            />
+            <div className="grid gap-4">
+              <ProfileImagePicker
+                value={formData.avatar_url}
+                onChange={(url) =>
+                  setFormData((prev) => ({ ...prev, avatar_url: url }))
+                }
+                type="avatar"
+              />
+              <p className="text-sm text-white/70">
+                Choisissez une image qui vous représente parmi notre sélection thématique
+                ou importez la vôtre
+              </p>
+            </div>
           </div>
 
           <UsernameField
             username={formData.username}
-            onChange={handleUsernameChange}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, username: e.target.value }))
+            }
             checkingUsername={checkingUsername}
             usernameExists={usernameExists}
           />
@@ -146,9 +165,16 @@ export function ProfileSetupForm({ onSubmit }: ProfileSetupFormProps) {
               setFormData((prev) => ({ ...prev, bio: e.target.value }))
             }
           />
+
+          <MediaPreferences
+            preferences={formData.genres_preferences}
+            onChange={(preferences) =>
+              setFormData((prev) => ({ ...prev, genres_preferences: preferences }))
+            }
+          />
         </CardContent>
         
-        <CardFooter>
+        <CardFooter className="pb-6">
           <Button 
             type="submit" 
             className="w-full font-medium shadow-md hover:shadow-lg transition-all"
