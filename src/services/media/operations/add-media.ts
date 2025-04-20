@@ -11,13 +11,15 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       throw new Error("Vous devez être connecté pour ajouter un média à votre bibliothèque");
     }
     
+    // Création d'un objet formaté avec les données du média
     let formattedMedia: any = {
-      external_id: media.id.toString() || '',
+      external_id: media.id?.toString() || '',
       title: '',
       type: type,
       genres: [],
     };
 
+    // Formater les données selon le type de média
     switch (type) {
       case 'film':
         formattedMedia = {
@@ -70,11 +72,16 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         break;
     }
 
-    // Check if media exists
+    // S'assurer que tous les champs sont corrects
+    if (!formattedMedia.title) {
+      formattedMedia.title = "Sans titre";
+    }
+    
+    // Utiliser une transaction pour garantir la cohérence des données
     const { data: existingMedia, error: fetchError } = await supabase
       .from('media')
       .select('id')
-      .eq('external_id', media.id.toString())
+      .eq('external_id', formattedMedia.external_id)
       .eq('type', type)
       .maybeSingle();
 
@@ -87,6 +94,17 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
 
     if (existingMedia) {
       mediaId = existingMedia.id;
+      
+      // Mettre à jour les données du média si nécessaire
+      await supabase
+        .from('media')
+        .update({
+          rating: formattedMedia.rating,
+          cover_image: formattedMedia.cover_image,
+          description: formattedMedia.description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', mediaId);
     } else {
       const { data: newMedia, error: insertError } = await supabase
         .from('media')
@@ -102,10 +120,10 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       mediaId = newMedia.id;
     }
 
-    // Check if user already has this media
+    // Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
     const { data: existingUserMedia, error: userMediaCheckError } = await supabase
       .from('user_media')
-      .select('id')
+      .select('id, status, user_rating, notes')
       .eq('user_id', user.id)
       .eq('media_id', mediaId)
       .maybeSingle();
@@ -116,6 +134,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
     }
     
     if (existingUserMedia) {
+      // Si le média existe déjà, retourner ses données actuelles
       return {
         id: mediaId,
         type: type,
@@ -125,7 +144,8 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
         rating: formattedMedia.rating,
         genres: formattedMedia.genres,
         description: formattedMedia.description,
-        status: 'to-watch' as const,
+        status: existingUserMedia.status as any || 'to-watch',
+        userRating: existingUserMedia.user_rating,
         duration: formattedMedia.duration,
         director: formattedMedia.director,
         author: formattedMedia.author,
@@ -134,12 +154,14 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       };
     }
 
+    // Ajouter le média à la bibliothèque de l'utilisateur avec status 'to-watch' par défaut
     const { data: userMedia, error: userMediaInsertError } = await supabase
       .from('user_media')
       .insert({
         user_id: user.id,
         media_id: mediaId,
-        status: 'to-watch'
+        status: 'to-watch',
+        added_at: new Date().toISOString()
       })
       .select('*')
       .single();
@@ -149,6 +171,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       throw userMediaInsertError;
     }
 
+    // Retourner les données complètes du média
     return {
       id: mediaId,
       type: type,
@@ -158,7 +181,7 @@ export async function addMediaToLibrary(media: any, type: MediaType): Promise<Me
       rating: formattedMedia.rating,
       genres: formattedMedia.genres,
       description: formattedMedia.description,
-      status: userMedia.status as 'to-watch' | 'watching' | 'completed',
+      status: userMedia.status as any,
       duration: formattedMedia.duration,
       director: formattedMedia.director,
       author: formattedMedia.author,

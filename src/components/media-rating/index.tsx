@@ -16,9 +16,16 @@ interface MediaRatingProps {
   mediaType: MediaType;
   initialRating?: number;
   initialReview?: string;
+  onRatingComplete?: () => void;
 }
 
-export function MediaRating({ mediaId, mediaType, initialRating = 0, initialReview = "" }: MediaRatingProps) {
+export function MediaRating({ 
+  mediaId, 
+  mediaType, 
+  initialRating = 0, 
+  initialReview = "",
+  onRatingComplete
+}: MediaRatingProps) {
   const {
     isLoading,
     isSubmitting,
@@ -46,8 +53,11 @@ export function MediaRating({ mediaId, mediaType, initialRating = 0, initialRevi
     }
   }, [userRating, userReview, form]);
 
-  const onSubmit = (values: MediaRatingData) => {
-    saveRating(values);
+  const onSubmit = async (values: MediaRatingData) => {
+    await saveRating(values);
+    if (onRatingComplete) {
+      onRatingComplete();
+    }
   };
 
   // Save rating automatically when it changes

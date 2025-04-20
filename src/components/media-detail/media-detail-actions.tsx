@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, BookmarkPlus, FolderPlus, Share, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,7 @@ import { addMediaToLibrary } from "@/services/media-service";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { AddMediaDialog } from "./AddMediaDialog";
+import { useProfile } from "@/hooks/use-profile";
 
 interface MediaDetailActionsProps {
   media: any;
@@ -21,9 +22,20 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isAuthenticated } = useProfile();
 
-  const handleAddToLibrary = async () => {
+  const handleAddToLibrary = useCallback(async () => {
     if (!media) return;
+
+    // Si l'utilisateur n'est pas authentifié, rediriger vers la page de connexion
+    if (!isAuthenticated) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter un média à votre bibliothèque",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsAddingToLibrary(true);
     try {
@@ -39,7 +51,19 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
     } finally {
       setIsAddingToLibrary(false);
     }
-  };
+  }, [media, type, isAuthenticated, toast]);
+
+  const handleActionClick = useCallback((action: () => void) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour effectuer cette action",
+        variant: "destructive",
+      });
+      return;
+    }
+    action();
+  }, [isAuthenticated, toast]);
 
   return (
     <>
@@ -54,7 +78,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
           variant="ghost" 
           size="sm" 
           className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-          onClick={() => setIsLiked(!isLiked)}
+          onClick={() => handleActionClick(() => setIsLiked(!isLiked))}
         >
           <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
           <span className="text-xs">J'aime</span>
@@ -79,7 +103,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
           variant="ghost" 
           size="sm" 
           className="flex items-center gap-1.5 h-auto py-1.5 px-2"
-          onClick={onAddToCollection}
+          onClick={() => handleActionClick(onAddToCollection)}
         >
           <FolderPlus className="h-4 w-4" />
           <span className="text-xs">Collection</span>
@@ -89,6 +113,19 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
           variant="ghost" 
           size="sm" 
           className="flex items-center gap-1.5 h-auto py-1.5 px-2"
+          onClick={() => handleActionClick(() => {
+            navigator.share && navigator.share({
+              title: media.title,
+              text: `Découvrez ${media.title} sur Mookka !`,
+              url: window.location.href,
+            }).catch(() => {
+              toast({
+                title: "Partage",
+                description: "URL copiée dans le presse-papier",
+              });
+              navigator.clipboard.writeText(window.location.href);
+            });
+          })}
         >
           <Share className="h-4 w-4" />
           <span className="text-xs">Partager</span>
@@ -100,7 +137,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
         onOpenChange={setShowRatingDialog}
         mediaId={media.id}
         mediaType={type}
-        mediaTitle={media.title}
+        mediaTitle={media.title || media.name}
       />
     </>
   );

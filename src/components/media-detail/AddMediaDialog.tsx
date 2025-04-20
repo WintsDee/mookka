@@ -1,11 +1,14 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { useMediaRating } from "@/hooks/use-media-rating";
 import { MediaRating } from "@/components/media-rating";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaType } from "@/types";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface AddMediaDialogProps {
   isOpen: boolean;
@@ -23,6 +26,51 @@ export function AddMediaDialog({
   mediaTitle 
 }: AddMediaDialogProps) {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isComplete, setIsComplete] = useState(false);
+  
+  const { isSubmitting } = useMediaRating(mediaId, mediaType);
+  
+  // Réinitialiser l'état de complétion si le dialogue est rouvert
+  useEffect(() => {
+    if (isOpen) {
+      setIsComplete(false);
+    }
+  }, [isOpen]);
+  
+  const handleRatingComplete = () => {
+    setIsComplete(true);
+    toast({
+      title: "Média ajouté",
+      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
+    });
+  };
+  
+  const handleViewLibrary = () => {
+    onOpenChange(false);
+    navigate('/bibliotheque');
+  };
+  
+  const dialogContent = (
+    <>
+      <div className={isMobile ? "px-4 pb-8" : "py-4"}>
+        <MediaRating 
+          mediaId={mediaId} 
+          mediaType={mediaType} 
+          onRatingComplete={handleRatingComplete}
+        />
+        
+        {isComplete && (
+          <div className="mt-4 flex justify-end">
+            <Button onClick={handleViewLibrary}>
+              Voir ma bibliothèque
+            </Button>
+          </div>
+        )}
+      </div>
+    </>
+  );
 
   if (isMobile) {
     return (
@@ -31,9 +79,7 @@ export function AddMediaDialog({
           <DrawerHeader>
             <DrawerTitle>Ajouter "{mediaTitle}" à votre bibliothèque</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-8">
-            <MediaRating mediaId={mediaId} mediaType={mediaType} />
-          </div>
+          {dialogContent}
         </DrawerContent>
       </Drawer>
     );
@@ -45,9 +91,7 @@ export function AddMediaDialog({
         <DialogHeader>
           <DialogTitle>Ajouter "{mediaTitle}" à votre bibliothèque</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
-          <MediaRating mediaId={mediaId} mediaType={mediaType} />
-        </div>
+        {dialogContent}
       </DialogContent>
     </Dialog>
   );

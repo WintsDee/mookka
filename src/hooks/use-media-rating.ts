@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/use-profile";
@@ -18,52 +18,60 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
   const { toast } = useToast();
   const { isAuthenticated } = useProfile();
 
-  useEffect(() => {
-    const fetchRating = async () => {
-      // Only fetch if we have a mediaId
-      if (!mediaId) {
+  const fetchRating = useCallback(async () => {
+    // Only fetch if we have a mediaId and user is authenticated
+    if (!mediaId || !isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user) {
         setIsLoading(false);
         return;
       }
       
-      try {
-        setIsLoading(true);
-        const { data: user } = await supabase.auth.getUser();
+      const { data, error } = await supabase
+        .from('user_media')
+        .select('user_rating, notes')
+        .eq('media_id', mediaId)
+        .eq('user_id', user.user.id)
+        .maybeSingle();
         
-        if (!user.user) {
-          setIsLoading(false);
-          return;
-        }
-        
-        const { data, error } = await supabase
-          .from('user_media')
-          .select('user_rating, notes')
-          .eq('media_id', mediaId)
-          .eq('user_id', user.user.id)
-          .maybeSingle();
-          
-        if (error && error.code !== 'PGRST116') {
-          console.error("Erreur lors de la récupération de la note:", error);
-          return;
-        }
-        
-        if (data) {
-          const rating = data.user_rating || 0;
-          setUserRating(rating);
-          setUserReview(data.notes || '');
-        }
-      } catch (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error("Erreur lors de la récupération de la note:", error);
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
-    
+      
+      if (data) {
+        const rating = data.user_rating || 0;
+        setUserRating(rating);
+        setUserReview(data.notes || '');
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la note:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mediaId, isAuthenticated]);
+  
+  useEffect(() => {
     fetchRating();
-  }, [mediaId]);
+  }, [fetchRating]);
 
   const saveRating = async (values: MediaRatingData) => {
-    // Always assume the user is authenticated for now
+    if (!isAuthenticated) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour noter un média",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -100,10 +108,9 @@ export function useMediaRating(mediaId: string, mediaType?: MediaType) {
           .insert({
             user_id: user.user.id,
             media_id: mediaId,
-            media_type: mediaType || 'film', // Ensure we always have a media type
             user_rating: values.rating,
             notes: values.review,
-            status: 'rated'
+            status: 'completed'
           });
           
         if (error) throw error;
