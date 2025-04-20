@@ -3,42 +3,67 @@ import React, { useState, useEffect } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
-import { MediaRecommendations } from "@/components/media-recommendations";
-import { mockMedia } from "@/data/mockData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { PlusCircle, Eye, Clock, Check } from "lucide-react";
 import { MediaType, Media, MediaStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { getUserMediaLibrary } from "@/services/media/operations";
 import { useQuery } from "@tanstack/react-query";
-
-interface UserMedia extends Omit<Media, 'status'> {
-  added_at?: string;
-  user_rating?: number;
-  status?: MediaStatus | string;
-}
+import { Badge } from "@/components/ui/badge";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "title" | "rating">("date");
-  const [showCompleted, setShowCompleted] = useState(true);
-  const location = useLocation();
   const navigate = useNavigate();
   
-  const { data: userMedia = [], isLoading, error } = useQuery({
+  const { data: userMedia = [], isLoading } = useQuery({
     queryKey: ['userMediaLibrary'],
     queryFn: getUserMediaLibrary
   });
 
+  const getStatusLabel = (status: MediaStatus, mediaType: MediaType) => {
+    if (status === 'to-watch' || status === 'to-read' || status === 'to-play') {
+      switch (mediaType) {
+        case 'film':
+        case 'serie':
+          return 'À voir';
+        case 'book':
+          return 'À lire';
+        case 'game':
+          return 'À jouer';
+        default:
+          return 'À faire';
+      }
+    }
+    return status === 'watching' || status === 'reading' || status === 'playing' 
+      ? 'En cours' 
+      : 'Terminé';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'to-watch':
+      case 'to-read':
+      case 'to-play':
+        return <Eye className="h-4 w-4" />;
+      case 'watching':
+      case 'reading':
+      case 'playing':
+        return <Clock className="h-4 w-4" />;
+      case 'completed':
+        return <Check className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
   const filteredMedia = userMedia
     .filter(media => filter === "all" || media.type === filter)
-    .filter(media => showCompleted || media.status !== "completed")
     .filter(media => 
       searchTerm === "" || 
       media.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,8 +72,8 @@ const Bibliotheque = () => {
       ))
     )
     .sort((a, b) => {
-      const mediaA = a as UserMedia;
-      const mediaB = b as UserMedia;
+      const mediaA = a as Media & { added_at?: string; user_rating?: number };
+      const mediaB = b as Media & { added_at?: string; user_rating?: number };
       
       switch (sortBy) {
         case "title":
@@ -59,16 +84,54 @@ const Bibliotheque = () => {
         default:
           if (mediaA.added_at && mediaB.added_at) {
             return new Date(mediaB.added_at).getTime() - new Date(mediaA.added_at).getTime();
-          } else {
-            return (b.year || 0) - (a.year || 0);
           }
+          return (b.year || 0) - (a.year || 0);
       }
     });
 
-  const handleEmptyResults = () => {
-    if (searchTerm && filteredMedia.length === 0) {
-      navigate(`/recherche?q=${encodeURIComponent(searchTerm)}&type=${filter === "all" ? "" : filter}`);
+  const renderMediaGrid = (status: string) => {
+    const statusMedia = filteredMedia.filter(media => {
+      if (status === 'to-do') {
+        return ['to-watch', 'to-read', 'to-play'].includes(media.status || '');
+      }
+      if (status === 'in-progress') {
+        return ['watching', 'reading', 'playing'].includes(media.status || '');
+      }
+      return media.status === 'completed';
+    });
+
+    if (statusMedia.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-muted-foreground mb-4">
+            Aucun média dans cette catégorie
+          </p>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/recherche')}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Ajouter un média
+          </Button>
+        </div>
+      );
     }
+
+    return (
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {statusMedia.map((media) => (
+          <div key={media.id} className="relative">
+            <Badge 
+              className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
+              variant="outline"
+            >
+              {getStatusLabel(media.status as MediaStatus, media.type)}
+            </Badge>
+            <MediaCard media={media} />
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -79,95 +142,68 @@ const Bibliotheque = () => {
           <div className="flex items-center gap-4">
             <LibrarySearch
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (e.target.value === "") {
-                  handleEmptyResults();
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onSearch={() => {
+                if (searchTerm && filteredMedia.length === 0) {
+                  navigate(`/recherche?q=${encodeURIComponent(searchTerm)}&type=${filter === "all" ? "" : filter}`);
                 }
               }}
-              onSearch={handleEmptyResults}
             />
             <LibraryFilters
               sortBy={sortBy}
               onSortChange={setSortBy}
-              showCompleted={showCompleted}
-              onShowCompletedChange={setShowCompleted}
+              filter={filter}
+              onFilterChange={setFilter}
             />
           </div>
           
           <div className="mt-4">
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="w-full grid grid-cols-5">
+            <Tabs defaultValue="to-do" className="w-full">
+              <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger 
-                  value="all" 
-                  onClick={() => setFilter("all")}
-                  className="text-xs"
+                  value="to-do" 
+                  className="flex items-center gap-2"
                 >
-                  Tout
+                  <Eye className="h-4 w-4" />
+                  <span className="hidden sm:inline">À faire</span>
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="film" 
-                  onClick={() => setFilter("film")}
-                  className="text-xs"
+                  value="in-progress"
+                  className="flex items-center gap-2"
                 >
-                  Films
+                  <Clock className="h-4 w-4" />
+                  <span className="hidden sm:inline">En cours</span>
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="serie" 
-                  onClick={() => setFilter("serie")}
-                  className="text-xs"
+                  value="completed"
+                  className="flex items-center gap-2"
                 >
-                  Séries
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="book" 
-                  onClick={() => setFilter("book")}
-                  className="text-xs"
-                >
-                  Livres
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="game" 
-                  onClick={() => setFilter("game")}
-                  className="text-xs"
-                >
-                  Jeux
+                  <Check className="h-4 w-4" />
+                  <span className="hidden sm:inline">Terminé</span>
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="to-do" className="mt-6">
+                {renderMediaGrid('to-do')}
+              </TabsContent>
+              
+              <TabsContent value="in-progress" className="mt-6">
+                {renderMediaGrid('in-progress')}
+              </TabsContent>
+              
+              <TabsContent value="completed" className="mt-6">
+                {renderMediaGrid('completed')}
+              </TabsContent>
             </Tabs>
           </div>
         </header>
         
-        <div className="mt-32 px-6 pb-16 overflow-y-auto h-[calc(100vh-220px)] -webkit-overflow-scrolling-touch">
-          <div className="space-y-8 py-6">
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <p>Chargement de votre bibliothèque...</p>
-              </div>
-            ) : filteredMedia.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-muted-foreground mb-4">
-                  Votre bibliothèque est vide. Commencez à ajouter des médias !
-                </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/recherche')}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Ajouter un média
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {filteredMedia.map((media) => (
-                  <MediaCard
-                    key={media.id}
-                    media={media}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="mt-52 px-6 pb-16">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <p>Chargement de votre bibliothèque...</p>
+            </div>
+          ) : null}
         </div>
       </div>
       
