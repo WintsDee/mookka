@@ -30,9 +30,9 @@ const Auth = () => {
     
     if (isAuthenticated) {
       if (profile?.username) {
-        navigate('/bibliotheque');
+        navigate('/bibliotheque', { replace: true });
       } else {
-        navigate('/profile-setup');
+        navigate('/profile-setup', { replace: true });
       }
     }
   }, [isAuthenticated, profile, navigate, profileLoading]);
