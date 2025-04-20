@@ -129,7 +129,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
     const newWatchedEpisodes = { ...currentWatchedEpisodes };
     
     if (isSeasonWatched) {
-      // Si la saison était complètement regardée, on la vide
+      // If the season was completely watched, we empty it
       newWatchedEpisodes[seasonNumber] = [];
     } else {
       // Sinon on la marque comme complètement regardée
@@ -149,7 +149,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       }
     });
     
-    // Mise à jour du statut en fonction du nombre d'épisodes regardés
+    // Update status based on watched episodes count
     let newStatus = status;
     if (totalWatchedCount === 0) {
       newStatus = 'to-watch';

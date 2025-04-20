@@ -21,7 +21,7 @@ const formatSeasonDate = (dateString?: string) => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '';
     
-    // Format en français
+    // Format in French
     return new Intl.DateTimeFormat('fr-FR', {
       year: 'numeric',
       month: 'long',

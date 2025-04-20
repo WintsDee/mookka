@@ -6,8 +6,8 @@ export function generateUpcomingEpisodes(mediaDetails: any, seasons: Season[]): 
     return mediaDetails.upcoming_episodes;
   }
 
-  // Si aucune information sur les prochains épisodes, 
-  // créer des données factices pour les séries en cours
+  // If no information on upcoming episodes,
+  // create placeholder data for ongoing series
   if (mediaDetails?.status === 'Returning Series' || mediaDetails?.status === 'In Production') {
     const today = new Date();
     const fakeUpcoming = [];

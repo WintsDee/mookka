@@ -1,6 +1,10 @@
 
-export function determineStatus(watchedCount: number, totalEpisodes: number): string {
-  if (watchedCount === 0) return 'to-watch';
-  if (watchedCount === totalEpisodes) return 'completed';
-  return 'watching';
+export function determineStatus(watchedCount: number, totalCount: number): string {
+  if (watchedCount === 0) {
+    return 'to-watch';
+  } else if (watchedCount === totalCount) {
+    return 'completed';
+  } else {
+    return 'watching';
+  }
 }
