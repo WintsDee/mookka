@@ -6,9 +6,8 @@ import { SeasonAccordion } from "./serie/season-accordion";
 import { useSerieProgression } from "./serie/use-serie-progression";
 import { NotesTextarea } from "./notes-textarea";
 import { EpisodeList } from "./serie/episode-list";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { UpcomingEpisodes } from "./serie/upcoming-episodes";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SerieProgressionProps {
   mediaDetails: any;
@@ -18,12 +17,14 @@ interface SerieProgressionProps {
 
 export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieProgressionProps) {
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null);
+  const { toast } = useToast();
   
   const {
     seasons,
     totalEpisodes,
     watchedEpisodes,
     status,
+    upcomingEpisodes,
     progression: updatedProgression,
     toggleEpisode,
     toggleSeason,
@@ -31,18 +32,52 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
   } = useSerieProgression(mediaDetails, progression);
 
   const handleSeasonToggle = (seasonNumber: number, episodeCount: number) => {
-    const updated = toggleSeason(seasonNumber, episodeCount);
-    onUpdate(updated);
+    try {
+      const updated = toggleSeason(seasonNumber, episodeCount);
+      onUpdate(updated);
+      
+      toast({
+        title: "Progression mise à jour",
+        description: "La progression de la saison a été enregistrée",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la saison:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la progression",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEpisodeToggle = (seasonNumber: number, episodeNumber: number) => {
-    const updated = toggleEpisode(seasonNumber, episodeNumber);
-    onUpdate(updated);
+    try {
+      const updated = toggleEpisode(seasonNumber, episodeNumber);
+      onUpdate(updated);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'épisode:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la progression",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleStatusChange = (newStatus: string) => {
-    const updated = updateStatus(newStatus);
-    onUpdate(updated);
+    try {
+      const updated = updateStatus(newStatus);
+      onUpdate(updated);
+      
+      toast({
+        title: "Statut mis à jour",
+        description: `La série est maintenant marquée comme "${newStatus === 'to-watch' ? 'À voir' : newStatus === 'watching' ? 'En cours' : 'Terminée'}"`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du statut:", error);
+    }
   };
   
   const handleNotesChange = (notes: string) => {
@@ -56,6 +91,14 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
   const handleExpandSeason = (seasonNumber: number) => {
     setExpandedSeason(expandedSeason === seasonNumber ? null : seasonNumber);
   };
+
+  if (!seasons || seasons.length === 0) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-muted-foreground">Aucune information sur les saisons disponible</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -81,7 +124,7 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
             />
             
             {expandedSeason === season.season_number && (
-              <div className="px-4 pb-4 mt-2">
+              <div className="px-4 pb-4">
                 <EpisodeList 
                   season={season}
                   watchedEpisodes={updatedProgression?.watched_episodes?.[season.season_number] || []}
@@ -92,6 +135,10 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
           </div>
         ))}
       </div>
+      
+      {upcomingEpisodes && upcomingEpisodes.length > 0 && (
+        <UpcomingEpisodes episodes={upcomingEpisodes} />
+      )}
         
       <div className="bg-card/30 backdrop-blur-sm border border-border/40 rounded-lg p-4 mt-4">
         <NotesTextarea 

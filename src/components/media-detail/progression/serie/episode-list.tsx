@@ -10,22 +10,26 @@ interface EpisodeListProps {
 }
 
 export function EpisodeList({ season, watchedEpisodes, onToggleEpisode }: EpisodeListProps) {
+  if (!season || !season.episode_count) {
+    return <div className="p-4 text-muted-foreground">Aucun épisode disponible</div>;
+  }
+
   const episodes = Array.from({ length: season.episode_count }, (_, i) => ({
     number: i + 1,
-    title: `Épisode ${i + 1}`,
+    title: season.episodes?.[i]?.title || `Épisode ${i + 1}`
   }));
 
   return (
     <div className="space-y-2 mt-2">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {episodes.map((episode) => {
-          const isWatched = watchedEpisodes.includes(episode.number);
+          const isWatched = Array.isArray(watchedEpisodes) && watchedEpisodes.includes(episode.number);
           
           return (
             <div 
               key={`episode-${season.season_number}-${episode.number}`}
               className={`
-                flex items-center gap-2 p-2 rounded-md border 
+                flex items-center gap-2 p-3 rounded-md border transition-colors
                 ${isWatched ? 'bg-primary/10 border-primary/20' : 'bg-card/50 border-border/40'}
               `}
             >

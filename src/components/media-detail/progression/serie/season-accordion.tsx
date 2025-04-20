@@ -47,7 +47,7 @@ export function SeasonAccordion({
   const episodeCount = season.episode_count;
   const seasonName = season.name || `Saison ${seasonNumber}`;
   const seasonDate = formatSeasonDate(season.air_date);
-  const isSeasonWatched = watchedEpisodes.length === episodeCount;
+  const isSeasonWatched = Array.isArray(watchedEpisodes) && watchedEpisodes.length === episodeCount;
   
   const handleToggleSeason = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -60,11 +60,7 @@ export function SeasonAccordion({
         <div className="flex items-center gap-3">
           <Checkbox
             checked={isSeasonWatched}
-            onCheckedChange={(checked) => {
-              if (checked !== 'indeterminate') {
-                onToggleSeason();
-              }
-            }}
+            onCheckedChange={() => onToggleSeason()}
             onClick={(e) => e.stopPropagation()}
             className="h-5 w-5"
           />
@@ -79,7 +75,7 @@ export function SeasonAccordion({
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            {watchedEpisodes.length}/{episodeCount} épisodes
+            {watchedEpisodes?.length || 0}/{episodeCount} épisodes
           </span>
           {expanded ? (
             <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -89,7 +85,7 @@ export function SeasonAccordion({
         </div>
       </div>
       <Progress 
-        value={(watchedEpisodes.length / episodeCount) * 100} 
+        value={episodeCount > 0 ? ((watchedEpisodes?.length || 0) / episodeCount) * 100 : 0} 
         className="h-1.5 bg-secondary/30"
       />
     </div>

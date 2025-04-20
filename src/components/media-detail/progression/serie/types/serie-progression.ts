@@ -13,9 +13,16 @@ export interface Season {
   episodes?: Episode[];
 }
 
+export interface UpcomingEpisode {
+  season_number: number;
+  episode_number: number;
+  name?: string;
+  air_date?: string;
+}
+
 export interface SerieProgressionResult {
   seasons: Season[];
-  upcomingEpisodes: any[];
+  upcomingEpisodes: UpcomingEpisode[];
   totalEpisodes: number;
   watchedEpisodes: number;
   status: string;
