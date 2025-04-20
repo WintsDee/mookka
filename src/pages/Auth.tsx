@@ -56,22 +56,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-auto">
-      <div className="absolute inset-0 z-0">
+    <div className="min-h-screen w-full overflow-y-auto">
+      <div className="fixed inset-0 -z-10">
         <img 
           src="/lovable-uploads/72025526-1809-42a2-b072-b398f21bffca.png" 
           alt="Mookka Background" 
-          className="w-full h-full object-cover fixed"
+          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
 
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md flex flex-col items-center rounded-xl p-6">
+      <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md flex flex-col items-center p-4 sm:p-6">
           <img 
             src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
             alt="Mookka Logo" 
-            className="w-36 h-36 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
+            className="w-32 h-32 sm:w-40 sm:h-40 mb-4 animate-scale-in drop-shadow-lg" 
           />
           
           <Card className="w-full bg-background/80 backdrop-blur-md border-border/20">
@@ -148,3 +148,4 @@ const Auth = () => {
 };
 
 export default Auth;
+
