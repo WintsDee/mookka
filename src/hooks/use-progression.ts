@@ -48,6 +48,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           notes: ''
         };
       default:
+        defaultStatus = 'to-watch' as MediaStatus;
         return {};
     }
   };
