@@ -54,38 +54,47 @@ export const useImageUpload = (type: 'avatar' | 'cover', onChange: (url: string)
 
       setIsUploading(true);
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${type === 'avatar' ? 'avatars' : 'covers'}/${fileName}`;
-
-      const { error: uploadError, data: uploadData } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        throw {
-          message: "Erreur lors de l'upload",
-          statusCode: uploadError.message,
-          details: uploadError.message
+      // Instead of uploading to storage, we'll convert to base64 and use that directly
+      // This avoids RLS issues with storage buckets
+      const reader = new FileReader();
+      
+      return new Promise((resolve) => {
+        reader.onload = (e) => {
+          const base64String = e.target?.result as string;
+          if (base64String) {
+            onChange(base64String);
+            resolve({ success: true, url: base64String });
+          } else {
+            const error = {
+              message: "Erreur lors de la conversion",
+              details: "Impossible de convertir l'image"
+            };
+            toast({
+              title: error.message,
+              description: error.details,
+              variant: "destructive",
+            });
+            resolve({ success: false, error });
+          }
+          setIsUploading(false);
         };
-      }
-
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      if (!data?.publicUrl) {
-        throw {
-          message: "Erreur lors de la récupération de l'URL",
-          details: "Impossible de générer l'URL publique"
+        
+        reader.onerror = () => {
+          const error = {
+            message: "Erreur lors de la lecture",
+            details: "Impossible de lire le fichier"
+          };
+          toast({
+            title: error.message,
+            description: error.details,
+            variant: "destructive",
+          });
+          resolve({ success: false, error });
+          setIsUploading(false);
         };
-      }
-
-      onChange(data.publicUrl);
-      return { success: true, url: data.publicUrl };
+        
+        reader.readAsDataURL(file);
+      });
 
     } catch (error: any) {
       const errorMessage = {
@@ -100,10 +109,8 @@ export const useImageUpload = (type: 'avatar' | 'cover', onChange: (url: string)
         variant: "destructive",
       });
 
-      return { success: false, error: errorMessage };
-
-    } finally {
       setIsUploading(false);
+      return { success: false, error: errorMessage };
     }
   };
 

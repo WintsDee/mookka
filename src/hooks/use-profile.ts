@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { DEFAULT_AVATARS } from "@/config/default-avatars";
 
 export type Profile = {
   id: string;
@@ -17,8 +18,14 @@ export type Profile = {
   updated_at: string;
 };
 
-// Updated abstract images that better match the app's style
-export const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
+// Get a random avatar from our collection
+const getRandomAvatar = () => {
+  const randomIndex = Math.floor(Math.random() * DEFAULT_AVATARS.length);
+  return DEFAULT_AVATARS[randomIndex];
+};
+
+// Default images
+export const DEFAULT_AVATAR = getRandomAvatar();
 export const DEFAULT_COVER = "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=3000&auto=format&fit=crop";
 
 export function useProfile() {
