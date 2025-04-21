@@ -14,6 +14,7 @@ import { LibraryFilters } from "@/components/library/library-filters";
 import { getUserMediaLibrary } from "@/services/media/operations";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Bibliotheque = () => {
   const [filter, setFilter] = useState<MediaType | "all">("all");
@@ -121,12 +122,6 @@ const Bibliotheque = () => {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {statusMedia.map((media) => (
           <div key={media.id} className="relative">
-            <Badge 
-              className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
-              variant="outline"
-            >
-              {getStatusLabel(media.status as MediaStatus, media.type)}
-            </Badge>
             <MediaCard media={media} />
           </div>
         ))}
@@ -137,8 +132,8 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 h-full overflow-hidden">
-        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-6 pt-4 pb-2">
+      <div className="h-full pt-16">
+        <div className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-6 pt-4 pb-2">
           <div className="flex items-center gap-4">
             <LibrarySearch
               value={searchTerm}
@@ -182,29 +177,31 @@ const Bibliotheque = () => {
                   <span className="hidden sm:inline">Terminé</span>
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="to-do" className="mt-6">
-                {renderMediaGrid('to-do')}
-              </TabsContent>
-              
-              <TabsContent value="in-progress" className="mt-6">
-                {renderMediaGrid('in-progress')}
-              </TabsContent>
-              
-              <TabsContent value="completed" className="mt-6">
-                {renderMediaGrid('completed')}
-              </TabsContent>
             </Tabs>
           </div>
-        </header>
+        </div>
         
-        <div className="mt-52 px-6 pb-16">
-          {isLoading ? (
+        <ScrollArea className="h-[calc(100vh-190px)] px-6 pt-36 pb-20">
+          <Tabs defaultValue="to-do" className="w-full">
+            <TabsContent value="to-do" className="mt-2">
+              {renderMediaGrid('to-do')}
+            </TabsContent>
+            
+            <TabsContent value="in-progress" className="mt-2">
+              {renderMediaGrid('in-progress')}
+            </TabsContent>
+            
+            <TabsContent value="completed" className="mt-2">
+              {renderMediaGrid('completed')}
+            </TabsContent>
+          </Tabs>
+          
+          {isLoading && (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
             </div>
-          ) : null}
-        </div>
+          )}
+        </ScrollArea>
       </div>
       
       <MobileNav />

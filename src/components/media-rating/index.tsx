@@ -50,12 +50,15 @@ export function MediaRating({
   
   const handleSubmitRating = async () => {
     try {
-      await submitRating({ 
+      console.log("Submitting rating:", { mediaId, mediaType, rating, review, notes });
+      const result = await submitRating({ 
         rating, 
         review,
         notes,
         status: 'completed'
       });
+      
+      console.log("Rating submission result:", result);
       
       if (onRatingComplete) {
         onRatingComplete();

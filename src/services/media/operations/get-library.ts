@@ -19,8 +19,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
         added_at,
         user_rating,
         notes,
-        media_id,
-        media (
+        media:media_id (
           id,
           title,
           type,
@@ -33,8 +32,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
           director,
           author,
           publisher,
-          platform,
-          external_id
+          platform
         )
       `)
       .eq('user_id', user.user.id)
@@ -49,16 +47,7 @@ export async function getUserMediaLibrary(): Promise<Media[]> {
       return [];
     }
     
-    console.log("Raw library data:", data);
-    
-    return data.map(item => {
-      // Assurez-vous que le média existe avant de formatter
-      if (!item.media) {
-        console.warn("Média manquant pour l'entrée:", item);
-        return null;
-      }
-      return formatLibraryMedia(item);
-    }).filter(Boolean) as Media[];
+    return data.map(formatLibraryMedia);
   } catch (error) {
     console.error("Erreur dans getUserMediaLibrary:", error);
     throw error;

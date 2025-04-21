@@ -9,7 +9,7 @@ const Index = () => {
   return (
     <>
       {isLoading && <LoadingScreen onLoadComplete={() => setIsLoading(false)} />}
-      <div
+      <div 
         className={`relative min-h-screen w-full overflow-auto transition-opacity duration-1000 ${
           isLoading ? "opacity-0" : "opacity-100"
         }`}
@@ -22,6 +22,7 @@ const Index = () => {
           />
           <div className="absolute inset-0 bg-black/50" />
         </div>
+        
         <MainContent />
       </div>
     </>

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Gamepad, Film, Tv } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 
@@ -25,9 +25,6 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
-  
-  // Déterminer l'ID à utiliser pour la navigation (important pour les livres)
-  const navigationId = media.externalId && type === 'book' ? media.externalId : id;
   
   const sizeClasses = {
     small: "w-32 h-48",
@@ -55,33 +52,38 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     
     let statusClass = "";
     let statusText = "";
+    let StatusIcon = null;
     
     switch (status) {
       // Statuts "à faire"
       case "to-watch":
       case "to-read":
       case "to-play":
-        statusClass = "status-todo";
+        statusClass = "bg-amber-500/20 border-amber-500/30 text-amber-300";
         statusText = type === "book" ? "À lire" : type === "game" ? "À jouer" : "À voir";
+        StatusIcon = Eye;
         break;
       
       // Statuts "en cours"
       case "watching":
       case "reading":
       case "playing":
-        statusClass = "status-in-progress";
+        statusClass = "bg-purple-500/20 border-purple-500/30 text-purple-300";
         statusText = "En cours";
+        StatusIcon = Clock;
         break;
       
       // Statut "terminé"
       case "completed":
-        statusClass = "status-completed";
-        statusText = type === "film" ? "Vu" : "Terminé";
+        statusClass = "bg-emerald-500/20 border-emerald-500/30 text-emerald-300";
+        statusText = type === "book" ? "Lu" : type === "film" ? "Vu" : "Terminé";
+        StatusIcon = Check;
         break;
     }
     
     return (
-      <Badge className={`absolute top-2 left-2 text-[0.6rem] py-0 ${statusClass}`}>
+      <Badge className={`absolute top-2 left-2 text-[0.6rem] py-0 border ${statusClass} flex items-center gap-1 shadow-sm backdrop-blur-sm z-10`}>
+        {StatusIcon && <StatusIcon className="h-3 w-3" />}
         {statusText}
       </Badge>
     );
@@ -93,7 +95,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 
   return (
     <Link 
-      to={`/media/${type}/${navigationId}`} 
+      to={`/media/${type}/${id}`} 
       state={from ? { from } : undefined}
       className="block animate-fade-in"
     >

@@ -1,59 +1,82 @@
-
 import { useState, useEffect } from "react";
 import { MediaType, MediaStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { updateMediaStatus } from "@/services/media";
 
 export function useProgression(mediaId: string, mediaType: MediaType, mediaDetails: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [progression, setProgression] = useState<any>(null);
+  const [userMediaStatus, setUserMediaStatus] = useState<MediaStatus | null>(null);
 
   // Create a default progression based on media type
   const createDefaultProgression = (type: MediaType) => {
-    // Assign correct default status based on media type
+    // Define default statuses based on media type
     let defaultStatus: MediaStatus;
     
     switch (type) {
       case 'film':
-      case 'serie':
         defaultStatus = 'to-watch';
-        break;
-      case 'book':
-        defaultStatus = 'to-read';
-        break;
-      case 'game':
-        defaultStatus = 'to-play';
-        break;
-      default:
-        defaultStatus = 'to-watch';
-    }
-    
-    switch (type) {
-      case 'film':
         return {
           status: defaultStatus,
-          watched_time: 0
+          watched_time: 0,
+          notes: ''
         };
       case 'serie':
+        defaultStatus = 'to-watch';
         return {
           status: defaultStatus,
           watched_episodes: {},
           watched_count: 0,
-          total_episodes: 0
+          total_episodes: 0,
+          notes: ''
         };
       case 'book':
+        defaultStatus = 'to-read';
         return {
           status: defaultStatus,
           current_page: 0,
-          total_pages: mediaDetails?.page_count || 0
+          total_pages: mediaDetails?.page_count || 0,
+          notes: ''
         };
       case 'game':
+        defaultStatus = 'to-play';
         return {
           status: defaultStatus,
           completion_percentage: 0,
-          playtime: 0
+          playtime: 0,
+          notes: ''
         };
       default:
-        return {};
+        defaultStatus = 'to-watch';
+        return {
+          status: defaultStatus
+        };
+    }
+  };
+  
+  // Fetch user_media status to ensure consistency
+  const fetchUserMediaStatus = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user) return null;
+      
+      const { data, error } = await supabase
+        .from('user_media')
+        .select('status')
+        .eq('media_id', mediaId)
+        .eq('user_id', user.user.id)
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erreur lors de la récupération du statut:', error);
+        return null;
+      }
+      
+      return data?.status as MediaStatus | null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du statut:', error);
+      return null;
     }
   };
   
@@ -61,6 +84,10 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
     try {
       setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
+      
+      // Get user media status first for consistency
+      const status = await fetchUserMediaStatus();
+      setUserMediaStatus(status);
       
       // Create a default progression regardless of user status
       const defaultProgression = createDefaultProgression(mediaType);
@@ -77,10 +104,24 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           console.error('Erreur lors de la récupération de la progression:', error);
         }
         
-        // If progression data exists, use it; otherwise use default
+        // If progression data exists, use it, but ensure status is consistent with user_media
         if (data && data.progression_data) {
-          setProgression(data.progression_data);
+          const progressionData = data.progression_data;
+          
+          // If we have a status from user_media and it's different from progression status, update progression
+          if (status && typeof progressionData === 'object' && progressionData !== null) {
+            // Check if progressionData has a status property and fix it if needed
+            if ('status' in progressionData && progressionData.status !== status) {
+              progressionData.status = status;
+            }
+          }
+          
+          setProgression(progressionData);
         } else {
+          // Use default progression if no data, but use status from user_media if available
+          if (status && defaultProgression && typeof defaultProgression === 'object') {
+            defaultProgression.status = status;
+          }
           setProgression(defaultProgression);
         }
       } else {
@@ -106,6 +147,13 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       const { data: user } = await supabase.auth.getUser();
       
       if (!user.user) return;
+      
+      // If progressionData has a status property and it's different from userMediaStatus
+      if (progressionData && 'status' in progressionData && progressionData.status !== userMediaStatus) {
+        const newStatus = progressionData.status as MediaStatus;
+        await updateMediaStatus(mediaId, newStatus);
+        setUserMediaStatus(newStatus);
+      }
       
       const { data: existingProgression } = await supabase
         .from('media_progressions')

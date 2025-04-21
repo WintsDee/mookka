@@ -1,3 +1,4 @@
+
 import { MediaType } from "@/types";
 
 /**
@@ -183,35 +184,22 @@ export const formatGameSearchResult = (item: any) => {
 /**
  * Format library media item
  */
-export const formatLibraryMedia = (item: any) => {
-  if (!item.media) {
-    console.warn("Missing media data in format:", item);
-    return null;
-  }
-  
-  // Déterminer quel ID utiliser (préférez l'ID externe pour les livres)
-  const mediaId = item.media.type === 'book' && item.media.external_id 
-    ? item.media.external_id 
-    : item.media.id;
-  
-  return {
-    id: mediaId,
-    title: item.media.title,
-    type: item.media.type as MediaType,
-    coverImage: item.media.cover_image,
-    year: item.media.year,
-    rating: item.media.rating,
-    userRating: item.user_rating,
-    genres: item.media.genres,
-    description: item.media.description,
-    status: (item.status || 'to-watch') as 'to-watch' | 'watching' | 'completed',
-    addedAt: item.added_at,
-    notes: item.notes,
-    duration: item.media.duration,
-    director: item.media.director,
-    author: item.media.author,
-    publisher: item.media.publisher,
-    platform: item.media.platform,
-    externalId: item.media.external_id // Ajout de l'ID externe
-  };
-};
+export const formatLibraryMedia = (item: any) => ({
+  id: item.media.id,
+  title: item.media.title,
+  type: item.media.type as MediaType,
+  coverImage: item.media.cover_image,
+  year: item.media.year,
+  rating: item.media.rating,
+  userRating: item.user_rating,
+  genres: item.media.genres,
+  description: item.media.description,
+  status: (item.status || 'to-watch') as 'to-watch' | 'watching' | 'completed',
+  addedAt: item.added_at,
+  notes: item.notes,
+  duration: item.media.duration,
+  director: item.media.director,
+  author: item.media.author,
+  publisher: item.media.publisher,
+  platform: item.media.platform
+});
