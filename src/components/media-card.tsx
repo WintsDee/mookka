@@ -17,21 +17,21 @@ interface MediaCardProps {
 
 const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
   // Normalize rating to 10-point scale if it's not already
-  const normalizedRating = media.rating
-    ? media.rating > 5
-      ? media.rating
+  const normalizedRating = media.rating 
+    ? media.rating > 5 
+      ? media.rating 
       : parseFloat(((media.rating / 5) * 10).toFixed(1))
     : undefined;
 
   const { id, title, type, coverImage, year, genres, status, duration } = media;
   const isMobile = useIsMobile();
-
+  
   const sizeClasses = {
     small: "w-32 h-48",
     medium: "w-40 h-60",
     large: "w-48 h-72"
   };
-
+  
   const MediaTypeIcon = () => {
     switch (type) {
       case "film":
@@ -46,14 +46,14 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         return null;
     }
   };
-
+  
   const getStatusBadge = () => {
     if (!status) return null;
-
+    
     let statusClass = "";
     let statusText = "";
     let StatusIcon = null;
-
+    
     switch (status) {
       // Statuts "à faire"
       case "to-watch":
@@ -63,7 +63,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         statusText = type === "book" ? "À lire" : type === "game" ? "À jouer" : "À voir";
         StatusIcon = Eye;
         break;
-
+      
       // Statuts "en cours"
       case "watching":
       case "reading":
@@ -72,7 +72,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         statusText = "En cours";
         StatusIcon = Clock;
         break;
-
+      
       // Statut "terminé"
       case "completed":
         statusClass = "bg-emerald-500/20 border-emerald-500/30 text-emerald-300";
@@ -80,7 +80,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         StatusIcon = Check;
         break;
     }
-
+    
     return (
       <Badge className={`absolute top-2 left-2 text-[0.6rem] py-0 border ${statusClass} flex items-center gap-1 shadow-sm backdrop-blur-sm z-10`}>
         {StatusIcon && <StatusIcon className="h-3 w-3" />}
@@ -88,10 +88,14 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
       </Badge>
     );
   };
+  
+  const getTypeVariant = () => {
+    return type as "film" | "serie" | "book" | "game";
+  };
 
   return (
-    <Link
-      to={`/media/${type}/${id}`}
+    <Link 
+      to={`/media/${type}/${id}`} 
       state={from ? { from } : undefined}
       className="block animate-fade-in"
     >
@@ -103,9 +107,32 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
             alt={title} 
             className="w-full h-full object-cover rounded-lg"
           />
+          
           {/* Status Badge */}
           {getStatusBadge()}
-          {/* Removed the top-right type badge to avoid duplication */}
+          
+          {/* Type Badge - Repositioned for mobile */}
+          {isMobile ? (
+            <div className="absolute top-0 right-0">
+              <div className={cn(
+                "w-5 h-5 rounded-tr-lg flex items-center justify-center",
+                `bg-media-${type}`
+              )}>
+                <MediaTypeIcon />
+              </div>
+            </div>
+          ) : (
+            <Badge 
+              variant={getTypeVariant()} 
+              className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
+            >
+              <MediaTypeIcon />
+              {type === "film" ? "Film" : 
+               type === "serie" ? "Série" : 
+               type === "book" ? "Livre" : "Jeu"}
+            </Badge>
+          )}
+          
           {/* Information - Always visible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
@@ -118,9 +145,9 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
                       <span className="text-xs text-white/80">{year}</span>
                     </div>
                     {normalizedRating && (
-                      <MediaRatingBadge
-                        rating={normalizedRating}
-                        size="small"
+                      <MediaRatingBadge 
+                        rating={normalizedRating} 
+                        size="small" 
                       />
                     )}
                   </div>
@@ -144,7 +171,11 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
             </div>
           </div>
         </div>
-        {/* Removed the colored small bar on top-right */}
+        <div className={cn(
+          "absolute top-0 right-0 w-2 h-8", 
+          `bg-media-${type}`,
+          isMobile && "hidden"
+        )} />
       </div>
     </Link>
   );
