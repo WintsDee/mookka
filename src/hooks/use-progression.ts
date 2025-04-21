@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { MediaType, MediaStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +48,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           notes: ''
         };
       default:
-        defaultStatus = 'to-watch';
+        defaultStatus = 'to-watch' as MediaStatus;
         return {
           status: defaultStatus
         };
