@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Media } from "@/types";
@@ -54,6 +55,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
     let StatusIcon = null;
     
     switch (status) {
+      // Statuts "à faire"
       case "to-watch":
       case "to-read":
       case "to-play":
@@ -61,6 +63,8 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         statusText = type === "book" ? "À lire" : type === "game" ? "À jouer" : "À voir";
         StatusIcon = Eye;
         break;
+      
+      // Statuts "en cours"
       case "watching":
       case "reading":
       case "playing":
@@ -68,6 +72,8 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         statusText = "En cours";
         StatusIcon = Clock;
         break;
+      
+      // Statut "terminé"
       case "completed":
         statusClass = "bg-emerald-500/20 border-emerald-500/30 text-emerald-300";
         statusText = type === "book" ? "Lu" : type === "film" ? "Vu" : "Terminé";
@@ -81,6 +87,10 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
         {statusText}
       </Badge>
     );
+  };
+  
+  const getTypeVariant = () => {
+    return type as "film" | "serie" | "book" | "game";
   };
 
   return (
@@ -97,9 +107,32 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
             alt={title} 
             className="w-full h-full object-cover rounded-lg"
           />
+          
           {/* Status Badge */}
           {getStatusBadge()}
-          {/* (SUPPRIMÉ) Type Badge - plus rien à droite */}
+          
+          {/* Type Badge - Repositioned for mobile */}
+          {isMobile ? (
+            <div className="absolute top-0 right-0">
+              <div className={cn(
+                "w-5 h-5 rounded-tr-lg flex items-center justify-center",
+                `bg-media-${type}`
+              )}>
+                <MediaTypeIcon />
+              </div>
+            </div>
+          ) : (
+            <Badge 
+              variant={getTypeVariant()} 
+              className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
+            >
+              <MediaTypeIcon />
+              {type === "film" ? "Film" : 
+               type === "serie" ? "Série" : 
+               type === "book" ? "Livre" : "Jeu"}
+            </Badge>
+          )}
+          
           {/* Information - Always visible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
@@ -111,7 +144,6 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
                       <MediaTypeIcon />
                       <span className="text-xs text-white/80">{year}</span>
                     </div>
-                    {/* Notation */}
                     {normalizedRating && (
                       <MediaRatingBadge 
                         rating={normalizedRating} 
@@ -139,6 +171,11 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
             </div>
           </div>
         </div>
+        <div className={cn(
+          "absolute top-0 right-0 w-2 h-8", 
+          `bg-media-${type}`,
+          isMobile && "hidden"
+        )} />
       </div>
     </Link>
   );
