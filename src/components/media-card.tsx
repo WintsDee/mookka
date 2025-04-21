@@ -110,7 +110,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
           
           {/* Status Badge */}
           {getStatusBadge()}
-          
+
           {/* Type Badge - Repositioned for mobile */}
           {isMobile ? (
             <div className="absolute top-0 right-0">
@@ -182,3 +182,4 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 };
 
 export { MediaCard };
+
