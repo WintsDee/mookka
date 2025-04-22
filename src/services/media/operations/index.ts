@@ -4,3 +4,4 @@ export { getUserMediaLibrary } from './get-library';
 export { updateMediaStatus } from './update-status';
 export { removeMediaFromLibrary } from './remove-media';
 export { updateMediaNotes } from './update-notes';
+export { getUserMediaLibraryStats } from './get-library-stats';

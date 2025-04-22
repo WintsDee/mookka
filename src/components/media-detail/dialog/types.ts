@@ -17,3 +17,20 @@ export type StatusOption = {
   textColor: string;
   borderColor: string;
 }
+
+export type MediaStatusCount = {
+  status: MediaStatus;
+  count: number;
+}
+
+export type MediaTypeStatsGroup = {
+  type: MediaType | 'all';
+  label: string;
+  icon: React.ElementType;
+  totalCount: number;
+  statusGroups: {
+    inProgress: MediaStatusCount[];
+    todo: MediaStatusCount[];
+    completed: MediaStatusCount[];
+  };
+}
