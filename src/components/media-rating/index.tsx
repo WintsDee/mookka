@@ -14,6 +14,8 @@ interface MediaRatingProps {
   mediaId: string;
   mediaType: MediaType;
   initialNotes?: string;
+  initialRating?: number;
+  initialReview?: string;
   onRatingComplete?: () => void;
 }
 
@@ -21,10 +23,12 @@ export function MediaRating({
   mediaId, 
   mediaType, 
   initialNotes = "",
+  initialRating = 0,
+  initialReview = "",
   onRatingComplete
 }: MediaRatingProps) {
-  const [rating, setRating] = useState<number>(0);
-  const [review, setReview] = useState<string>(initialNotes || "");
+  const [rating, setRating] = useState<number>(initialRating);
+  const [review, setReview] = useState<string>(initialReview || initialNotes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
@@ -34,8 +38,8 @@ export function MediaRating({
       const { data: { user } } = await supabase.auth.getUser();
       setIsLoggedIn(!!user);
       
-      if (user) {
-        // Vérifier si une notation existe déjà
+      if (user && !initialRating && !initialReview) {
+        // Vérifier si une notation existe déjà seulement si aucune valeur initiale n'est fournie
         const { data } = await supabase
           .from('user_media')
           .select('user_rating, notes')
@@ -47,7 +51,7 @@ export function MediaRating({
           if (data.user_rating) {
             setRating(data.user_rating);
           }
-          if (data.notes && !initialNotes) {
+          if (data.notes && !initialNotes && !initialReview) {
             setReview(data.notes);
           }
         }
@@ -55,7 +59,7 @@ export function MediaRating({
     };
     
     checkAuthStatus();
-  }, [mediaId, initialNotes]);
+  }, [mediaId, initialNotes, initialRating, initialReview]);
 
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);

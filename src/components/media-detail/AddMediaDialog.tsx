@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -86,7 +85,7 @@ export function AddMediaDialog({
             bgColor: 'bg-emerald-500/20',
             textColor: 'text-emerald-300',
             borderColor: 'border-emerald-500/30'
-          }
+          },
         ];
       case 'serie':
         return [
