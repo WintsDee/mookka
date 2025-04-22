@@ -7,7 +7,8 @@ export async function addMediaToLibrary(
   media: any, 
   type: MediaType, 
   status?: MediaStatus,
-  notes?: string
+  notes?: string,
+  rating?: number
 ): Promise<Media> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -139,14 +140,26 @@ export async function addMediaToLibrary(
     }
     
     if (existingUserMedia) {
-      // Si le média existe déjà, mettre à jour son statut et ses notes
+      // Si le média existe déjà, mettre à jour son statut, ses notes et sa note
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+      
+      if (status) {
+        updateData.status = status;
+      }
+      
+      if (notes !== undefined) {
+        updateData.notes = notes;
+      }
+      
+      if (rating !== undefined && rating > 0) {
+        updateData.user_rating = rating;
+      }
+      
       await supabase
         .from('user_media')
-        .update({
-          status: status || existingUserMedia.status,
-          notes: notes !== undefined ? notes : existingUserMedia.notes,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', existingUserMedia.id);
       
       return {
@@ -168,15 +181,24 @@ export async function addMediaToLibrary(
     }
 
     // Ajouter le média à la bibliothèque de l'utilisateur avec le statut spécifié
+    const userMediaData: any = {
+      user_id: user.id,
+      media_id: mediaId,
+      status: status || getDefaultStatusForType(type),
+      added_at: new Date().toISOString()
+    };
+    
+    if (notes !== undefined) {
+      userMediaData.notes = notes;
+    }
+    
+    if (rating !== undefined && rating > 0) {
+      userMediaData.user_rating = rating;
+    }
+    
     const { data: userMedia, error: userMediaInsertError } = await supabase
       .from('user_media')
-      .insert({
-        user_id: user.id,
-        media_id: mediaId,
-        status: status || getDefaultStatusForType(type),
-        notes: notes || '',
-        added_at: new Date().toISOString()
-      })
+      .insert(userMediaData)
       .select('*')
       .single();
 
