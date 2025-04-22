@@ -3,6 +3,7 @@ import React from "react";
 import { LibrarySearch } from "@/components/library/library-search";
 import { LibraryFilters } from "@/components/library/library-filters";
 import { LibraryTypeTabs } from "@/components/library/library-type-tabs";
+import { MediaType } from "@/types";
 
 interface BibliothequeHeaderProps {
   searchTerm: string;
@@ -10,7 +11,7 @@ interface BibliothequeHeaderProps {
   onSearch: () => void;
   sortBy: "date" | "title" | "rating";
   setSortBy: (val: "date" | "title" | "rating") => void;
-  mediaType: string;
+  mediaType: MediaType | "all";
   setMediaType: (val: string) => void;
 }
 
@@ -40,7 +41,7 @@ export function BibliothequeHeader({
       </div>
       <div className="mt-4">
         <LibraryTypeTabs 
-          selectedType={mediaType as any} 
+          selectedType={mediaType} 
           onChange={setMediaType} 
         />
       </div>
