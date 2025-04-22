@@ -34,14 +34,14 @@ export function BibliothequeHeader({
         <LibraryFilters
           sortBy={sortBy}
           onSortChange={setSortBy}
-          filter={mediaType as any}
-          onFilterChange={setMediaType as any}
+          filter={mediaType}
+          onFilterChange={setMediaType}
         />
       </div>
       <div className="mt-4">
         <LibraryTypeTabs 
           selectedType={mediaType as any} 
-          onChange={setMediaType as any} 
+          onChange={setMediaType} 
         />
       </div>
     </header>

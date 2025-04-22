@@ -66,6 +66,15 @@ const BibliothequeContainer = () => {
     }
   };
 
+  // Create wrapper functions with the correct type signatures
+  const handleSetMediaType = (val: string) => {
+    setMediaType(val as MediaType | "all");
+  };
+  
+  const handleSetSortBy = (val: "date" | "title" | "rating") => {
+    setSortBy(val);
+  };
+
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
@@ -75,9 +84,9 @@ const BibliothequeContainer = () => {
           setSearchTerm={setSearchTerm}
           onSearch={handleSearch}
           sortBy={sortBy}
-          setSortBy={setSortBy}
+          setSortBy={handleSetSortBy}
           mediaType={mediaType}
-          setMediaType={setMediaType}
+          setMediaType={handleSetMediaType}
         />
         <div className="mt-36 px-6 pb-16">
           {isLoading ? (
