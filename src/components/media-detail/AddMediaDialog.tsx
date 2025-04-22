@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -231,7 +232,7 @@ export function AddMediaDialog({
       
       toast({
         title: "Média ajouté",
-        description: `"${mediaTitle}" a été ajouté à votre bibliothèque."
+        description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
       });
       
       setTimeout(() => {
@@ -259,7 +260,7 @@ export function AddMediaDialog({
     
     toast({
       title: "Média ajouté",
-      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès."
+      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
     });
     
     setTimeout(() => {
