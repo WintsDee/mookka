@@ -66,8 +66,11 @@ export async function updateMediaStatus(mediaId: string, status: MediaStatus): P
       .maybeSingle();
       
     if (progression) {
-      // Fix: Ensure progression_data is an object before spreading
-      const progressionData = progression.progression_data || {};
+      // Vérifier explicitement si progression_data est un objet et utiliser un objet vide comme fallback
+      const progressionData = progression.progression_data && 
+                             typeof progression.progression_data === 'object' && 
+                             progression.progression_data !== null ? 
+                             progression.progression_data : {};
       
       const updatedProgressionData = {
         ...progressionData,
