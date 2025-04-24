@@ -84,7 +84,7 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 h-full overflow-y-auto">
+      <div className="flex flex-col h-screen pb-24">
         {/* Header fixe avec filtres */}
         <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-2">
           <div className="flex items-center gap-4 mb-4">
@@ -122,7 +122,7 @@ const Bibliotheque = () => {
         </header>
 
         {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-36 px-4">
+        <div className="mt-36 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
