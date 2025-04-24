@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaCard } from "@/components/media-card";
-import { MediaType, Media } from "@/types";
+import { MediaType, Media, MediaStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +38,20 @@ const Bibliotheque = () => {
       ))
     );
 
+  const groupedMedia = {
+    inProgress: filteredMedia.filter(media => 
+      media.status === "watching" || 
+      media.status === "reading" || 
+      media.status === "playing"
+    ),
+    todo: filteredMedia.filter(media => 
+      media.status === "to-watch" || 
+      media.status === "to-read" || 
+      media.status === "to-play"
+    ),
+    completed: filteredMedia.filter(media => media.status === "completed")
+  };
+
   const mediaTypes = [
     { id: "all", label: "Tous", icon: null },
     { id: "book", label: "Livres", icon: Book },
@@ -44,6 +59,32 @@ const Bibliotheque = () => {
     { id: "serie", label: "Séries", icon: Tv },
     { id: "game", label: "Jeux", icon: Gamepad }
   ];
+
+  const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
+    if (medias.length === 0) return null;
+    
+    return (
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-4">{title}</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {medias.map((media) => (
+            <div key={media.id} className="relative">
+              <Badge 
+                className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
+                variant="outline"
+              >
+                {media.status === 'completed' ? 'Terminé' : 
+                 media.status?.includes('watching') || media.status?.includes('reading') || media.status?.includes('playing') ? 'En cours' : 
+                 media.type === 'book' ? 'À lire' :
+                 media.type === 'game' ? 'À jouer' : 'À voir'}
+              </Badge>
+              <MediaCard media={media} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Background>
@@ -62,7 +103,7 @@ const Bibliotheque = () => {
             />
           </div>
           
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex justify-between gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
             {mediaTypes.map((type) => (
               <Button
                 key={type.id}
@@ -70,12 +111,14 @@ const Bibliotheque = () => {
                 onClick={() => setSelectedType(type.id as MediaType | "all")}
                 size="sm"
                 className={cn(
-                  "flex items-center gap-2 whitespace-nowrap min-w-fit",
+                  "flex-1 flex items-center justify-center gap-2 min-w-0",
                   isMobile && type.id !== "all" && "px-3"
                 )}
               >
                 {type.icon && <type.icon className="h-4 w-4" />}
-                {(!isMobile || type.id === "all") && type.label}
+                {(!isMobile || type.id === "all") && (
+                  <span className="truncate">{type.label}</span>
+                )}
               </Button>
             ))}
           </div>
@@ -100,21 +143,20 @@ const Bibliotheque = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {filteredMedia.map((media) => (
-                <div key={media.id} className="relative">
-                  <Badge 
-                    className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
-                    variant="outline"
-                  >
-                    {media.status === 'completed' ? 'Terminé' : 
-                     media.status?.includes('watching') || media.status?.includes('reading') || media.status?.includes('playing') ? 'En cours' : 
-                     'À faire'}
-                  </Badge>
-                  <MediaCard media={media} />
-                </div>
-              ))}
-            </div>
+            <>
+              <StatusSection 
+                title="En cours" 
+                medias={groupedMedia.inProgress} 
+              />
+              <StatusSection 
+                title="À faire" 
+                medias={groupedMedia.todo} 
+              />
+              <StatusSection 
+                title="Terminé" 
+                medias={groupedMedia.completed} 
+              />
+            </>
           )}
         </div>
       </div>
@@ -124,3 +166,4 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
+
