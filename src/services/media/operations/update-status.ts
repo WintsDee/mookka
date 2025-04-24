@@ -66,8 +66,11 @@ export async function updateMediaStatus(mediaId: string, status: MediaStatus): P
       .maybeSingle();
       
     if (progression) {
+      // Fix: Ensure progression_data is an object before spreading
+      const progressionData = progression.progression_data || {};
+      
       const updatedProgressionData = {
-        ...progression.progression_data,
+        ...progressionData,
         status
       };
       
