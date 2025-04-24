@@ -12,11 +12,13 @@ import { getUserMediaLibrary } from "@/services/media/operations";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Book, Film, Tv, Gamepad } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Bibliotheque = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<MediaType | "all">("all");
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const { data: userMedia = [], isLoading } = useQuery({
     queryKey: ['userMediaLibrary'],
@@ -46,8 +48,8 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="pb-24 h-full overflow-hidden">
-        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-6 pt-4 pb-2">
+      <div className="pb-24 h-full overflow-y-auto">
+        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-2">
           <div className="flex items-center gap-4 mb-4">
             <LibrarySearch
               value={searchTerm}
@@ -66,16 +68,20 @@ const Bibliotheque = () => {
                 key={type.id}
                 variant={selectedType === type.id ? "default" : "outline"}
                 onClick={() => setSelectedType(type.id as MediaType | "all")}
-                className="flex items-center gap-2 whitespace-nowrap"
+                size="sm"
+                className={cn(
+                  "flex items-center gap-2 whitespace-nowrap min-w-fit",
+                  isMobile && type.id !== "all" && "px-3"
+                )}
               >
                 {type.icon && <type.icon className="h-4 w-4" />}
-                {type.label}
+                {(!isMobile || type.id === "all") && type.label}
               </Button>
             ))}
           </div>
         </header>
 
-        <div className="mt-40 px-6">
+        <div className="mt-36 px-4">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
@@ -118,4 +124,3 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
-
