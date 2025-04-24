@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -13,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Book, Film, Tv, Gamepad } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 const Bibliotheque = () => {
   const [searchTerm, setSearchTerm] = useState("");
