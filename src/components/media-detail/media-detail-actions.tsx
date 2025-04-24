@@ -10,6 +10,7 @@ import { AddMediaDialog } from "./AddMediaDialog";
 import { useProfile } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { removeMediaFromLibrary } from "@/services/media";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MediaDetailActionsProps {
   media: any;
@@ -26,6 +27,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useProfile();
+  const queryClient = useQueryClient();
 
   // Vérifier si le média est déjà dans la bibliothèque de l'utilisateur
   useEffect(() => {
@@ -91,6 +93,9 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
       setIsRemoving(true);
       await removeMediaFromLibrary(media.id);
       
+      // Invalider le cache pour forcer un rafraîchissement des données
+      queryClient.invalidateQueries({ queryKey: ['userMediaLibrary'] });
+      
       setIsInLibrary(false);
       toast({
         title: "Média supprimé",
@@ -106,7 +111,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
     } finally {
       setIsRemoving(false);
     }
-  }, [media, isAuthenticated, toast]);
+  }, [media, isAuthenticated, toast, queryClient]);
 
   const handleActionClick = useCallback((action: () => void) => {
     if (!isAuthenticated) {
@@ -124,6 +129,9 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   const handleAddDialogClose = (open: boolean) => {
     setShowAddDialog(open);
     if (!open) {
+      // Invalider le cache pour forcer un rafraîchissement des données
+      queryClient.invalidateQueries({ queryKey: ['userMediaLibrary'] });
+      
       // Attendre un peu avant de vérifier, pour laisser le temps à la base de données
       setTimeout(() => {
         const checkIfInLibrary = async () => {
@@ -217,17 +225,25 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
           size="sm" 
           className="flex items-center gap-1.5 h-auto py-1.5 px-2"
           onClick={() => handleActionClick(() => {
-            navigator.share && navigator.share({
-              title: media.title,
-              text: `Découvrez ${media.title} sur Mookka !`,
-              url: window.location.href,
-            }).catch(() => {
+            if (navigator.share) {
+              navigator.share({
+                title: media.title,
+                text: `Découvrez ${media.title} sur Mookka !`,
+                url: window.location.href,
+              }).catch(() => {
+                toast({
+                  title: "Partage",
+                  description: "URL copiée dans le presse-papier",
+                });
+                navigator.clipboard.writeText(window.location.href);
+              });
+            } else {
               toast({
                 title: "Partage",
                 description: "URL copiée dans le presse-papier",
               });
               navigator.clipboard.writeText(window.location.href);
-            });
+            }
           })}
         >
           <Share className="h-4 w-4" />

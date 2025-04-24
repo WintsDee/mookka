@@ -21,19 +21,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
         acc + (season.episode_count || 0), 0);
       setTotalEpisodes(totalEpisodeCount);
       
-      // Calculate watched episodes count
-      const watchedEpisodesObj = initialProgression?.watched_episodes || {};
-      let watchedCount = 0;
-      
-      Object.values(watchedEpisodesObj).forEach((episodes: any) => {
-        if (Array.isArray(episodes)) {
-          watchedCount += episodes.length;
-        }
-      });
-      
-      setWatchedEpisodes(watchedCount);
-      
-      // Generate upcoming episodes if any
+      // Générer les épisodes à venir s'il y en a
       const upcomingEps = generateUpcomingEpisodes(mediaDetails, formattedSeasons);
       setUpcomingEpisodes(upcomingEps);
     }
@@ -44,7 +32,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       setStatus(initialProgression.status || 'to-watch');
       setProgression(initialProgression);
       
-      // Calculate watched episodes count
+      // Calculer le nombre d'épisodes regardés
       const watchedEpisodesObj = initialProgression?.watched_episodes || {};
       let watchedCount = 0;
       
@@ -64,28 +52,28 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       ? [...currentWatchedEpisodes[seasonNumber]] 
       : [];
     
-    // Check if episode is already watched
+    // Vérifier si l'épisode est déjà regardé
     const isEpisodeWatched = seasonEpisodes.includes(episodeNumber);
     
     let updatedSeasonEpisodes: number[];
     
     if (isEpisodeWatched) {
-      // Remove episode from watched
+      // Supprimer l'épisode des regardés
       updatedSeasonEpisodes = seasonEpisodes.filter(ep => ep !== episodeNumber);
     } else {
-      // Add episode to watched
+      // Ajouter l'épisode aux regardés
       updatedSeasonEpisodes = [...seasonEpisodes, episodeNumber];
-      // Sort episodes for better display
+      // Trier les épisodes pour un meilleur affichage
       updatedSeasonEpisodes.sort((a, b) => a - b);
     }
     
-    // Update watched episodes for season
+    // Mettre à jour les épisodes regardés pour la saison
     const newWatchedEpisodes = {
       ...currentWatchedEpisodes,
       [seasonNumber]: updatedSeasonEpisodes
     };
     
-    // Calculate total watched count
+    // Calculer le nombre total d'épisodes regardés
     let totalWatchedCount = 0;
     Object.values(newWatchedEpisodes).forEach((episodes: any) => {
       if (Array.isArray(episodes)) {
@@ -93,7 +81,7 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       }
     });
     
-    // Update status based on watched episodes
+    // Mettre à jour le statut en fonction des épisodes regardés
     let newStatus = status;
     if (totalWatchedCount === 0) {
       newStatus = 'to-watch';
@@ -139,10 +127,10 @@ export function useSerieProgression(mediaDetails: any, initialProgression: any):
       );
     }
     
-    // Calculate the total watched count safely
+    // Calculer le nombre total d'épisodes regardés de façon sécurisée
     let totalWatchedCount = 0;
     
-    // Explicit iteration to ensure type safety
+    // Itération explicite pour assurer la sécurité des types
     Object.values(newWatchedEpisodes).forEach((episodes: any) => {
       if (Array.isArray(episodes)) {
         totalWatchedCount += episodes.length;

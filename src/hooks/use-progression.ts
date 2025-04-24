@@ -149,9 +149,12 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       
       if (!user.user) return;
       
+      console.log('Mise à jour de la progression:', progressionData);
+      
       // If progressionData has a status property and it's different from userMediaStatus
       if (progressionData && 'status' in progressionData && progressionData.status !== userMediaStatus) {
         const newStatus = progressionData.status as MediaStatus;
+        console.log(`Mise à jour du statut: ${userMediaStatus} -> ${newStatus}`);
         await updateMediaStatus(mediaId, newStatus);
         setUserMediaStatus(newStatus);
       }
@@ -190,6 +193,7 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
   return {
     isLoading,
     progression,
+    userMediaStatus,
     handleProgressionUpdate,
     createDefaultProgression
   };

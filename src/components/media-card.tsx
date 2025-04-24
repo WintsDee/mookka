@@ -13,9 +13,16 @@ interface MediaCardProps {
   size?: "small" | "medium" | "large";
   showDetails?: boolean;
   from?: string;
+  showStatusBadge?: boolean;
 }
 
-const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCardProps) => {
+const MediaCard = ({ 
+  media, 
+  size = "medium", 
+  showDetails = true, 
+  from, 
+  showStatusBadge = true 
+}: MediaCardProps) => {
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
     ? media.rating > 5 
@@ -48,7 +55,7 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
   };
   
   const getStatusBadge = () => {
-    if (!status) return null;
+    if (!status || !showStatusBadge) return null;
     
     let statusClass = "";
     let statusText = "";
@@ -182,4 +189,3 @@ const MediaCard = ({ media, size = "medium", showDetails = true, from }: MediaCa
 };
 
 export { MediaCard };
-

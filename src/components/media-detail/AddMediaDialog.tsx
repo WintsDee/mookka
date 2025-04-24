@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { addMediaToLibrary } from "@/services/media-service";
+import { addMediaToLibrary } from "@/services/media";
 import { AddMediaDialogProps } from "./dialog/types";
 import { getStatusOptions } from "./dialog/status-options";
 import { StatusSelection } from "./dialog/status-selection";
@@ -30,6 +30,7 @@ export function AddMediaDialog({
   const [showRatingStep, setShowRatingStep] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
   
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +40,7 @@ export function AddMediaDialog({
       setIsComplete(false);
       setIsAddingToLibrary(false);
       setShowSuccessAnimation(false);
+      setUserRating(null);
     }
   }, [isOpen]);
   
@@ -58,6 +60,7 @@ export function AddMediaDialog({
     setIsAddingToLibrary(true);
     
     try {
+      // Cas spécial pour le statut "completed"
       if (selectedStatus === 'completed') {
         setShowRatingStep(true);
         setIsAddingToLibrary(false);
@@ -96,21 +99,43 @@ export function AddMediaDialog({
     }
   };
   
-  const handleRatingComplete = () => {
-    setShowRatingStep(false);
-    setShowSuccessAnimation(true);
+  const handleRatingComplete = async (rating?: number) => {
+    if (rating) {
+      setUserRating(rating);
+    }
     
-    toast({
-      title: "Média ajouté",
-      description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
-    });
-    
-    setTimeout(() => {
-      setIsComplete(true);
+    try {
+      // Ajout du média avec statut "completed" et la note attribuée
+      await addMediaToLibrary(
+        { id: mediaId, title: mediaTitle },
+        mediaType,
+        'completed',
+        notes,
+        rating || undefined
+      );
+      
+      setShowRatingStep(false);
+      setShowSuccessAnimation(true);
+      
+      toast({
+        title: "Média ajouté",
+        description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
+      });
+      
       setTimeout(() => {
-        onOpenChange(false);
-      }, 1500);
-    }, 1000);
+        setIsComplete(true);
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 1500);
+      }, 1000);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du média noté:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleViewLibrary = () => {

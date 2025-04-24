@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MobileHeader } from "@/components/mobile-header";
 import { useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
-import { getUserMediaLibrary } from "@/services/media/operations";
+import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Book, Film, Tv, Gamepad } from "lucide-react";
@@ -26,6 +26,7 @@ const Bibliotheque = () => {
     queryFn: getUserMediaLibrary
   });
 
+  // Filtrer les médias par type et recherche
   const filteredMedia = userMedia
     .filter(media => 
       selectedType === "all" || media.type === selectedType
@@ -38,6 +39,7 @@ const Bibliotheque = () => {
       ))
     );
 
+  // Grouper les médias par statut
   const groupedMedia = {
     inProgress: filteredMedia.filter(media => 
       media.status === "watching" || 
@@ -68,18 +70,11 @@ const Bibliotheque = () => {
         <h2 className="text-lg font-semibold mb-4">{title}</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {medias.map((media) => (
-            <div key={media.id} className="relative">
-              <Badge 
-                className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm"
-                variant="outline"
-              >
-                {media.status === 'completed' ? 'Terminé' : 
-                 media.status?.includes('watching') || media.status?.includes('reading') || media.status?.includes('playing') ? 'En cours' : 
-                 media.type === 'book' ? 'À lire' :
-                 media.type === 'game' ? 'À jouer' : 'À voir'}
-              </Badge>
-              <MediaCard media={media} />
-            </div>
+            <MediaCard 
+              key={media.id} 
+              media={media} 
+              from="/bibliotheque"
+            />
           ))}
         </div>
       </div>
@@ -90,6 +85,7 @@ const Bibliotheque = () => {
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
       <div className="pb-24 h-full overflow-y-auto">
+        {/* Header fixe avec filtres */}
         <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-2">
           <div className="flex items-center gap-4 mb-4">
             <LibrarySearch
@@ -103,6 +99,7 @@ const Bibliotheque = () => {
             />
           </div>
           
+          {/* Filtres de type de média adaptés pour mobile */}
           <div className="flex justify-between gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
             {mediaTypes.map((type) => (
               <Button
@@ -124,6 +121,7 @@ const Bibliotheque = () => {
           </div>
         </header>
 
+        {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
         <div className="mt-36 px-4">
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -133,6 +131,8 @@ const Bibliotheque = () => {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque
+                {selectedType !== "all" && ` de type ${selectedType}`}
+                {searchTerm && ` correspondant à "${searchTerm}"`}
               </p>
               <Button 
                 variant="outline" 
@@ -144,6 +144,7 @@ const Bibliotheque = () => {
             </div>
           ) : (
             <>
+              {/* Affichage par sections de statut */}
               <StatusSection 
                 title="En cours" 
                 medias={groupedMedia.inProgress} 
@@ -166,4 +167,3 @@ const Bibliotheque = () => {
 };
 
 export default Bibliotheque;
-
