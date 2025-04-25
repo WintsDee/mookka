@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
 import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
-import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Book, Film, Tv, Gamepad } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -86,7 +85,7 @@ const Bibliotheque = () => {
       <MobileHeader title="Ma Bibliothèque" />
       <div className="flex flex-col h-screen pb-24">
         {/* Header fixe avec filtres */}
-        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-2">
+        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-4 shadow-sm">
           <div className="flex items-center gap-4 mb-4">
             <LibrarySearch
               value={searchTerm}
@@ -108,8 +107,9 @@ const Bibliotheque = () => {
                 onClick={() => setSelectedType(type.id as MediaType | "all")}
                 size="sm"
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 min-w-0",
-                  isMobile && type.id !== "all" && "px-3"
+                  "flex-1 flex items-center justify-center gap-2 min-w-0 rounded-full",
+                  isMobile && type.id !== "all" && "px-3",
+                  selectedType === type.id ? "shadow-md" : ""
                 )}
               >
                 {type.icon && <type.icon className="h-4 w-4" />}
@@ -122,7 +122,7 @@ const Bibliotheque = () => {
         </header>
 
         {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-36 px-4 flex-1 overflow-y-auto pb-16">
+        <div className="mt-44 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>

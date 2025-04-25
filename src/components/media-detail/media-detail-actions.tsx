@@ -89,13 +89,13 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40 px-4 py-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40 px-4 py-3 shadow-md">
         <div className="flex items-center justify-between gap-2 mb-safe">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleGoBack}
-            className="h-10 w-10"
+            className="h-10 w-10 rounded-full"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -105,7 +105,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10"
+              className="h-10 w-10 rounded-full"
               onClick={() => setAddCollectionDialogOpen(true)}
             >
               <Folder className="h-5 w-5" />
@@ -115,14 +115,14 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 text-destructive hover:bg-destructive/10"
+              className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-full"
               onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 className="h-5 w-5" />
             </Button>
             
             {/* Bouton principal pour ajouter à la bibliothèque */}
-            <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+            <Button onClick={() => setAddDialogOpen(true)} className="gap-2 rounded-full">
               <TypeIcon />
               {isMobile ? "Ajouter" : "Ajouter à ma bibliothèque"}
             </Button>

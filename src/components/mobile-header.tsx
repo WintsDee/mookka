@@ -22,7 +22,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
   const { profile } = useProfile();
   
   return (
-    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50">
+    <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50 shadow-sm">
       {showBackButton && (
         <Link to="/" className="absolute left-4 top-1/2 -translate-y-1/2 transition-opacity duration-200">
           <ArrowLeft size={24} />
@@ -35,7 +35,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
         {!title && !isSoutienPage && (
           <Link to="/profil">
             {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
+              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
                 <AvatarImage 
                   src={profile.avatar_url} 
                   alt={profile?.username || "Utilisateur"}
@@ -49,7 +49,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
               <img 
                 src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
                 alt="Mookka Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain will-change-transform"
               />
             )}
           </Link>
@@ -73,7 +73,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
             )}
           >
             {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
+              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
                 <AvatarImage 
                   src={profile.avatar_url} 
                   alt={profile?.username || "Utilisateur"}
@@ -84,7 +84,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <Avatar className="w-8 h-8 border border-border/20 transition-transform duration-200">
+              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
                 <AvatarFallback>
                   <User size={20} />
                 </AvatarFallback>
