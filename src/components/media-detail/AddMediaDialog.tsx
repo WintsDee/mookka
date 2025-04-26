@@ -67,12 +67,12 @@ export function AddMediaDialog({
         return;
       }
       
-      await addMediaToLibrary(
-        { id: mediaId, title: mediaTitle },
+      await addMediaToLibrary({
+        mediaId,
         mediaType,
-        selectedStatus,
+        status: selectedStatus,
         notes
-      );
+      });
       
       setShowSuccessAnimation(true);
       
@@ -106,13 +106,13 @@ export function AddMediaDialog({
     
     try {
       // Ajout du média avec statut "completed" et la note attribuée
-      await addMediaToLibrary(
-        { id: mediaId, title: mediaTitle },
+      await addMediaToLibrary({
+        mediaId,
         mediaType,
-        'completed',
+        status: 'completed',
         notes,
-        rating || undefined
-      );
+        rating: rating || undefined
+      });
       
       setShowRatingStep(false);
       setShowSuccessAnimation(true);
