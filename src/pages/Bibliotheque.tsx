@@ -112,7 +112,7 @@ const Bibliotheque = () => {
                   selectedType === type.id ? "shadow-md" : ""
                 )}
               >
-                {type.icon && <type.icon className="h-4 w-4" />}
+                {type.icon && <type.icon className="h-4 w-4 flex-shrink-0" />}
                 {(!isMobile || type.id === "all") && (
                   <span className="truncate">{type.label}</span>
                 )}
@@ -122,7 +122,7 @@ const Bibliotheque = () => {
         </header>
 
         {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-44 px-4 flex-1 overflow-y-auto pb-16">
+        <div className="mt-48 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>

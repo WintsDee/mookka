@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router-dom";
 import { User, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/use-profile";
 import { HelpFeedback } from "@/components/profile/help-feedback";
 
@@ -20,6 +19,27 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
   const isSoutienPage = location.pathname === "/soutenir";
   
   const { profile } = useProfile();
+
+  const ProfileAvatar = () => (
+    profile?.avatar_url ? (
+      <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
+        <AvatarImage 
+          src={profile.avatar_url} 
+          alt={profile?.username || "Utilisateur"}
+          className="object-cover w-full h-full"
+        />
+        <AvatarFallback>
+          <User size={20} />
+        </AvatarFallback>
+      </Avatar>
+    ) : (
+      <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
+        <AvatarFallback>
+          <User size={20} />
+        </AvatarFallback>
+      </Avatar>
+    )
+  );
   
   return (
     <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50 shadow-sm">
@@ -31,20 +51,11 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
 
       {title && <h1 className="text-lg font-semibold w-full text-left transition-opacity duration-200">{title}</h1>}
       
-      <div className="w-8 h-8 flex-shrink-0 absolute right-6">
+      <div className="w-8 h-8 flex-shrink-0">
         {!title && !isSoutienPage && (
           <Link to="/profil">
             {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
-                <AvatarImage 
-                  src={profile.avatar_url} 
-                  alt={profile?.username || "Utilisateur"}
-                  className="object-cover w-full h-full"
-                />
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              </Avatar>
+              <ProfileAvatar />
             ) : (
               <img 
                 src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
@@ -72,24 +83,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {profile?.avatar_url ? (
-              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
-                <AvatarImage 
-                  src={profile.avatar_url} 
-                  alt={profile?.username || "Utilisateur"}
-                  className="object-cover w-full h-full"
-                />
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
-                <AvatarFallback>
-                  <User size={20} />
-                </AvatarFallback>
-              </Avatar>
-            )}
+            <ProfileAvatar />
           </Link>
         </div>
       )}
