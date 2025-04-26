@@ -40,20 +40,24 @@ export function MediaRating({
       
       if (user && !initialRating && !initialReview) {
         // Vérifier si une notation existe déjà seulement si aucune valeur initiale n'est fournie
-        const { data } = await supabase
-          .from('user_media')
-          .select('user_rating, notes')
-          .eq('user_id', user.id)
-          .eq('media_id', mediaId)
-          .maybeSingle();
-          
-        if (data) {
-          if (data.user_rating) {
-            setRating(data.user_rating);
+        try {
+          const { data } = await supabase
+            .from('user_media')
+            .select('user_rating, notes')
+            .eq('user_id', user.id)
+            .eq('media_id', mediaId)
+            .maybeSingle();
+            
+          if (data) {
+            if (data.user_rating) {
+              setRating(data.user_rating);
+            }
+            if (data.notes && !initialNotes && !initialReview) {
+              setReview(data.notes);
+            }
           }
-          if (data.notes && !initialNotes && !initialReview) {
-            setReview(data.notes);
-          }
+        } catch (error) {
+          console.error("Erreur lors de la récupération des données:", error);
         }
       }
     };
@@ -147,11 +151,16 @@ export function MediaRating({
           className="gap-2"
         >
           {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Ajout en cours...
+            </>
           ) : (
-            <Send className="h-4 w-4" />
+            <span className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              Soumettre
+            </span>
           )}
-          Soumettre
         </Button>
       </div>
     </div>

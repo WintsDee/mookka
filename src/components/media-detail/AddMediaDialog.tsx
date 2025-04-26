@@ -34,6 +34,7 @@ export function AddMediaDialog({
   
   useEffect(() => {
     if (isOpen) {
+      // Réinitialiser l'état lorsque la boîte de dialogue est ouverte
       setSelectedStatus(null);
       setNotes("");
       setShowRatingStep(false);
@@ -62,8 +63,9 @@ export function AddMediaDialog({
     try {
       // Cas spécial pour le statut "completed"
       if (selectedStatus === 'completed') {
-        setShowRatingStep(true);
+        // Important: d'abord désactiver l'indicateur d'ajout avant d'afficher l'étape de notation
         setIsAddingToLibrary(false);
+        setShowRatingStep(true);
         return;
       }
       
