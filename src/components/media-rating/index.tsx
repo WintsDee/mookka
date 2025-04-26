@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Send } from "lucide-react";
 import { MediaType } from "@/types";
-import { addMediaToLibrary } from "@/services/media-service";
+import { addMediaToLibrary } from "@/services/media";
 
 interface MediaRatingProps {
   mediaId: string;
@@ -16,7 +16,7 @@ interface MediaRatingProps {
   initialNotes?: string;
   initialRating?: number;
   initialReview?: string;
-  onRatingComplete?: () => void;
+  onRatingComplete?: (rating?: number) => void;
 }
 
 export function MediaRating({ 
@@ -83,17 +83,13 @@ export function MediaRating({
     
     try {
       // Ajouter le média à la bibliothèque avec le statut "terminé"
-      const media = { id: mediaId };
-      await addMediaToLibrary(
-        media,
+      await addMediaToLibrary({
+        mediaId,
         mediaType,
-        // Déterminer le statut "completed" approprié pour le type de média
-        mediaType === 'book' ? 'completed' : 
-        mediaType === 'game' ? 'completed' : 
-        mediaType === 'serie' ? 'completed' : 'completed',
-        review,
+        status: 'completed',
+        notes: review,
         rating
-      );
+      });
       
       toast({
         title: "Note soumise",
@@ -102,7 +98,7 @@ export function MediaRating({
       
       // Appel du callback si fourni
       if (onRatingComplete) {
-        onRatingComplete();
+        onRatingComplete(rating);
       }
     } catch (error) {
       console.error("Erreur lors de la soumission de la note :", error);
