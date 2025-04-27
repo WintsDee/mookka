@@ -21,25 +21,37 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
   const { profile } = useProfile();
 
   const ProfileAvatar = () => (
-    profile?.avatar_url ? (
-      <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
+    <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
+      {profile?.avatar_url ? (
         <AvatarImage 
           src={profile.avatar_url} 
           alt={profile?.username || "Utilisateur"}
           className="object-cover w-full h-full"
         />
+      ) : (
         <AvatarFallback>
           <User size={20} />
         </AvatarFallback>
-      </Avatar>
-    ) : (
-      <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
-        <AvatarFallback>
-          <User size={20} />
-        </AvatarFallback>
-      </Avatar>
-    )
+      )}
+    </Avatar>
   );
+  
+  // Determine what to display in the logo position
+  const LogoContent = () => {
+    if (title || isSoutienPage) {
+      return null;
+    }
+    
+    return (
+      <Link to="/profil">
+        <img 
+          src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
+          alt="Mookka Logo" 
+          className="w-full h-full object-contain will-change-transform"
+        />
+      </Link>
+    );
+  };
   
   return (
     <div className="mobile-header fixed top-0 left-0 right-0 flex justify-between items-center bg-background px-6 py-4 h-16 z-50 shadow-sm">
@@ -52,19 +64,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
       {title && <h1 className="text-lg font-semibold w-full text-left transition-opacity duration-200">{title}</h1>}
       
       <div className="w-8 h-8 flex-shrink-0">
-        {!title && !isSoutienPage && (
-          <Link to="/profil">
-            {profile?.avatar_url ? (
-              <ProfileAvatar />
-            ) : (
-              <img 
-                src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
-                alt="Mookka Logo" 
-                className="w-full h-full object-contain will-change-transform"
-              />
-            )}
-          </Link>
-        )}
+        <LogoContent />
       </div>
       
       {!isSoutienPage && (
