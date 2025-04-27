@@ -1,5 +1,5 @@
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent as UIDialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { MediaRating } from "@/components/media-rating";
 import { MediaType, MediaStatus } from "@/types";
@@ -105,7 +105,7 @@ export function DialogContent({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <UIDialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {showRatingStep 
@@ -116,7 +116,7 @@ export function DialogContent({
         <div className="py-4">
           {renderContent()}
         </div>
-      </DialogContent>
+      </UIDialogContent>
     </Dialog>
   );
 }

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MediaType } from "@/types";
 import { ArrowLeft, PlusCircle, BookOpen, Film, Gamepad, Tv2 as Tv, Folder, Trash2 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { AddMediaDialog } from "./AddMediaDialog";
+import { AddMediaDialog } from "./dialog/add-media";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { removeMediaFromLibrary, updateMediaStatus } from "@/services/media";
