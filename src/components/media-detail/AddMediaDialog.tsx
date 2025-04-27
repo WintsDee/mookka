@@ -32,9 +32,9 @@ export function AddMediaDialog({
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   
+  // Reset state when dialog is opened
   useEffect(() => {
     if (isOpen) {
-      // Réinitialiser l'état lorsque la boîte de dialogue est ouverte
       setSelectedStatus(null);
       setNotes("");
       setShowRatingStep(false);
@@ -61,9 +61,8 @@ export function AddMediaDialog({
     setIsAddingToLibrary(true);
     
     try {
-      // Cas spécial pour le statut "completed"
+      // Special case for "completed" status
       if (selectedStatus === 'completed') {
-        // Important: d'abord désactiver l'indicateur d'ajout avant d'afficher l'étape de notation
         setIsAddingToLibrary(false);
         setShowRatingStep(true);
         return;
@@ -79,8 +78,8 @@ export function AddMediaDialog({
       setShowSuccessAnimation(true);
       
       toast({
-        title: "Média ajouté",
-        description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
+        title: "Media added",
+        description: `"${mediaTitle}" has been added to your library.`
       });
       
       setTimeout(() => {
@@ -91,10 +90,10 @@ export function AddMediaDialog({
       }, 1000);
       
     } catch (error) {
-      console.error("Erreur lors de l'ajout à la bibliothèque:", error);
+      console.error("Error adding to library:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        title: "Error",
+        description: "Unable to add this media to your library",
         variant: "destructive",
       });
       setIsAddingToLibrary(false);
@@ -107,7 +106,7 @@ export function AddMediaDialog({
     }
     
     try {
-      // Ajout du média avec statut "completed" et la note attribuée
+      // Add media with "completed" status and assigned rating
       await addMediaToLibrary({
         mediaId,
         mediaType,
@@ -120,8 +119,8 @@ export function AddMediaDialog({
       setShowSuccessAnimation(true);
       
       toast({
-        title: "Média ajouté",
-        description: `"${mediaTitle}" a été ajouté à votre bibliothèque avec succès.`
+        title: "Media added",
+        description: `"${mediaTitle}" has been successfully added to your library.`
       });
       
       setTimeout(() => {
@@ -131,10 +130,10 @@ export function AddMediaDialog({
         }, 1500);
       }, 1000);
     } catch (error) {
-      console.error("Erreur lors de l'ajout du média noté:", error);
+      console.error("Error adding rated media:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        title: "Error",
+        description: "Unable to add this media to your library",
         variant: "destructive",
       });
     }
@@ -188,8 +187,8 @@ export function AddMediaDialog({
           <DrawerHeader>
             <DrawerTitle>
               {showRatingStep 
-                ? `Noter "${mediaTitle}"`
-                : `Ajouter "${mediaTitle}" à votre bibliothèque`}
+                ? `Rate "${mediaTitle}"`
+                : `Add "${mediaTitle}" to your library`}
             </DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-8">
@@ -206,8 +205,8 @@ export function AddMediaDialog({
         <DialogHeader>
           <DialogTitle>
             {showRatingStep 
-              ? `Noter "${mediaTitle}"`
-              : `Ajouter "${mediaTitle}" à votre bibliothèque`}
+              ? `Rate "${mediaTitle}"`
+              : `Add "${mediaTitle}" to your library`}
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">

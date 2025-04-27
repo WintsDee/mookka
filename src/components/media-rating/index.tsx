@@ -39,7 +39,7 @@ export function MediaRating({
       setIsLoggedIn(!!user);
       
       if (user && !initialRating && !initialReview) {
-        // Vérifier si une notation existe déjà seulement si aucune valeur initiale n'est fournie
+        // Check if a rating already exists only if no initial value is provided
         try {
           const { data } = await supabase
             .from('user_media')
@@ -57,7 +57,7 @@ export function MediaRating({
             }
           }
         } catch (error) {
-          console.error("Erreur lors de la récupération des données:", error);
+          console.error("Error fetching rating data:", error);
         }
       }
     };
@@ -76,8 +76,8 @@ export function MediaRating({
   const handleSubmit = async () => {
     if (!isLoggedIn) {
       toast({
-        title: "Non connecté",
-        description: "Vous devez être connecté pour noter un média",
+        title: "Not logged in",
+        description: "You must be logged in to rate media",
         variant: "destructive",
       });
       return;
@@ -86,7 +86,7 @@ export function MediaRating({
     setIsSubmitting(true);
     
     try {
-      // Ajouter le média à la bibliothèque avec le statut "terminé"
+      // Add media to library with "completed" status
       await addMediaToLibrary({
         mediaId,
         mediaType,
@@ -96,19 +96,19 @@ export function MediaRating({
       });
       
       toast({
-        title: "Note soumise",
-        description: "Votre note a été enregistrée avec succès.",
+        title: "Rating submitted",
+        description: "Your rating has been successfully recorded.",
       });
       
-      // Appel du callback si fourni
+      // Call callback if provided
       if (onRatingComplete) {
         onRatingComplete(rating);
       }
     } catch (error) {
-      console.error("Erreur lors de la soumission de la note :", error);
+      console.error("Error submitting rating:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer votre note.",
+        title: "Error",
+        description: "Unable to save your rating.",
         variant: "destructive",
       });
     } finally {
@@ -124,9 +124,9 @@ export function MediaRating({
     <div className="space-y-6 animate-fade-in">
       <div className="space-y-4">
         <div className="space-y-2">
-          <h3 className="font-medium text-lg">Donnez votre note</h3>
+          <h3 className="font-medium text-lg">Rate this media</h3>
           <p className="text-sm text-muted-foreground">
-            Quelle note donneriez-vous à ce média ?
+            What rating would you give this media?
           </p>
         </div>
         
@@ -137,7 +137,7 @@ export function MediaRating({
       </div>
       
       <div className="space-y-2">
-        <h3 className="font-medium">Votre avis (optionnel)</h3>
+        <h3 className="font-medium">Your review (optional)</h3>
         <ReviewTextarea 
           value={review} 
           onChange={handleReviewChange} 
@@ -153,12 +153,12 @@ export function MediaRating({
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Ajout en cours...
+              Adding...
             </>
           ) : (
             <span className="flex items-center gap-2">
               <Send className="h-4 w-4" />
-              Soumettre
+              Submit
             </span>
           )}
         </Button>
