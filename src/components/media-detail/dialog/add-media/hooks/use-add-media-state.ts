@@ -1,26 +1,25 @@
 
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { MediaRating } from "@/components/media-rating";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { MediaStatus } from "@/types";
+import { useState, useEffect } from "react";
+import { MediaStatus, MediaType } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { addMediaToLibrary } from "@/services/media";
-import { AddMediaDialogProps } from "./dialog/types";
-import { getStatusOptions } from "./dialog/status-options";
-import { StatusSelection } from "./dialog/status-selection";
-import { SuccessState } from "./dialog/success-state";
 
-export function AddMediaDialog({ 
-  isOpen, 
-  onOpenChange, 
+interface UseAddMediaStateProps {
+  mediaId: string;
+  mediaType: MediaType;
+  mediaTitle: string;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function useAddMediaState({
   mediaId,
   mediaType,
-  mediaTitle 
-}: AddMediaDialogProps) {
-  const isMobile = useIsMobile();
+  mediaTitle,
+  isOpen,
+  onOpenChange
+}: UseAddMediaStateProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -31,8 +30,7 @@ export function AddMediaDialog({
   const [isComplete, setIsComplete] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
-  
-  // Reset state when dialog is opened
+
   useEffect(() => {
     if (isOpen) {
       setSelectedStatus(null);
@@ -44,24 +42,21 @@ export function AddMediaDialog({
       setUserRating(null);
     }
   }, [isOpen]);
-  
-  const statusOptions = getStatusOptions(mediaType);
-  
+
   const handleStatusSelect = (status: MediaStatus) => {
     setSelectedStatus(status);
   };
-  
+
   const handleNotesChange = (value: string) => {
     setNotes(value);
   };
-  
+
   const handleAddToLibrary = async () => {
     if (!selectedStatus) return;
     
     setIsAddingToLibrary(true);
     
     try {
-      // Special case for "completed" status
       if (selectedStatus === 'completed') {
         setIsAddingToLibrary(false);
         setShowRatingStep(true);
@@ -99,14 +94,13 @@ export function AddMediaDialog({
       setIsAddingToLibrary(false);
     }
   };
-  
+
   const handleRatingComplete = async (rating?: number) => {
     if (rating) {
       setUserRating(rating);
     }
     
     try {
-      // Add media with "completed" status and assigned rating
       await addMediaToLibrary({
         mediaId,
         mediaType,
@@ -138,81 +132,24 @@ export function AddMediaDialog({
       });
     }
   };
-  
+
   const handleViewLibrary = () => {
     onOpenChange(false);
     navigate('/bibliotheque');
   };
-  
-  const renderContent = () => {
-    if (showSuccessAnimation || isComplete) {
-      return (
-        <SuccessState 
-          mediaTitle={mediaTitle}
-          isComplete={isComplete}
-          onViewLibrary={handleViewLibrary}
-        />
-      );
-    }
-    
-    if (showRatingStep) {
-      return (
-        <MediaRating 
-          mediaId={mediaId} 
-          mediaType={mediaType} 
-          initialNotes={notes}
-          onRatingComplete={handleRatingComplete}
-        />
-      );
-    }
-    
-    return (
-      <StatusSelection
-        statusOptions={statusOptions}
-        selectedStatus={selectedStatus}
-        notes={notes}
-        mediaTitle={mediaTitle}
-        isAddingToLibrary={isAddingToLibrary}
-        onStatusSelect={handleStatusSelect}
-        onNotesChange={handleNotesChange}
-        onAddToLibrary={handleAddToLibrary}
-      />
-    );
+
+  return {
+    selectedStatus,
+    notes,
+    isAddingToLibrary,
+    showRatingStep,
+    isComplete,
+    showSuccessAnimation,
+    userRating,
+    handleStatusSelect,
+    handleNotesChange,
+    handleAddToLibrary,
+    handleRatingComplete,
+    handleViewLibrary
   };
-
-  if (isMobile) {
-    return (
-      <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>
-              {showRatingStep 
-                ? `Rate "${mediaTitle}"`
-                : `Add "${mediaTitle}" to your library`}
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-8">
-            {renderContent()}
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {showRatingStep 
-              ? `Rate "${mediaTitle}"`
-              : `Add "${mediaTitle}" to your library`}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          {renderContent()}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 }
