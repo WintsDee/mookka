@@ -7,13 +7,13 @@ import { MediaType } from "@/types";
 interface MediaTypeSelectorProps {
   selectedType: MediaType | "";
   onSelectType: (type: string) => void;
-  className?: string; // Ajout d'une prop optionnelle pour les classes
+  className?: string;
 }
 
 const MediaTypeSelector = ({ 
   selectedType, 
   onSelectType, 
-  className // Nouvelle prop
+  className
 }: MediaTypeSelectorProps) => {
   const mediaTypes = [
     { id: "book", label: "Livres", icon: Book, color: "emerald" },
@@ -33,7 +33,7 @@ const MediaTypeSelector = ({
             key={type.id}
             onClick={() => onSelectType(type.id)}
             className={cn(
-              "flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 shadow-sm",
+              "flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300 shadow-sm flex-shrink-0", // Ajout de flex-shrink-0
               isSelected 
                 ? `bg-${mediaColor} text-white scale-105 shadow-md`
                 : "bg-secondary/60 text-muted-foreground hover:bg-secondary/80"
@@ -41,7 +41,9 @@ const MediaTypeSelector = ({
             aria-label={type.label}
           >
             <type.icon size={24} className={isSelected ? "animate-pulse" : ""} />
-            <span className={cn("text-xs mt-2 font-medium", isSelected && "font-bold")}>{type.label}</span>
+            <span className={cn("text-xs mt-2 font-medium", isSelected && "font-bold")}>
+              {type.label}
+            </span>
           </button>
         );
       })}
@@ -50,3 +52,4 @@ const MediaTypeSelector = ({
 };
 
 export { MediaTypeSelector };
+
