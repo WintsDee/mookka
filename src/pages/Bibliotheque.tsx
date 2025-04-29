@@ -10,13 +10,16 @@ import { useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
 import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle, Book, Film, Tv, Gamepad } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { LibraryTypeSelector } from "@/components/library/library-type-selector";
+import { LibrarySortSelector } from "@/components/library/library-sort-selector";
 
 const Bibliotheque = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<MediaType | "all">("all");
+  const [sortBy, setSortBy] = useState<"date" | "title" | "rating">("date");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
@@ -52,14 +55,6 @@ const Bibliotheque = () => {
     ),
     completed: filteredMedia.filter(media => media.status === "completed")
   };
-
-  const mediaTypes = [
-    { id: "all", label: "Tous", icon: null },
-    { id: "book", label: "Livres", icon: Book },
-    { id: "film", label: "Films", icon: Film },
-    { id: "serie", label: "Séries", icon: Tv },
-    { id: "game", label: "Jeux", icon: Gamepad }
-  ];
 
   const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
     if (medias.length === 0) return null;
@@ -98,31 +93,30 @@ const Bibliotheque = () => {
             />
           </div>
           
-          {/* Filtres de type de média adaptés pour mobile */}
-          <div className="flex justify-between gap-2 w-full overflow-x-auto pb-2 scrollbar-hide">
-            {mediaTypes.map((type) => (
-              <Button
-                key={type.id}
-                variant={selectedType === type.id ? "default" : "outline"}
-                onClick={() => setSelectedType(type.id as MediaType | "all")}
-                size="sm"
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 min-w-0 rounded-full",
-                  isMobile && type.id !== "all" && "px-3",
-                  selectedType === type.id ? "shadow-md" : ""
-                )}
-              >
-                {type.icon && <type.icon className="h-4 w-4 flex-shrink-0" />}
-                {(!isMobile || type.id === "all") && (
-                  <span className="truncate">{type.label}</span>
-                )}
-              </Button>
-            ))}
+          {/* Section des filtres */}
+          <div className="space-y-4">
+            {/* Type de média */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Type de média</p>
+              <LibraryTypeSelector 
+                selectedType={selectedType} 
+                onSelectType={setSelectedType} 
+              />
+            </div>
+            
+            {/* Tri */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Trier par</p>
+              <LibrarySortSelector 
+                sortBy={sortBy} 
+                onSortChange={setSortBy} 
+              />
+            </div>
           </div>
         </header>
 
         {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-48 px-4 flex-1 overflow-y-auto pb-16">
+        <div className="mt-64 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
