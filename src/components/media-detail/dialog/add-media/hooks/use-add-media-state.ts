@@ -29,19 +29,32 @@ export function useAddMediaState({
   const [showRatingStep, setShowRatingStep] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
-  const [userRating, setUserRating] = useState<number | null>(null);
 
+  // Réinitialiser l'état lorsque le dialogue s'ouvre
   useEffect(() => {
     if (isOpen) {
-      setSelectedStatus(null);
+      // Sélectionner le statut par défaut en fonction du type de média
+      let defaultStatus: MediaStatus;
+      switch (mediaType) {
+        case 'book':
+          defaultStatus = 'to-read';
+          break;
+        case 'game':
+          defaultStatus = 'to-play';
+          break;
+        case 'film':
+        case 'serie':
+        default:
+          defaultStatus = 'to-watch';
+      }
+      setSelectedStatus(defaultStatus);
       setNotes("");
       setShowRatingStep(false);
       setIsComplete(false);
       setIsAddingToLibrary(false);
       setShowSuccessAnimation(false);
-      setUserRating(null);
     }
-  }, [isOpen]);
+  }, [isOpen, mediaType]);
 
   const handleStatusSelect = (status: MediaStatus) => {
     setSelectedStatus(status);
@@ -73,8 +86,8 @@ export function useAddMediaState({
       setShowSuccessAnimation(true);
       
       toast({
-        title: "Media added",
-        description: `"${mediaTitle}" has been added to your library.`
+        title: "Média ajouté",
+        description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
       });
       
       setTimeout(() => {
@@ -85,10 +98,10 @@ export function useAddMediaState({
       }, 1000);
       
     } catch (error) {
-      console.error("Error adding to library:", error);
+      console.error("Erreur d'ajout à la bibliothèque:", error);
       toast({
-        title: "Error",
-        description: "Unable to add this media to your library",
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à votre bibliothèque",
         variant: "destructive",
       });
       setIsAddingToLibrary(false);
@@ -96,25 +109,21 @@ export function useAddMediaState({
   };
 
   const handleRatingComplete = async (rating?: number) => {
-    if (rating) {
-      setUserRating(rating);
-    }
-    
     try {
       await addMediaToLibrary({
         mediaId,
         mediaType,
         status: 'completed',
         notes,
-        rating: rating || undefined
+        rating
       });
       
       setShowRatingStep(false);
       setShowSuccessAnimation(true);
       
       toast({
-        title: "Media added",
-        description: `"${mediaTitle}" has been successfully added to your library.`
+        title: "Média ajouté",
+        description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
       });
       
       setTimeout(() => {
@@ -124,10 +133,10 @@ export function useAddMediaState({
         }, 1500);
       }, 1000);
     } catch (error) {
-      console.error("Error adding rated media:", error);
+      console.error("Erreur d'ajout avec notation:", error);
       toast({
-        title: "Error",
-        description: "Unable to add this media to your library",
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à votre bibliothèque",
         variant: "destructive",
       });
     }
@@ -145,7 +154,6 @@ export function useAddMediaState({
     showRatingStep,
     isComplete,
     showSuccessAnimation,
-    userRating,
     handleStatusSelect,
     handleNotesChange,
     handleAddToLibrary,

@@ -91,8 +91,8 @@ export function DialogContent({
           <DrawerHeader>
             <DrawerTitle>
               {showRatingStep 
-                ? `Rate "${mediaTitle}"`
-                : `Add "${mediaTitle}" to your library`}
+                ? `Noter "${mediaTitle}"`
+                : `Ajouter "${mediaTitle}" à votre bibliothèque`}
             </DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-8">
@@ -109,8 +109,8 @@ export function DialogContent({
         <DialogHeader>
           <DialogTitle>
             {showRatingStep 
-              ? `Rate "${mediaTitle}"`
-              : `Add "${mediaTitle}" to your library`}
+              ? `Noter "${mediaTitle}"`
+              : `Ajouter "${mediaTitle}" à votre bibliothèque`}
           </DialogTitle>
         </DialogHeader>
         <div className="py-4">
