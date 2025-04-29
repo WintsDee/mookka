@@ -49,12 +49,16 @@ const Bibliotheque = () => {
   // Trier les médias
   const sortedMedia = [...filteredMedia].sort((a, b) => {
     if (sortBy === "date") {
-      return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+      // Use a safe approach to access the potentially missing property
+      const dateA = 'addedAt' in a ? new Date(a.addedAt).getTime() : 0;
+      const dateB = 'addedAt' in b ? new Date(b.addedAt).getTime() : 0;
+      return dateB - dateA;
     } else if (sortBy === "title") {
       return a.title.localeCompare(b.title);
     } else if (sortBy === "rating") {
-      const ratingA = a.userRating || 0;
-      const ratingB = b.userRating || 0;
+      // Use a safe approach to access the potentially missing property
+      const ratingA = 'userRating' in a ? (a.userRating || 0) : 0;
+      const ratingB = 'userRating' in b ? (b.userRating || 0) : 0;
       return ratingB - ratingA;
     }
     return 0;
