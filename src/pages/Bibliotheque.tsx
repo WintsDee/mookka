@@ -21,6 +21,12 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 
+// Extended Media type to handle properties coming from user_media table
+interface UserMedia extends Media {
+  addedAt?: string;
+  userRating?: number;
+}
+
 const Bibliotheque = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<MediaType | "all">("all");
@@ -49,16 +55,22 @@ const Bibliotheque = () => {
   // Trier les médias
   const sortedMedia = [...filteredMedia].sort((a, b) => {
     if (sortBy === "date") {
-      // Use a safe approach to access the potentially missing property
-      const dateA = 'addedAt' in a ? new Date(a.addedAt).getTime() : 0;
-      const dateB = 'addedAt' in b ? new Date(b.addedAt).getTime() : 0;
+      // Cast to UserMedia interface to access the addedAt property
+      const userMediaA = a as UserMedia;
+      const userMediaB = b as UserMedia;
+      
+      const dateA = userMediaA.addedAt ? new Date(userMediaA.addedAt).getTime() : 0;
+      const dateB = userMediaB.addedAt ? new Date(userMediaB.addedAt).getTime() : 0;
       return dateB - dateA;
     } else if (sortBy === "title") {
       return a.title.localeCompare(b.title);
     } else if (sortBy === "rating") {
-      // Use a safe approach to access the potentially missing property
-      const ratingA = 'userRating' in a ? (a.userRating || 0) : 0;
-      const ratingB = 'userRating' in b ? (b.userRating || 0) : 0;
+      // Cast to UserMedia interface to access the userRating property
+      const userMediaA = a as UserMedia;
+      const userMediaB = b as UserMedia;
+      
+      const ratingA = userMediaA.userRating || 0;
+      const ratingB = userMediaB.userRating || 0;
       return ratingB - ratingA;
     }
     return 0;
