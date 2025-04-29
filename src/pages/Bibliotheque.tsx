@@ -10,11 +10,16 @@ import { useNavigate } from "react-router-dom";
 import { LibrarySearch } from "@/components/library/library-search";
 import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, SortAsc } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { LibraryTypeSelector } from "@/components/library/library-type-selector";
-import { LibrarySortSelector } from "@/components/library/library-sort-selector";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 const Bibliotheque = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,19 +46,33 @@ const Bibliotheque = () => {
       ))
     );
 
+  // Trier les médias
+  const sortedMedia = [...filteredMedia].sort((a, b) => {
+    if (sortBy === "date") {
+      return new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime();
+    } else if (sortBy === "title") {
+      return a.title.localeCompare(b.title);
+    } else if (sortBy === "rating") {
+      const ratingA = a.userRating || 0;
+      const ratingB = b.userRating || 0;
+      return ratingB - ratingA;
+    }
+    return 0;
+  });
+
   // Grouper les médias par statut
   const groupedMedia = {
-    inProgress: filteredMedia.filter(media => 
+    inProgress: sortedMedia.filter(media => 
       media.status === "watching" || 
       media.status === "reading" || 
       media.status === "playing"
     ),
-    todo: filteredMedia.filter(media => 
+    todo: sortedMedia.filter(media => 
       media.status === "to-watch" || 
       media.status === "to-read" || 
       media.status === "to-play"
     ),
-    completed: filteredMedia.filter(media => media.status === "completed")
+    completed: sortedMedia.filter(media => media.status === "completed")
   };
 
   const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
@@ -75,13 +94,22 @@ const Bibliotheque = () => {
     );
   };
 
+  const getSortLabel = (sort: string) => {
+    switch (sort) {
+      case "date": return "Date";
+      case "title": return "Titre";
+      case "rating": return "Note";
+      default: return "Date";
+    }
+  };
+
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
       <div className="flex flex-col h-screen pb-24">
         {/* Header fixe avec filtres */}
         <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-4 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -91,37 +119,53 @@ const Bibliotheque = () => {
                 }
               }}
             />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <SortAsc size={18} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => setSortBy("date")}
+                  className={sortBy === "date" ? "bg-accent text-accent-foreground" : ""}
+                >
+                  Trier par date
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setSortBy("title")}
+                  className={sortBy === "title" ? "bg-accent text-accent-foreground" : ""}
+                >
+                  Trier par titre
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setSortBy("rating")}
+                  className={sortBy === "rating" ? "bg-accent text-accent-foreground" : ""}
+                >
+                  Trier par note
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           {/* Section des filtres */}
-          <div className="space-y-4">
-            {/* Type de média */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Type de média</p>
-              <LibraryTypeSelector 
-                selectedType={selectedType} 
-                onSelectType={setSelectedType} 
-              />
-            </div>
-            
-            {/* Tri */}
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">Trier par</p>
-              <LibrarySortSelector 
-                sortBy={sortBy} 
-                onSortChange={setSortBy} 
-              />
-            </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Type de média</p>
+            <LibraryTypeSelector 
+              selectedType={selectedType} 
+              onSelectType={setSelectedType} 
+            />
           </div>
         </header>
 
         {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-64 px-4 flex-1 overflow-y-auto pb-16">
+        <div className="mt-40 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
             </div>
-          ) : filteredMedia.length === 0 ? (
+          ) : sortedMedia.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque

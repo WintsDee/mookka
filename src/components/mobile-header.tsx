@@ -21,12 +21,12 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
   const { profile } = useProfile();
 
   const ProfileAvatar = () => (
-    <Avatar className="w-8 h-8 border border-border/20 will-change-transform">
+    <Avatar className="w-8 h-8 border border-border/20">
       {profile?.avatar_url ? (
         <AvatarImage 
           src={profile.avatar_url} 
           alt={profile?.username || "Utilisateur"}
-          className="object-cover w-full h-full"
+          className="object-cover"
         />
       ) : (
         <AvatarFallback>
@@ -47,7 +47,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
         <img 
           src="/lovable-uploads/59160824-2c34-4d40-82c6-d9f9f5b4d1f3.png" 
           alt="Mookka Logo" 
-          className="w-full h-full object-contain will-change-transform"
+          className="w-full h-full object-contain"
         />
       </Link>
     );
@@ -82,6 +82,7 @@ const MobileHeader = ({ title, children, showBackButton = false }: MobileHeaderP
                 ? "text-primary" 
                 : "text-muted-foreground hover:text-foreground"
             )}
+            style={{ height: '32px', width: '32px' }} // Hauteur et largeur fixes
           >
             <ProfileAvatar />
           </Link>
