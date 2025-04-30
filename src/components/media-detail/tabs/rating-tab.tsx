@@ -27,8 +27,7 @@ export function CritiqueTab({ mediaId, mediaType, initialRating = 0, initialRevi
       <MediaRating 
         mediaId={mediaId} 
         mediaType={mediaType}
-        initialRating={initialRating}
-        initialReview={initialReview}
+        initialNotes={initialReview}
       />
     </div>
   );

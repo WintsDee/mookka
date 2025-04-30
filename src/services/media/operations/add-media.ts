@@ -114,21 +114,39 @@ export async function addMediaToLibrary({
                              progression.progression_data !== null ? 
                              { ...progression.progression_data } : {};
       
-      // N'ajouter les champs que s'ils sont définis
-      if (status || defaultStatus) progressionData.status = status || defaultStatus;
-      if (notes !== undefined) progressionData.notes = notes || "";
-      
-      await supabase
-        .from('media_progressions')
-        .update({
-          progression_data: progressionData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', progression.id);
+      // Assurons-nous que progressionData est un objet et non un tableau
+      if (Array.isArray(progressionData)) {
+        console.warn("progression_data est un tableau, conversion en objet");
+        const newProgressionData: Record<string, any> = {};
+        // N'ajouter les champs que s'ils sont définis
+        if (status || defaultStatus) newProgressionData.status = status || defaultStatus;
+        if (notes !== undefined) newProgressionData.notes = notes || "";
+        
+        await supabase
+          .from('media_progressions')
+          .update({
+            progression_data: newProgressionData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', progression.id);
+      } else {
+        // C'est un objet, on peut mettre à jour normalement
+        // N'ajouter les champs que s'ils sont définis
+        if (status || defaultStatus) progressionData.status = status || defaultStatus;
+        if (notes !== undefined) progressionData.notes = notes || "";
+        
+        await supabase
+          .from('media_progressions')
+          .update({
+            progression_data: progressionData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', progression.id);
+      }
     } else {
       console.log(`Création d'une nouvelle progression pour: ${mediaId}`);
       // Créer une structure de progression basique
-      const progressionData: any = {};
+      const progressionData: Record<string, any> = {};
       
       // N'ajouter les champs que s'ils sont définis
       if (status || defaultStatus) progressionData.status = status || defaultStatus;
