@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { DEFAULT_AVATAR } from "@/config/avatars/avatar-utils";
 
 const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -56,7 +57,7 @@ const Social = () => {
           id: item.id,
           title: item.title,
           type: item.type as MediaType,
-          coverImage: item.cover_image,
+          coverImage: item.cover_image || '/placeholder.svg',
           year: item.year,
           rating: item.rating,
           genres: item.genres,
@@ -80,7 +81,7 @@ const Social = () => {
         profilesMap[profile.id] = {
           id: profile.id,
           full_name: profile.full_name || profile.username || 'Utilisateur',
-          avatar_url: profile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.id}`
+          avatar_url: profile.avatar_url || DEFAULT_AVATAR
         };
       });
       
@@ -90,7 +91,7 @@ const Social = () => {
           profilesMap[id] = {
             id,
             full_name: 'Utilisateur',
-            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`
+            avatar_url: DEFAULT_AVATAR
           };
         }
       });
@@ -121,7 +122,7 @@ const Social = () => {
           user: {
             id: profileItem.id,
             name: profileItem.full_name || 'Utilisateur',
-            avatar: profileItem.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileItem.id}`
+            avatar: profileItem.avatar_url || DEFAULT_AVATAR
           },
           action,
           media: {

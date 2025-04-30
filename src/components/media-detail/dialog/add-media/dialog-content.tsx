@@ -1,11 +1,11 @@
 
-import { Dialog, DialogContent as UIDialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { MediaRating } from "@/components/media-rating";
-import { MediaType, MediaStatus } from "@/types";
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { StatusSelection } from "../status-selection";
+import { statusOptions } from "../status-options";
 import { SuccessState } from "../success-state";
-import { getStatusOptions } from "../status-options";
+import { MediaType, MediaStatus } from "@/types";
+import { MediaRating } from "@/components/media-rating";
 
 interface DialogContentProps {
   isMobile: boolean;
@@ -14,12 +14,12 @@ interface DialogContentProps {
   mediaId: string;
   mediaType: MediaType;
   mediaTitle: string;
-  showRatingStep: boolean;
-  showSuccessAnimation: boolean;
-  isComplete: boolean;
   selectedStatus: MediaStatus | null;
   notes: string;
   isAddingToLibrary: boolean;
+  isComplete: boolean;
+  showSuccessAnimation: boolean;
+  showRatingStep: boolean;
   onStatusSelect: (status: MediaStatus) => void;
   onNotesChange: (value: string) => void;
   onAddToLibrary: () => void;
@@ -34,97 +34,77 @@ export function DialogContent({
   mediaId,
   mediaType,
   mediaTitle,
-  showRatingStep,
-  showSuccessAnimation,
-  isComplete,
   selectedStatus,
   notes,
   isAddingToLibrary,
+  isComplete,
+  showSuccessAnimation,
+  showRatingStep,
   onStatusSelect,
   onNotesChange,
   onAddToLibrary,
   onRatingComplete,
   onViewLibrary
 }: DialogContentProps) {
-  const statusOptions = getStatusOptions(mediaType);
-
-  // Déterminer le titre du dialogue en fonction de l'étape actuelle
-  const getDialogTitle = () => {
-    if (showRatingStep) {
-      return `Noter "${mediaTitle}"`;
+  // Filtrer les options de statut en fonction du type de média
+  const filteredOptions = statusOptions.filter(option => {
+    if (option.mediaType === 'all' || option.mediaType === mediaType) {
+      return true;
     }
-    if (showSuccessAnimation || isComplete) {
-      return "Média ajouté";
-    }
-    return `Ajouter "${mediaTitle}" à votre bibliothèque`;
-  };
-
-  const renderContent = () => {
-    // Si nous sommes à l'étape du succès ou de fin
-    if (showSuccessAnimation || isComplete) {
-      return (
-        <SuccessState 
-          mediaTitle={mediaTitle}
-          isComplete={isComplete}
-          onViewLibrary={onViewLibrary}
-        />
-      );
-    }
-    
-    // Si nous sommes à l'étape de notation
-    if (showRatingStep) {
-      return (
-        <MediaRating 
-          mediaId={mediaId} 
-          mediaType={mediaType} 
-          initialNotes={notes}
-          onRatingComplete={onRatingComplete}
-        />
-      );
-    }
-    
-    // Sinon, nous sommes à l'étape de sélection du statut
-    return (
-      <StatusSelection
-        statusOptions={statusOptions}
-        selectedStatus={selectedStatus}
-        notes={notes}
-        mediaTitle={mediaTitle}
-        isAddingToLibrary={isAddingToLibrary}
-        onStatusSelect={onStatusSelect}
-        onNotesChange={onNotesChange}
-        onAddToLibrary={onAddToLibrary}
-      />
-    );
-  };
-
-  // Utiliser un composant Drawer sur mobile
-  if (isMobile) {
-    return (
-      <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{getDialogTitle()}</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-8">
-            {renderContent()}
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  // Utiliser un Dialog sur desktop
+    return false;
+  });
+  
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <UIDialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{getDialogTitle()}</DialogTitle>
+          <DialogTitle>
+            {showRatingStep 
+              ? "Noter ce média" 
+              : isComplete 
+                ? "Ajout terminé" 
+                : "Ajouter à ma bibliothèque"}
+          </DialogTitle>
+          {!showRatingStep && !isComplete && (
+            <DialogDescription>
+              {isMobile 
+                ? `Choisissez un statut pour "${mediaTitle}".` 
+                : `Choisissez un statut pour ce média et ajoutez éventuellement des notes personnelles.`}
+            </DialogDescription>
+          )}
         </DialogHeader>
-        <div className="py-4">
-          {renderContent()}
-        </div>
-      </UIDialogContent>
+
+        {showRatingStep && (
+          <MediaRating 
+            mediaId={mediaId} 
+            mediaType={mediaType}
+            initialNotes={notes}
+            onRatingComplete={onRatingComplete}
+          />
+        )}
+        
+        {!showRatingStep && !isComplete && (
+          <StatusSelection 
+            statusOptions={filteredOptions}
+            selectedStatus={selectedStatus}
+            notes={notes}
+            mediaTitle={mediaTitle}
+            isAddingToLibrary={isAddingToLibrary}
+            onStatusSelect={onStatusSelect}
+            onNotesChange={onNotesChange}
+            onAddToLibrary={onAddToLibrary}
+          />
+        )}
+        
+        {(isComplete || showSuccessAnimation) && (
+          <SuccessState 
+            mediaTitle={mediaTitle}
+            isComplete={isComplete}
+            showSuccessAnimation={showSuccessAnimation}
+            onViewLibrary={onViewLibrary}
+          />
+        )}
+      </DialogContent>
     </Dialog>
   );
 }
