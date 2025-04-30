@@ -1,8 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MediaRating } from "@/components/media-rating";
 import { MediaType } from "@/types";
 import { Loader2 } from "lucide-react";
+import { useMediaRating } from "@/hooks/use-media-rating";
+import { addMediaToLibrary } from "@/services/media";
+import { useToast } from "@/hooks/use-toast";
 
 interface CritiqueTabProps {
   mediaId: string;
@@ -12,6 +15,8 @@ interface CritiqueTabProps {
 }
 
 export function CritiqueTab({ mediaId, mediaType, initialRating = 0, initialReview = "" }: CritiqueTabProps) {
+  const { toast } = useToast();
+  
   if (!mediaId || !mediaType) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -19,6 +24,30 @@ export function CritiqueTab({ mediaId, mediaType, initialRating = 0, initialRevi
       </div>
     );
   }
+
+  const handleRatingComplete = async (rating?: number) => {
+    try {
+      await addMediaToLibrary({
+        mediaId,
+        mediaType,
+        status: 'completed',
+        notes: initialReview,
+        rating
+      });
+      
+      toast({
+        title: "Critique enregistrée",
+        description: "Votre critique a été enregistrée avec succès",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de la critique:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre critique",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -28,6 +57,7 @@ export function CritiqueTab({ mediaId, mediaType, initialRating = 0, initialRevi
         mediaId={mediaId} 
         mediaType={mediaType}
         initialNotes={initialReview}
+        onRatingComplete={handleRatingComplete}
       />
     </div>
   );
