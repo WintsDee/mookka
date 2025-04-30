@@ -27,8 +27,9 @@ export function MediaRating({
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState(initialNotes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRatingLoading, setIsRatingLoading] = useState(false);
   const { isAuthenticated, session } = useAuthState();
-  const { isRatingLoading } = useMediaRating(mediaId);
+  const { submitRating, isSubmitting: isRatingSubmitting, userRating, userReview } = useMediaRating(mediaId, mediaType);
   
   const handleRatingChange = (value: number) => {
     setRating(value);
@@ -92,7 +93,7 @@ export function MediaRating({
         <div className="space-y-6">
           <div className="space-y-2">
             <p className="text-sm font-medium">Note</p>
-            <RatingSlider value={rating} onChange={handleRatingChange} />
+            <RatingSlider value={rating || 0} onChange={handleRatingChange} />
           </div>
           
           <div className="space-y-2">

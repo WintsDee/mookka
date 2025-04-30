@@ -1,13 +1,13 @@
 
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent as UIDialogContent, DialogHeader, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { StatusSelection } from "../status-selection";
-import { statusOptions } from "../status-options";
+import { getStatusOptions } from "../status-options";
 import { SuccessState } from "../success-state";
 import { MediaType, MediaStatus } from "@/types";
 import { MediaRating } from "@/components/media-rating";
 
-interface DialogContentProps {
+interface AddMediaDialogContentProps {
   isMobile: boolean;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,18 +45,13 @@ export function DialogContent({
   onAddToLibrary,
   onRatingComplete,
   onViewLibrary
-}: DialogContentProps) {
-  // Filtrer les options de statut en fonction du type de média
-  const filteredOptions = statusOptions.filter(option => {
-    if (option.mediaType === 'all' || option.mediaType === mediaType) {
-      return true;
-    }
-    return false;
-  });
+}: AddMediaDialogContentProps) {
+  // Get status options based on media type
+  const filteredOptions = getStatusOptions(mediaType);
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <UIDialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {showRatingStep 
@@ -104,7 +99,7 @@ export function DialogContent({
             onViewLibrary={onViewLibrary}
           />
         )}
-      </DialogContent>
+      </UIDialogContent>
     </Dialog>
   );
 }
