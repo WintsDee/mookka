@@ -51,8 +51,8 @@ export function useAddMediaState({
       setNotes("");
       setShowRatingStep(false);
       setIsComplete(false);
-      setIsAddingToLibrary(false);
       setShowSuccessAnimation(false);
+      setIsAddingToLibrary(false);
     }
   }, [isOpen, mediaType]);
 
@@ -70,12 +70,23 @@ export function useAddMediaState({
     setIsAddingToLibrary(true);
     
     try {
+      // Si le statut est "completed", montrer l'étape de notation
       if (selectedStatus === 'completed') {
+        // Avant de passer à l'étape de notation, on ajoute déjà le média à la bibliothèque
+        // avec le statut "completed", mais sans note pour l'instant
+        await addMediaToLibrary({
+          mediaId,
+          mediaType,
+          status: selectedStatus,
+          notes
+        });
+        
         setIsAddingToLibrary(false);
         setShowRatingStep(true);
         return;
       }
       
+      // Pour les autres statuts, ajouter directement à la bibliothèque
       await addMediaToLibrary({
         mediaId,
         mediaType,
@@ -83,6 +94,7 @@ export function useAddMediaState({
         notes
       });
       
+      // Afficher l'animation de succès
       setShowSuccessAnimation(true);
       
       toast({
@@ -90,8 +102,10 @@ export function useAddMediaState({
         description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
       });
       
+      // Après un court délai, marquer comme complet pour afficher le bouton
       setTimeout(() => {
         setIsComplete(true);
+        // Après un autre délai, fermer automatiquement le dialogue
         setTimeout(() => {
           onOpenChange(false);
         }, 1500);
@@ -110,6 +124,8 @@ export function useAddMediaState({
 
   const handleRatingComplete = async (rating?: number) => {
     try {
+      // Mettre à jour le média avec la note uniquement
+      // puisqu'il a déjà été ajouté avec le statut "completed"
       await addMediaToLibrary({
         mediaId,
         mediaType,
@@ -122,12 +138,14 @@ export function useAddMediaState({
       setShowSuccessAnimation(true);
       
       toast({
-        title: "Média ajouté",
-        description: `"${mediaTitle}" a été ajouté à votre bibliothèque.`
+        title: "Média noté",
+        description: `"${mediaTitle}" a été noté avec succès.`
       });
       
+      // Après un court délai, marquer comme complet pour afficher le bouton
       setTimeout(() => {
         setIsComplete(true);
+        // Après un autre délai, fermer automatiquement le dialogue
         setTimeout(() => {
           onOpenChange(false);
         }, 1500);
@@ -136,7 +154,7 @@ export function useAddMediaState({
       console.error("Erreur d'ajout avec notation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        description: "Impossible d'ajouter la note à ce média",
         variant: "destructive",
       });
     }

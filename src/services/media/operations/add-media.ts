@@ -42,6 +42,8 @@ export async function addMediaToLibrary({
       }
     }
     
+    console.log(`Ajout/mise à jour du média ${mediaId} avec statut: ${status || defaultStatus}, notes: ${notes}, rating: ${rating}`);
+    
     // Vérifier si le média est déjà dans la bibliothèque
     const { data: existingMedia } = await supabase
       .from('user_media')
@@ -51,15 +53,21 @@ export async function addMediaToLibrary({
       .maybeSingle();
     
     if (existingMedia) {
+      console.log(`Mise à jour du média existant: ${existingMedia.id}`);
+      // Créer un objet de mise à jour, en excluant les valeurs null/undefined
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+      
+      // N'ajouter les champs que s'ils sont définis
+      if (status || defaultStatus) updateData.status = status || defaultStatus;
+      if (notes !== undefined) updateData.notes = notes || null;
+      if (rating !== undefined) updateData.user_rating = rating !== null ? rating : null;
+      
       // Mettre à jour le média existant
       const { error: updateError } = await supabase
         .from('user_media')
-        .update({
-          status: status || defaultStatus,
-          notes: notes || null,
-          user_rating: rating || null,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', existingMedia.id);
         
       if (updateError) {
@@ -67,17 +75,22 @@ export async function addMediaToLibrary({
         throw updateError;
       }
     } else {
+      console.log(`Ajout d'un nouveau média: ${mediaId}`);
       // Ajouter un nouveau média
+      const newMediaData: any = {
+        user_id: user.user.id,
+        media_id: mediaId,
+        status: status || defaultStatus,
+        added_at: new Date().toISOString()
+      };
+      
+      // N'ajouter les champs que s'ils sont définis
+      if (notes !== undefined) newMediaData.notes = notes || null;
+      if (rating !== undefined) newMediaData.user_rating = rating !== null ? rating : null;
+      
       const { error: insertError } = await supabase
         .from('user_media')
-        .insert({
-          user_id: user.user.id,
-          media_id: mediaId,
-          status: status || defaultStatus,
-          notes: notes || null,
-          user_rating: rating || null,
-          added_at: new Date().toISOString()
-        });
+        .insert(newMediaData);
         
       if (insertError) {
         console.error("Erreur lors de l'ajout du média:", insertError);
@@ -88,17 +101,22 @@ export async function addMediaToLibrary({
     // Mettre à jour également le statut dans media_progressions si nécessaire
     const { data: progression } = await supabase
       .from('media_progressions')
-      .select('id')
+      .select('id, progression_data')
       .eq('user_id', user.user.id)
       .eq('media_id', mediaId)
       .maybeSingle();
       
     if (progression) {
-      // Créer une structure de progression basique
-      const progressionData = {
-        status: status || defaultStatus,
-        notes: notes || ""
-      };
+      console.log(`Mise à jour de la progression existante: ${progression.id}`);
+      // Vérifier explicitement si progression_data est un objet et utiliser un objet vide comme fallback
+      const progressionData = progression.progression_data && 
+                             typeof progression.progression_data === 'object' && 
+                             progression.progression_data !== null ? 
+                             { ...progression.progression_data } : {};
+      
+      // N'ajouter les champs que s'ils sont définis
+      if (status || defaultStatus) progressionData.status = status || defaultStatus;
+      if (notes !== undefined) progressionData.notes = notes || "";
       
       await supabase
         .from('media_progressions')
@@ -107,7 +125,26 @@ export async function addMediaToLibrary({
           updated_at: new Date().toISOString()
         })
         .eq('id', progression.id);
+    } else {
+      console.log(`Création d'une nouvelle progression pour: ${mediaId}`);
+      // Créer une structure de progression basique
+      const progressionData: any = {};
+      
+      // N'ajouter les champs que s'ils sont définis
+      if (status || defaultStatus) progressionData.status = status || defaultStatus;
+      if (notes !== undefined) progressionData.notes = notes || "";
+      
+      // Créer une nouvelle entrée de progression
+      await supabase
+        .from('media_progressions')
+        .insert({
+          media_id: mediaId,
+          user_id: user.user.id,
+          progression_data: progressionData
+        });
     }
+    
+    console.log(`Média ${mediaId} ajouté/mis à jour avec succès`);
   } catch (error) {
     console.error("Erreur dans addMediaToLibrary:", error);
     throw error;

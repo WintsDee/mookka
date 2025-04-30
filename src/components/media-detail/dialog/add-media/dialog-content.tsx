@@ -48,7 +48,19 @@ export function DialogContent({
 }: DialogContentProps) {
   const statusOptions = getStatusOptions(mediaType);
 
+  // Déterminer le titre du dialogue en fonction de l'étape actuelle
+  const getDialogTitle = () => {
+    if (showRatingStep) {
+      return `Noter "${mediaTitle}"`;
+    }
+    if (showSuccessAnimation || isComplete) {
+      return "Média ajouté";
+    }
+    return `Ajouter "${mediaTitle}" à votre bibliothèque`;
+  };
+
   const renderContent = () => {
+    // Si nous sommes à l'étape du succès ou de fin
     if (showSuccessAnimation || isComplete) {
       return (
         <SuccessState 
@@ -59,6 +71,7 @@ export function DialogContent({
       );
     }
     
+    // Si nous sommes à l'étape de notation
     if (showRatingStep) {
       return (
         <MediaRating 
@@ -70,6 +83,7 @@ export function DialogContent({
       );
     }
     
+    // Sinon, nous sommes à l'étape de sélection du statut
     return (
       <StatusSelection
         statusOptions={statusOptions}
@@ -84,16 +98,13 @@ export function DialogContent({
     );
   };
 
+  // Utiliser un composant Drawer sur mobile
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>
-              {showRatingStep 
-                ? `Noter "${mediaTitle}"`
-                : `Ajouter "${mediaTitle}" à votre bibliothèque`}
-            </DrawerTitle>
+            <DrawerTitle>{getDialogTitle()}</DrawerTitle>
           </DrawerHeader>
           <div className="px-4 pb-8">
             {renderContent()}
@@ -103,15 +114,12 @@ export function DialogContent({
     );
   }
 
+  // Utiliser un Dialog sur desktop
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <UIDialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {showRatingStep 
-              ? `Noter "${mediaTitle}"`
-              : `Ajouter "${mediaTitle}" à votre bibliothèque`}
-          </DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           {renderContent()}

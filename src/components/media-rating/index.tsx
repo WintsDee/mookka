@@ -1,165 +1,126 @@
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { Button } from "../ui/button";
+import { NotLoggedInCard } from "./not-logged-in-card";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
-import { NotLoggedInCard } from "./not-logged-in-card";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Loader2, Send } from "lucide-react";
 import { MediaType } from "@/types";
-import { addMediaToLibrary } from "@/services/media";
 
 interface MediaRatingProps {
   mediaId: string;
   mediaType: MediaType;
   initialNotes?: string;
-  initialRating?: number;
-  initialReview?: string;
-  onRatingComplete?: (rating?: number) => void;
+  onRatingComplete: (rating?: number) => void;
 }
 
-export function MediaRating({ 
-  mediaId, 
-  mediaType, 
+export function MediaRating({
+  mediaId,
+  mediaType,
   initialNotes = "",
-  initialRating = 0,
-  initialReview = "",
   onRatingComplete
 }: MediaRatingProps) {
-  const [rating, setRating] = useState<number>(initialRating);
-  const [review, setReview] = useState<string>(initialReview || initialNotes || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
+  const [rating, setRating] = useState<number | null>(null);
+  const [notes, setNotes] = useState(initialNotes);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsLoggedIn(!!user);
-      
-      if (user && !initialRating && !initialReview) {
-        // Check if a rating already exists only if no initial value is provided
-        try {
-          const { data } = await supabase
-            .from('user_media')
-            .select('user_rating, notes')
-            .eq('user_id', user.id)
-            .eq('media_id', mediaId)
-            .maybeSingle();
-            
-          if (data) {
-            if (data.user_rating) {
-              setRating(data.user_rating);
-            }
-            if (data.notes && !initialNotes && !initialReview) {
-              setReview(data.notes);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching rating data:", error);
+  React.useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Erreur lors de la vérification de l'authentification:", error);
+          setIsLoggedIn(false);
+          return;
         }
+        setIsLoggedIn(!!data.user);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de l'authentification:", error);
+        setIsLoggedIn(false);
       }
     };
-    
-    checkAuthStatus();
-  }, [mediaId, initialNotes, initialRating, initialReview]);
 
-  const handleRatingChange = (newRating: number) => {
-    setRating(newRating);
+    checkLoginStatus();
+  }, []);
+
+  const handleRatingChange = (value: number | null) => {
+    setRating(value);
   };
 
-  const handleReviewChange = (newReview: string) => {
-    setReview(newReview);
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNotes(e.target.value);
   };
-  
+
   const handleSubmit = async () => {
-    if (!isLoggedIn) {
-      toast({
-        title: "Not logged in",
-        description: "You must be logged in to rate media",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+    setIsLoading(true);
     try {
-      // Add media to library with "completed" status
-      await addMediaToLibrary({
-        mediaId,
-        mediaType,
-        status: 'completed',
-        notes: review,
-        rating
-      });
-      
-      toast({
-        title: "Rating submitted",
-        description: "Your rating has been successfully recorded.",
-      });
-      
-      // Call callback if provided
-      if (onRatingComplete) {
-        onRatingComplete(rating);
-      }
+      // Appel de la fonction de callback avec la note
+      onRatingComplete(rating !== null ? rating : undefined);
     } catch (error) {
-      console.error("Error submitting rating:", error);
+      console.error("Erreur lors de l'envoi de la note:", error);
       toast({
-        title: "Error",
-        description: "Unable to save your rating.",
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre note",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  if (!isLoggedIn) {
+  if (isLoggedIn === null) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (isLoggedIn === false) {
     return <NotLoggedInCard />;
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="font-medium text-lg">Rate this media</h3>
-          <p className="text-sm text-muted-foreground">
-            What rating would you give this media?
-          </p>
-        </div>
-        
-        <RatingSlider 
-          value={rating} 
-          onChange={handleRatingChange} 
-        />
+    <div className="space-y-6 py-2">
+      <div className="space-y-2">
+        <h3 className="text-lg font-medium">Notez ce média</h3>
+        <p className="text-sm text-muted-foreground">
+          Votre note aide la communauté à découvrir de nouveaux contenus de qualité.
+        </p>
       </div>
+      
+      <RatingSlider value={rating} onChange={handleRatingChange} />
       
       <div className="space-y-2">
-        <h3 className="font-medium">Your review (optional)</h3>
-        <ReviewTextarea 
-          value={review} 
-          onChange={handleReviewChange} 
+        <h3 className="text-sm font-medium">Avis (optionnel)</h3>
+        <ReviewTextarea
+          value={notes}
+          onChange={handleNotesChange}
+          placeholder="Partagez votre avis sur ce média..."
         />
       </div>
       
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         <Button
-          onClick={handleSubmit}
-          disabled={rating === 0 || isSubmitting}
-          className="gap-2"
+          variant="outline"
+          onClick={() => onRatingComplete(undefined)}
+          disabled={isLoading}
         >
-          {isSubmitting ? (
+          Ignorer
+        </Button>
+        
+        <Button onClick={handleSubmit} disabled={isLoading || rating === null}>
+          {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Adding...
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Enregistrement...
             </>
           ) : (
-            <span className="flex items-center gap-2">
-              <Send className="h-4 w-4" />
-              Submit
-            </span>
+            "Enregistrer"
           )}
         </Button>
       </div>

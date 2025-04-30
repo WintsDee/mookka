@@ -1,18 +1,19 @@
 
-import React from 'react';
-import { Textarea } from "@/components/ui/textarea";
+import React from "react";
+import { Textarea } from "../ui/textarea";
 
 interface ReviewTextareaProps {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
 }
 
-export function ReviewTextarea({ value, onChange }: ReviewTextareaProps) {
+export function ReviewTextarea({ value, onChange, placeholder }: ReviewTextareaProps) {
   return (
     <Textarea
-      placeholder="Partagez vos impressions sur ce média..."
+      placeholder={placeholder || "Partagez votre avis..."}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange}
       className="min-h-[120px] resize-none"
     />
   );
