@@ -79,6 +79,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
+        console.error("Error checking existing media:", checkError);
         throw checkError;
       }
 
@@ -128,7 +129,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         description: "Impossible d'enregistrer votre note",
         variant: "destructive",
       });
-      throw error;
+      return false;
     } finally {
       setIsSubmitting(false);
     }
