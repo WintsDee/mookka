@@ -44,7 +44,73 @@ export async function addMediaToLibrary({
     
     console.log(`Ajout/mise à jour du média ${mediaId} avec statut: ${status || defaultStatus}, notes: ${notes}, rating: ${rating}`);
     
-    // Vérifier si le média est déjà dans la bibliothèque
+    // Vérifier si le média existe déjà dans la table 'media'
+    const { data: existingMediaInDb, error: mediaCheckError } = await supabase
+      .from('media')
+      .select('id')
+      .eq('id', mediaId)
+      .maybeSingle();
+      
+    if (mediaCheckError) {
+      console.error("Erreur lors de la vérification du média:", mediaCheckError);
+      throw mediaCheckError;
+    }
+    
+    // Si le média n'existe pas encore dans la base de données, l'ajouter
+    if (!existingMediaInDb) {
+      console.log(`Le média ${mediaId} n'existe pas encore dans la base de données, récupération des détails...`);
+      
+      // Récupérer les informations du média depuis l'API externe via la fonction fetch-media
+      const mediaFetchResponse = await fetch(`https://dfuawprsisgwyvdtfjvl.supabase.co/functions/v1/fetch-media`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.getSession()}`
+        },
+        body: JSON.stringify({
+          type: mediaType,
+          id: mediaId
+        })
+      });
+      
+      if (!mediaFetchResponse.ok) {
+        throw new Error(`Erreur lors de la récupération des données du média: ${mediaFetchResponse.statusText}`);
+      }
+      
+      const mediaData = await mediaFetchResponse.json();
+      
+      if (mediaData && mediaData.id) {
+        console.log(`Ajout du nouveau média dans la base de données:`, mediaData);
+        
+        // Préparer les données pour l'insertion
+        const newMediaEntry = {
+          id: mediaId,
+          title: mediaData.title,
+          type: mediaType,
+          year: mediaData.year || null,
+          description: mediaData.description || null,
+          cover_image: mediaData.poster_path || mediaData.cover_image || null,
+          genres: Array.isArray(mediaData.genres) ? mediaData.genres : [],
+          director: mediaData.director || null,
+          author: mediaData.author || mediaData.authors ? (Array.isArray(mediaData.authors) ? mediaData.authors.join(', ') : mediaData.authors) : null,
+          publisher: mediaData.publisher || null,
+          platform: mediaData.platform || null,
+          rating: mediaData.rating || null,
+          external_id: mediaData.external_id || mediaData.id.toString()
+        };
+        
+        const { error: insertMediaError } = await supabase
+          .from('media')
+          .insert(newMediaEntry);
+          
+        if (insertMediaError) {
+          console.error("Erreur lors de l'ajout du média dans la base de données:", insertMediaError);
+          throw insertMediaError;
+        }
+      }
+    }
+    
+    // Vérifier si le média est déjà dans la bibliothèque de l'utilisateur
     const { data: existingMedia } = await supabase
       .from('user_media')
       .select('id')

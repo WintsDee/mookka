@@ -27,13 +27,13 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
   const fetchUserRating = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
       const { data, error } = await supabase
         .from('user_media')
         .select('user_rating, notes')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .eq('media_id', mediaId)
         .maybeSingle();
 
@@ -60,21 +60,21 @@ export function useMediaRating(mediaId: string, mediaType: string) {
   const submitRating = async ({ rating, review = "", notes = "", status }: RatingSubmission) => {
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
         toast({
           title: "Erreur",
           description: "Vous devez être connecté pour noter ce média",
           variant: "destructive",
         });
-        return;
+        return false;
       }
 
       // Check if the user already has this media in their library
       const { data: existingUserMedia, error: checkError } = await supabase
         .from('user_media')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .eq('media_id', mediaId)
         .maybeSingle();
 
@@ -100,7 +100,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         const { error: insertError } = await supabase
           .from('user_media')
           .insert({
-            user_id: user.id,
+            user_id: session.user.id,
             media_id: mediaId,
             user_rating: rating,
             notes: notes,
