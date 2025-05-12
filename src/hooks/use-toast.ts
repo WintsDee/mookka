@@ -7,6 +7,7 @@ type ToastProps = {
   description?: React.ReactNode;
   action?: React.ReactNode;
   variant?: "default" | "destructive";
+  id?: string; // Add the id property to the ToastProps interface
 };
 
 export const useToast = () => {
