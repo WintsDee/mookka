@@ -1,20 +1,22 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, Eye } from "lucide-react";
+import { Check, Clock, Eye, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface GameStatusSelectorProps {
   status: string;
-  onStatusChange: (status: 'to-play' | 'playing' | 'completed') => void;
+  onStatusChange: (status: 'to-play' | 'playing' | 'completed' | 'abandoned') => void;
+  isInLibrary?: boolean; // New prop to check if media is in library
 }
 
-export function GameStatusSelector({ status, onStatusChange }: GameStatusSelectorProps) {
+export function GameStatusSelector({ status, onStatusChange, isInLibrary = false }: GameStatusSelectorProps) {
   const getStatusLabel = (statusCode: string) => {
     switch (statusCode) {
       case 'to-play': return 'À jouer';
       case 'playing': return 'En cours';
       case 'completed': return 'Terminé';
+      case 'abandoned': return 'Abandonné';
       default: return 'À jouer';
     }
   };
@@ -24,6 +26,7 @@ export function GameStatusSelector({ status, onStatusChange }: GameStatusSelecto
       case 'to-play': return 'text-yellow-500';
       case 'playing': return 'text-purple-500';
       case 'completed': return 'text-green-500';
+      case 'abandoned': return 'text-gray-500';
       default: return 'text-yellow-500';
     }
   };
@@ -39,7 +42,7 @@ export function GameStatusSelector({ status, onStatusChange }: GameStatusSelecto
         </Badge>
       </div>
       
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Button
           size="sm"
           variant={status === 'to-play' ? 'default' : 'outline'}
@@ -67,6 +70,19 @@ export function GameStatusSelector({ status, onStatusChange }: GameStatusSelecto
           <Check className="h-4 w-4 mr-1" />
           Terminé
         </Button>
+        
+        {/* Only show the abandoned button if the media is already in the user's library */}
+        {isInLibrary && (
+          <Button
+            size="sm"
+            variant={status === 'abandoned' ? 'default' : 'outline'}
+            className={status === 'abandoned' ? 'bg-gray-500 hover:bg-gray-600' : ''}
+            onClick={() => onStatusChange('abandoned')}
+          >
+            <Ban className="h-4 w-4 mr-1" />
+            Abandonné
+          </Button>
+        )}
       </div>
     </div>
   );

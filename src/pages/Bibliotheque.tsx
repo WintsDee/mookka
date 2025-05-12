@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PlusCircle, SortAsc } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { StatusDropdown } from "@/components/media-detail/status-dropdown";
 import { LibraryTypeSelector } from "@/components/library/library-type-selector";
 import { 
   DropdownMenu, 
@@ -88,7 +89,8 @@ const Bibliotheque = () => {
       media.status === "to-read" || 
       media.status === "to-play"
     ),
-    completed: sortedMedia.filter(media => media.status === "completed")
+    completed: sortedMedia.filter(media => media.status === "completed"),
+    abandoned: sortedMedia.filter(media => media.status === "abandoned") // New group for abandoned media
   };
 
   const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
@@ -210,6 +212,10 @@ const Bibliotheque = () => {
               <StatusSection 
                 title="Terminé" 
                 medias={groupedMedia.completed} 
+              />
+              <StatusSection 
+                title="Abandonné" 
+                medias={groupedMedia.abandoned} 
               />
             </>
           )}

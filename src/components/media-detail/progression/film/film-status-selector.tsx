@@ -1,21 +1,23 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, Eye } from "lucide-react";
+import { Check, Clock, Eye, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MediaStatus } from "@/types";
 
 interface FilmStatusSelectorProps {
   status: MediaStatus;
   onStatusChange: (status: MediaStatus) => void;
+  isInLibrary?: boolean; // New prop to check if media is in library
 }
 
-export function FilmStatusSelector({ status, onStatusChange }: FilmStatusSelectorProps) {
+export function FilmStatusSelector({ status, onStatusChange, isInLibrary = false }: FilmStatusSelectorProps) {
   const getStatusLabel = (statusCode: string) => {
     switch (statusCode) {
       case 'to-watch': return 'À voir';
       case 'watching': return 'En cours';
       case 'completed': return 'Vu';
+      case 'abandoned': return 'Abandonné';
       default: return 'À voir';
     }
   };
@@ -25,6 +27,7 @@ export function FilmStatusSelector({ status, onStatusChange }: FilmStatusSelecto
       case 'to-watch': return 'text-yellow-500';
       case 'watching': return 'text-purple-500';
       case 'completed': return 'text-green-500';
+      case 'abandoned': return 'text-gray-500';
       default: return 'text-yellow-500';
     }
   };
@@ -40,7 +43,7 @@ export function FilmStatusSelector({ status, onStatusChange }: FilmStatusSelecto
         </Badge>
       </div>
       
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Button
           size="sm"
           variant={status === 'to-watch' ? 'default' : 'outline'}
@@ -68,6 +71,19 @@ export function FilmStatusSelector({ status, onStatusChange }: FilmStatusSelecto
           <Check className="h-4 w-4 mr-1" />
           Vu
         </Button>
+        
+        {/* Only show the abandoned button if the media is already in the user's library */}
+        {isInLibrary && (
+          <Button
+            size="sm"
+            variant={status === 'abandoned' ? 'default' : 'outline'}
+            className={status === 'abandoned' ? 'bg-gray-500 hover:bg-gray-600' : ''}
+            onClick={() => onStatusChange('abandoned')}
+          >
+            <Ban className="h-4 w-4 mr-1" />
+            Abandonné
+          </Button>
+        )}
       </div>
     </div>
   );

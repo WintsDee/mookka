@@ -2,9 +2,9 @@
 export type MediaType = 'film' | 'serie' | 'book' | 'game';
 
 export type MediaStatus = 
-  | 'to-watch' | 'watching' | 'completed'  // Statuts pour films et séries
-  | 'to-read' | 'reading'                  // Statuts pour livres
-  | 'to-play' | 'playing';                 // Statuts pour jeux
+  | 'to-watch' | 'watching' | 'completed' | 'abandoned'  // Updated to include abandoned status
+  | 'to-read' | 'reading'                  
+  | 'to-play' | 'playing';                 
 
 export interface Media {
   id: string;

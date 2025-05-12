@@ -23,6 +23,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [userReview, setUserReview] = useState<string | null>(null);
+  const [userMediaStatus, setUserMediaStatus] = useState<MediaStatus | null>(null);
   const { toast } = useToast();
 
   const fetchUserRating = async () => {
@@ -32,7 +33,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       const { data, error } = await supabase
         .from('user_media')
-        .select('user_rating, notes')
+        .select('user_rating, notes, status')
         .eq('user_id', session.user.id)
         .eq('media_id', mediaId)
         .maybeSingle();
@@ -45,6 +46,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
       if (data) {
         setUserRating(data.user_rating);
         setUserReview(data.notes || null);
+        setUserMediaStatus(data.status as MediaStatus || null);
       }
     } catch (error) {
       console.error("Error in fetchUserRating:", error);
@@ -73,7 +75,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
       // Check if the user already has this media in their library
       const { data: existingUserMedia, error: checkError } = await supabase
         .from('user_media')
-        .select('id')
+        .select('id, status')
         .eq('user_id', session.user.id)
         .eq('media_id', mediaId)
         .maybeSingle();
@@ -96,6 +98,11 @@ export function useMediaRating(mediaId: string, mediaType: string) {
           .eq('id', existingUserMedia.id);
 
         if (updateError) throw updateError;
+        
+        // Update local state with new status if provided
+        if (status) {
+          setUserMediaStatus(status);
+        }
       } else {
         // Insert a new entry
         const { error: insertError } = await supabase
@@ -110,6 +117,11 @@ export function useMediaRating(mediaId: string, mediaType: string) {
           });
 
         if (insertError) throw insertError;
+        
+        // Update local state with new status
+        if (status) {
+          setUserMediaStatus(status);
+        }
       }
 
       // Update state
@@ -140,5 +152,6 @@ export function useMediaRating(mediaId: string, mediaType: string) {
     isSubmitting,
     userRating,
     userReview,
+    userMediaStatus,
   };
 }

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 
@@ -85,6 +85,13 @@ const MediaCard = ({
         statusClass = "bg-emerald-500/20 border-emerald-500/30 text-emerald-300";
         statusText = type === "book" ? "Lu" : type === "film" ? "Vu" : "Terminé";
         StatusIcon = Check;
+        break;
+
+      // Nouveau statut "abandonné"
+      case "abandoned":
+        statusClass = "bg-gray-500/20 border-gray-500/30 text-gray-300";
+        statusText = "Abandonné";
+        StatusIcon = Ban;
         break;
     }
     

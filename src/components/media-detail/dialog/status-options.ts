@@ -115,3 +115,22 @@ export function getStatusOptions(mediaType: MediaType): StatusOption[] {
       ];
   }
 }
+
+// New function to get full status options including the "Abandoned" status
+// This is only shown for media already in the user's library
+export function getFullStatusOptions(mediaType: MediaType): StatusOption[] {
+  // Get the standard options first
+  const standardOptions = getStatusOptions(mediaType);
+  
+  // Add the abandoned status option
+  const abandonedOption: StatusOption = {
+    value: 'abandoned',
+    label: 'Abandonné',
+    description: 'Vous avez abandonné ce média',
+    bgColor: 'bg-gray-500/10',
+    textColor: 'text-gray-500',
+    borderColor: 'border-gray-500/50'
+  };
+  
+  return [...standardOptions, abandonedOption];
+}
