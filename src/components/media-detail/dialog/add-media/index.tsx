@@ -28,6 +28,7 @@ export function AddMediaDialog({
     showRatingStep,
     isComplete,
     showSuccessAnimation,
+    errorMessage,
     handleStatusSelect,
     handleNotesChange,
     handleAddToLibrary,
@@ -55,6 +56,7 @@ export function AddMediaDialog({
       selectedStatus={selectedStatus}
       notes={notes}
       isAddingToLibrary={isAddingToLibrary}
+      errorMessage={errorMessage}
       onStatusSelect={handleStatusSelect}
       onNotesChange={handleNotesChange}
       onAddToLibrary={handleAddToLibrary}

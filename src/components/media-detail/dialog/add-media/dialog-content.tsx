@@ -6,6 +6,8 @@ import { getStatusOptions } from "../status-options";
 import { SuccessState } from "../success-state";
 import { MediaType, MediaStatus } from "@/types";
 import { MediaRating } from "@/components/media-rating";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AddMediaDialogContentProps {
   isMobile: boolean;
@@ -20,6 +22,7 @@ interface AddMediaDialogContentProps {
   isComplete: boolean;
   showSuccessAnimation: boolean;
   showRatingStep: boolean;
+  errorMessage: string | null;
   onStatusSelect: (status: MediaStatus) => void;
   onNotesChange: (value: string) => void;
   onAddToLibrary: () => void;
@@ -40,6 +43,7 @@ export function DialogContent({
   isComplete,
   showSuccessAnimation,
   showRatingStep,
+  errorMessage,
   onStatusSelect,
   onNotesChange,
   onAddToLibrary,
@@ -68,6 +72,14 @@ export function DialogContent({
             </DialogDescription>
           )}
         </DialogHeader>
+
+        {/* Error message display */}
+        {errorMessage && !showRatingStep && !isComplete && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
 
         {showRatingStep && (
           <MediaRating 

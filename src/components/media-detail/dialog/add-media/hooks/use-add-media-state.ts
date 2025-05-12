@@ -29,6 +29,7 @@ export function useAddMediaState({
   const [showRatingStep, setShowRatingStep] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Réinitialiser l'état lorsque le dialogue s'ouvre
   useEffect(() => {
@@ -53,11 +54,13 @@ export function useAddMediaState({
       setIsComplete(false);
       setShowSuccessAnimation(false);
       setIsAddingToLibrary(false);
+      setErrorMessage(null);
     }
   }, [isOpen, mediaType]);
 
   const handleStatusSelect = (status: MediaStatus) => {
     setSelectedStatus(status);
+    setErrorMessage(null); // Clear any previous errors when user makes a new selection
   };
 
   const handleNotesChange = (value: string) => {
@@ -68,8 +71,11 @@ export function useAddMediaState({
     if (!selectedStatus) return;
     
     setIsAddingToLibrary(true);
+    setErrorMessage(null);
     
     try {
+      console.log(`Adding ${mediaTitle} (${mediaId}) to library with status ${selectedStatus}`);
+      
       // Si le statut est "completed", montrer l'étape de notation
       if (selectedStatus === 'completed') {
         // Avant de passer à l'étape de notation, on ajoute déjà le média à la bibliothèque
@@ -111,13 +117,30 @@ export function useAddMediaState({
         }, 1500);
       }, 1000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur d'ajout à la bibliothèque:", error);
+      
+      // Extract meaningful error message
+      let errorMsg = "Impossible d'ajouter ce média à votre bibliothèque";
+      
+      if (error instanceof Error) {
+        errorMsg = error.message;
+      }
+      
+      // Authentication errors
+      if (errorMsg.includes("non connecté") || errorMsg.includes("non authentifié")) {
+        errorMsg = "Vous devez être connecté pour ajouter un média à votre bibliothèque.";
+      }
+      
+      // Set the error message for display in the UI
+      setErrorMessage(errorMsg);
+      
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter ce média à votre bibliothèque",
+        description: errorMsg,
         variant: "destructive",
       });
+      
       setIsAddingToLibrary(false);
     }
   };
@@ -150,13 +173,23 @@ export function useAddMediaState({
           onOpenChange(false);
         }, 1500);
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur d'ajout avec notation:", error);
+      
+      // Extract meaningful error message
+      let errorMsg = "Impossible d'ajouter la note à ce média";
+      
+      if (error instanceof Error) {
+        errorMsg = error.message;
+      }
+      
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter la note à ce média",
+        description: errorMsg,
         variant: "destructive",
       });
+      
+      setIsAddingToLibrary(false);
     }
   };
 
@@ -172,6 +205,7 @@ export function useAddMediaState({
     showRatingStep,
     isComplete,
     showSuccessAnimation,
+    errorMessage,
     handleStatusSelect,
     handleNotesChange,
     handleAddToLibrary,
