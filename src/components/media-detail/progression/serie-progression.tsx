@@ -7,7 +7,7 @@ import { useSerieProgression } from "./serie/use-serie-progression";
 import { NotesTextarea } from "./notes-textarea";
 import { EpisodeList } from "./serie/episode-list";
 import { UpcomingEpisodes } from "./serie/upcoming-episodes";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface SerieProgressionProps {
   mediaDetails: any;
@@ -39,7 +39,7 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
       toast({
         title: "Progression mise à jour",
         description: "La progression de la saison a été enregistrée",
-        duration: 3000,
+        variant: "default"
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la saison:", error);
@@ -73,7 +73,7 @@ export function SerieProgression({ mediaDetails, progression, onUpdate }: SerieP
       toast({
         title: "Statut mis à jour",
         description: `La série est maintenant marquée comme "${newStatus === 'to-watch' ? 'À voir' : newStatus === 'watching' ? 'En cours' : 'Terminée'}"`,
-        duration: 3000,
+        variant: "default"
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour du statut:", error);

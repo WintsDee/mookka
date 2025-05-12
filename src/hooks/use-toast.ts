@@ -24,8 +24,14 @@ export const useToast = () => {
       toastOptions.action = action;
     }
     
-    // Add to internal state
-    const newToast = { title, description, variant, action };
+    // Add to internal state with unique ID for tracking
+    const newToast = { 
+      title, 
+      description, 
+      variant, 
+      action, 
+      id: toastOptions.id 
+    };
     setToasts((prev) => [...prev, newToast]);
 
     // Show the sonner toast
