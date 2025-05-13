@@ -18,10 +18,14 @@ export async function searchExternalApis(
 ): Promise<any[]> {
   try {
     // Call Supabase Function to fetch from external APIs
-    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
-      body: { type, query },
-      signal: abortSignal
-    });
+    const options: any = { body: { type, query } };
+    
+    // Only add the signal if it exists (for compatibility)
+    if (abortSignal) {
+      options.signal = abortSignal;
+    }
+    
+    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', options);
 
     if (apiError) {
       console.error("Error searching media via API:", apiError);

@@ -8,5 +8,11 @@ export {
   removeMediaFromLibrary,
   updateMediaNotes
 } from './operations';
-export { filterAdultContent } from './filters';
+export { 
+  filterAdultContent,
+  filterByRating,
+  filterByAgeRestriction,
+  filterByContent,
+  filterByKeywords
+} from './filters';
 export { getSocialShareSettings, updateSocialShareSettings } from './social-service';

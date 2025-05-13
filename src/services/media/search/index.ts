@@ -4,6 +4,7 @@ import { searchLocalDatabase } from "./database-search";
 import { searchExternalApis } from "./api-search";
 import { mergeSearchResults, sortResultsByRelevance } from "./utils";
 import { filterAdultContent } from '../filters';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Search for media in external APIs and local database
