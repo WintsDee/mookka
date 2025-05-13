@@ -136,7 +136,7 @@ export async function addMediaToLibrary({
     // Étape 3: Vérifier si le média est déjà dans la bibliothèque de l'utilisateur
     const { data: existingMedia, error: userMediaCheckError } = await supabase
       .from('user_media')
-      .select('id')
+      .select('id, status')
       .eq('user_id', userId)
       .eq('media_id', mediaId)
       .maybeSingle();
@@ -148,6 +148,12 @@ export async function addMediaToLibrary({
     
     // Étape 4: Mettre à jour ou ajouter le média dans la bibliothèque de l'utilisateur
     if (existingMedia) {
+      // Si le média existe déjà et que le statut est le même, informer l'utilisateur
+      if (existingMedia.status === effectiveStatus) {
+        console.log(`Media ${mediaId} already in library with the same status: ${effectiveStatus}`);
+        throw new Error(`Ce média est déjà dans votre bibliothèque avec le statut "${effectiveStatus}"`);
+      }
+      
       // Mettre à jour le média existant
       const updateData: any = {
         updated_at: new Date().toISOString()

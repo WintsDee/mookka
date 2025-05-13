@@ -99,7 +99,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40 px-4 py-3 shadow-md">
-        <div className="flex items-center justify-between gap-2 mb-safe">
+        <div className="flex items-center justify-between gap-2 mb-safe pb-4">
           <Button
             variant="ghost"
             size="icon"
