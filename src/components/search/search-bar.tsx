@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { MediaType } from "@/types";
 import { Search, Loader2 } from "lucide-react";
 
 interface SearchBarProps {
@@ -27,14 +26,16 @@ export const SearchBar = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`pl-10 py-6 border-none shadow-sm ${selectedTypeColor}`}
+        className={`pl-10 py-6 border-none shadow-sm ${selectedTypeColor} h-[44px]`}
         disabled={isDisabled}
       />
-      {isLoading ? (
-        <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground animate-spin" size={18} />
-      ) : (
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-      )}
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
+        {isLoading ? (
+          <Loader2 className="text-muted-foreground animate-spin" size={18} />
+        ) : (
+          <Search className="text-muted-foreground" size={18} />
+        )}
+      </div>
     </div>
   );
 };

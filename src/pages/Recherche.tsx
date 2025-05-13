@@ -6,7 +6,7 @@ import { MediaTypeSelector } from "@/components/media-type-selector";
 import { MediaType } from "@/types";
 import { searchMedia } from "@/services/media";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { useLocation } from "react-router-dom";
 import { SearchBar } from "@/components/search/search-bar";
@@ -27,36 +27,40 @@ const Recherche = () => {
   const { toast } = useToast();
   const location = useLocation();
   
+  // Control search with a more stable effect dependency
   useEffect(() => {
+    // Only run search when there's an actual query and type selected
+    if (!debouncedSearchTerm || !selectedType) {
+      setIsLoading(false);
+      setSearchResults([]);
+      return;
+    }
+
     const fetchSearchResults = async () => {
-      if (debouncedSearchTerm && selectedType) {
-        setIsLoading(true);
-        console.log(`Fetching search results for "${debouncedSearchTerm}" in ${selectedType}`);
+      setIsLoading(true);
+      console.log(`Fetching search results for "${debouncedSearchTerm}" in ${selectedType}`);
+      
+      try {
+        const result = await searchMedia(selectedType as MediaType, debouncedSearchTerm);
         
-        try {
-          const result = await searchMedia(selectedType as MediaType, debouncedSearchTerm);
-          
-          if (result.results && result.results.length > 0) {
-            console.log(`Search returned ${result.results.length} results`);
-            const formattedResults = formatSearchResults(result.results, selectedType as MediaType);
-            setSearchResults(formattedResults);
-          } else {
-            console.log("Search returned no results");
-            setSearchResults([]);
-          }
-        } catch (error) {
-          console.error("Erreur de recherche:", error);
-          toast({
-            title: "Erreur de recherche",
-            description: "Impossible de récupérer les résultats",
-            variant: "destructive",
-          });
+        if (result.results && result.results.length > 0) {
+          console.log(`Search returned ${result.results.length} results`);
+          const formattedResults = formatSearchResults(result.results, selectedType as MediaType);
+          setSearchResults(formattedResults);
+        } else {
+          console.log("Search returned no results");
           setSearchResults([]);
-        } finally {
-          setIsLoading(false);
         }
-      } else {
+      } catch (error) {
+        console.error("Erreur de recherche:", error);
+        toast({
+          title: "Erreur de recherche",
+          description: "Impossible de récupérer les résultats",
+          variant: "destructive",
+        });
         setSearchResults([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 

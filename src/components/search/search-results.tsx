@@ -7,6 +7,7 @@ import { SearchEmptyState } from "@/components/search/search-empty-states";
 import { Button } from "@/components/ui/button";
 import { SuggestMediaDialog } from "@/components/search/suggest-media-dialog";
 import { useLocation } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface SearchResultsProps {
   results: any[];
@@ -26,15 +27,6 @@ export const SearchResults = ({
   const [suggestDialogOpen, setSuggestDialogOpen] = useState(false);
   const location = useLocation();
   const searchParams = location.search;
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-40">
-        <Loader2 className="h-8 w-8 text-primary animate-spin mb-2" />
-        <p className="text-muted-foreground">Recherche en cours...</p>
-      </div>
-    );
-  }
 
   const renderSuggestButton = () => {
     if (!selectedType) return null;
@@ -61,28 +53,47 @@ export const SearchResults = ({
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="animate-fade-in">
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="h-6 w-6 text-primary animate-spin opacity-70" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 mb-24">
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className="space-y-2">
+              <Skeleton className="h-[180px] w-full rounded-lg" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (results.length > 0) {
     return (
-      <>
+      <div className="animate-fade-in">
         {renderSuggestButton()}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 mb-24">
           {results.map((media) => (
             <MediaCard 
-              key={media.id} 
+              key={media.id || `${media.title}-${Math.random().toString(36).substring(7)}`}
               media={media} 
               size="medium" 
               from={location.pathname + searchParams}
             />
           ))}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="animate-fade-in">
       <SearchEmptyState searchQuery={searchQuery} selectedType={selectedType} />
       {searchQuery.length > 2 && renderSuggestButton()}
-    </>
+    </div>
   );
-}
+};

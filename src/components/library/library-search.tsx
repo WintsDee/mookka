@@ -15,7 +15,7 @@ export const LibrarySearch = ({ value, onChange, onSearch }: LibrarySearchProps)
       <Input
         type="text"
         placeholder="Rechercher dans ma bibliothèque..."
-        className="pl-10"
+        className="pl-10 h-[44px]"
         value={value}
         onChange={onChange}
         onKeyUp={(e) => {
@@ -24,7 +24,9 @@ export const LibrarySearch = ({ value, onChange, onSearch }: LibrarySearchProps)
           }
         }}
       />
-      <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
+        <Search className="h-5 w-5 text-muted-foreground" />
+      </div>
     </div>
   );
 };
