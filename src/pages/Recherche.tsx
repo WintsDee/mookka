@@ -42,7 +42,8 @@ const Recherche = () => {
     console.log(`Fetching search results for "${query}" in ${type}`);
     
     try {
-      const result = await searchMedia(type as MediaType, query);
+      // Pass the abort signal to the search function
+      const result = await searchMedia(type as MediaType, query, abortControllerRef.current.signal);
       
       if (result.results && result.results.length > 0) {
         console.log(`Search returned ${result.results.length} results`);
@@ -59,7 +60,7 @@ const Recherche = () => {
         return;
       }
       
-      console.error("Erreur de recherche:", error);
+      console.error("Search error:", error);
       toast({
         title: "Erreur de recherche",
         description: "Impossible de récupérer les résultats",

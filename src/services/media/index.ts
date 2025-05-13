@@ -1,6 +1,6 @@
 
 // Re-export all media service functions from their specialized modules
-export { searchMedia, getMediaById } from './search-service';
+export { searchMedia, getMediaById } from './search/index';
 export {
   addMediaToLibrary,
   getUserMediaLibrary,
