@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { MediaTypeSelector } from "@/components/media-type-selector";
@@ -26,46 +26,77 @@ const Recherche = () => {
   const debouncedSearchTerm = useDebounce(searchQuery, 500);
   const { toast } = useToast();
   const location = useLocation();
+  const abortControllerRef = useRef<AbortController | null>(null);
   
-  // Control search with a more stable effect dependency
+  // Use a callback to prevent recreation of the search function on every render
+  const fetchSearchResults = useCallback(async (query: string, type: MediaType) => {
+    // Cancel any previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
+    
+    setIsLoading(true);
+    console.log(`Fetching search results for "${query}" in ${type}`);
+    
+    try {
+      const result = await searchMedia(type as MediaType, query);
+      
+      if (result.results && result.results.length > 0) {
+        console.log(`Search returned ${result.results.length} results`);
+        const formattedResults = formatSearchResults(result.results, type as MediaType);
+        setSearchResults(formattedResults);
+      } else {
+        console.log("Search returned no results");
+        setSearchResults([]);
+      }
+    } catch (error) {
+      // Ignore aborted requests
+      if (error.name === 'AbortError') {
+        console.log('Search request was cancelled');
+        return;
+      }
+      
+      console.error("Erreur de recherche:", error);
+      toast({
+        title: "Erreur de recherche",
+        description: "Impossible de récupérer les résultats",
+        variant: "destructive",
+      });
+      // Don't clear existing results on error - maintain state
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  // Separate effect for handling search term changes
   useEffect(() => {
     // Only run search when there's an actual query and type selected
     if (!debouncedSearchTerm || !selectedType) {
+      // Don't clear results immediately when query is empty
+      if (!debouncedSearchTerm && searchResults.length > 0) {
+        // Optionally clear results after a short delay to prevent flickering
+        const timer = setTimeout(() => {
+          setSearchResults([]);
+        }, 200);
+        return () => clearTimeout(timer);
+      }
+      
       setIsLoading(false);
-      setSearchResults([]);
       return;
     }
 
-    const fetchSearchResults = async () => {
-      setIsLoading(true);
-      console.log(`Fetching search results for "${debouncedSearchTerm}" in ${selectedType}`);
-      
-      try {
-        const result = await searchMedia(selectedType as MediaType, debouncedSearchTerm);
-        
-        if (result.results && result.results.length > 0) {
-          console.log(`Search returned ${result.results.length} results`);
-          const formattedResults = formatSearchResults(result.results, selectedType as MediaType);
-          setSearchResults(formattedResults);
-        } else {
-          console.log("Search returned no results");
-          setSearchResults([]);
-        }
-      } catch (error) {
-        console.error("Erreur de recherche:", error);
-        toast({
-          title: "Erreur de recherche",
-          description: "Impossible de récupérer les résultats",
-          variant: "destructive",
-        });
-        setSearchResults([]);
-      } finally {
-        setIsLoading(false);
+    fetchSearchResults(debouncedSearchTerm, selectedType as MediaType);
+    
+    // Cleanup function
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-
-    fetchSearchResults();
-  }, [debouncedSearchTerm, selectedType, toast]);
+  }, [debouncedSearchTerm, selectedType, fetchSearchResults, searchResults.length]);
 
   return (
     <Background>
