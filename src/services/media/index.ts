@@ -13,6 +13,12 @@ export {
   filterByRating,
   filterByAgeRestriction,
   filterByContent,
-  filterByKeywords
+  filterByKeywords,
+  contentKeywords,
+  extractTextContent,
+  // Also re-export types
+  ContentRating,
+  ContentFilterOptions,
+  FilterableMedia
 } from './filters';
 export { getSocialShareSettings, updateSocialShareSettings } from './social-service';

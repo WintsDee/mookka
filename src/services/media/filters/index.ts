@@ -12,4 +12,7 @@ export { filterByContent } from './content-filter';
 export { filterByKeywords } from './keyword-filter';
 
 // Re-export types
-export type { ContentRating } from './types';
+export type { ContentRating, FilterableMedia, ContentFilterOptions } from './types';
+
+// Export filter keywords
+export { contentKeywords, extractTextContent } from './filter-keywords';
