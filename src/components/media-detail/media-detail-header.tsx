@@ -19,6 +19,15 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Debug logs
+  console.log("MediaDetailHeader props:", { 
+    media: !!media, 
+    formattedMedia: !!formattedMedia,
+    type,
+    coverImage: formattedMedia?.coverImage,
+    title: formattedMedia?.title
+  });
+  
   const handleGoBack = () => {
     // Check if there's state from react-router indicating where we came from
     if (location.state?.from) {
@@ -38,6 +47,15 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       navigate(-1);
     }
   };
+
+  // Protection contre les données manquantes
+  const coverImage = formattedMedia?.coverImage || '';
+  const title = formattedMedia?.title || 'Titre non disponible';
+  const year = formattedMedia?.year;
+  const rating = formattedMedia?.rating;
+  const userRating = formattedMedia?.userRating;
+  const duration = formattedMedia?.duration;
+  const genres = formattedMedia?.genres || [];
 
   // Function to navigate to critique tab when clicking the user rating badge
   const handleUserRatingClick = () => {
@@ -62,21 +80,21 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       </Button>
       
       <div className="absolute top-2 right-4 z-20 flex gap-2 flex-col items-end">
-        {formattedMedia.rating && (
+        {rating && (
           <div className="flex flex-col items-center gap-1">
             <span className="text-xs text-white font-medium drop-shadow-md">Note globale</span>
             <MediaRatingBadge 
-              rating={formattedMedia.rating} 
+              rating={rating} 
               size="large"
             />
           </div>
         )}
         
-        {formattedMedia.userRating && formattedMedia.userRating > 0 && (
+        {userRating && userRating > 0 && (
           <div className="flex flex-col items-center gap-1" onClick={handleUserRatingClick}>
             <span className="text-xs text-white font-medium drop-shadow-md">Ma note</span>
             <MediaRatingBadge 
-              rating={formattedMedia.userRating}
+              rating={userRating}
               size="large"
               className="bg-purple-500 hover:bg-purple-600 cursor-pointer transition-colors"
             />
@@ -86,40 +104,52 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
       
       <div className="absolute inset-0">
         <img 
-          src={formattedMedia.coverImage} 
-          alt={formattedMedia.title} 
+          src={coverImage} 
+          alt={title} 
           className="w-full h-full object-cover"
+          onError={(e) => {
+            // Fallback pour les images qui ne se chargent pas
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.src = '/placeholder.svg';
+          }}
         />
         <div className={cn(overlayGradient('to-top', 'strong'), "bg-black/75")} />
       </div>
       
       <div className="absolute bottom-0 left-0 p-6 w-full flex items-end">
         <img 
-          src={formattedMedia.coverImage} 
-          alt={formattedMedia.title} 
+          src={coverImage} 
+          alt={title} 
           className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4"
+          onError={(e) => {
+            // Fallback pour les images qui ne se chargent pas
+            const target = e.target as HTMLImageElement;
+            target.onerror = null;
+            target.src = '/placeholder.svg';
+          }}
         />
         <div className="flex-1 ml-4 mt-2 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className={cn("text-2xl font-bold text-white drop-shadow-md truncate max-w-full", enhanceTextVisibility('strong'))}>
-              {formattedMedia.title}
+              {title}
             </h1>
             <Badge variant={type} className="capitalize shadow-md shrink-0">
               {type}
             </Badge>
           </div>
           <div className="flex items-center mt-1 text-white mb-2 font-medium drop-shadow-md">
-            {formattedMedia.year && <span className="text-sm mr-3">{formattedMedia.year}</span>}
-            {formattedMedia.duration && (
+            {year && <span className="text-sm mr-3">{year}</span>}
+            {duration && (
               <div className="flex items-center">
                 <Clock className="h-4 w-4 text-white mr-1" />
-                <span className="text-sm">{formattedMedia.duration}</span>
+                <span className="text-sm">{duration}</span>
               </div>
             )}
           </div>
-          {formattedMedia.genres && formattedMedia.genres.length > 0 && (
+          {genres && genres.length > 0 && (
             <div className="flex gap-1.5 flex-wrap">
-              {formattedMedia.genres.map((genre: string) => (
+              {genres.map((genre: string) => (
                 <Badge 
                   key={genre} 
                   variant="outline" 

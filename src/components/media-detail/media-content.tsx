@@ -20,6 +20,9 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   const [activeTab, setActiveTab] = useState("overview");
   const isMobile = useIsMobile();
   
+  // Debug logging to track props
+  console.log("MediaContent props:", { id, type, formattedMedia: !!formattedMedia, additionalInfo: !!additionalInfo });
+  
   // Use a callback to prevent unnecessary re-renders when changing tabs
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
@@ -31,7 +34,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       case "overview":
         return (
           <OverviewTab 
-            description={formattedMedia.description} 
+            description={formattedMedia?.description || ""} 
             additionalInfo={additionalInfo} 
             mediaId={id}
             mediaType={type}
@@ -42,8 +45,8 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           <CritiqueTab 
             mediaId={id} 
             mediaType={type} 
-            initialRating={formattedMedia.userRating}
-            initialReview={formattedMedia.userReview}
+            initialRating={formattedMedia?.userRating}
+            initialReview={formattedMedia?.userReview}
           />
         );
       case "whereto":
@@ -51,7 +54,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           <WhereToWatchTab 
             mediaId={id} 
             mediaType={type} 
-            title={formattedMedia.title || ""}
+            title={formattedMedia?.title || ""}
           />
         );
       case "progression":
