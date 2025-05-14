@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState, useCallback } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
 import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
 import { ProgressionTab } from "@/components/media-detail/tabs/progression";
@@ -19,35 +19,86 @@ interface MediaContentProps {
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const isMobile = useIsMobile();
+  
+  // Use a callback to prevent unnecessary re-renders when changing tabs
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
+
+  // Memoize the tab content to prevent unnecessary re-renders
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <OverviewTab 
+            description={formattedMedia.description} 
+            additionalInfo={additionalInfo} 
+            mediaId={id}
+            mediaType={type}
+          />
+        );
+      case "critique":
+        return (
+          <CritiqueTab 
+            mediaId={id} 
+            mediaType={type} 
+            initialRating={formattedMedia.userRating}
+            initialReview={formattedMedia.userReview}
+          />
+        );
+      case "whereto":
+        return (
+          <WhereToWatchTab 
+            mediaId={id} 
+            mediaType={type} 
+            title={formattedMedia.title || ""}
+          />
+        );
+      case "progression":
+        return (
+          <ProgressionTab 
+            mediaId={id} 
+            mediaType={type} 
+            mediaDetails={additionalInfo}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Tabs 
-      value={activeTab}
-      onValueChange={setActiveTab}
-      className="w-full h-full flex flex-col overflow-hidden"
-    >
+    <div className="w-full h-full flex flex-col overflow-hidden">
       <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
         <TabsTrigger 
           value="overview" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          onClick={() => handleTabChange("overview")}
+          data-state={activeTab === "overview" ? "active" : "inactive"}
         >
           Aperçu
         </TabsTrigger>
         <TabsTrigger 
           value="critique" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          onClick={() => handleTabChange("critique")}
+          data-state={activeTab === "critique" ? "active" : "inactive"}
         >
           Critique
         </TabsTrigger>
         <TabsTrigger 
           value="whereto" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          onClick={() => handleTabChange("whereto")}
+          data-state={activeTab === "whereto" ? "active" : "inactive"}
         >
           {isMobile ? "Voir/Acheter" : "Où voir/acheter"}
         </TabsTrigger>
         <TabsTrigger 
           value="progression" 
           className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          onClick={() => handleTabChange("progression")}
+          data-state={activeTab === "progression" ? "active" : "inactive"}
         >
           Progression
         </TabsTrigger>
@@ -55,41 +106,9 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       
       <ScrollArea className="flex-1 overflow-auto">
         <div className="px-4 py-4 pb-28">
-          <TabsContent value="overview" className="mt-0 mb-0">
-            <OverviewTab 
-              description={formattedMedia.description} 
-              additionalInfo={additionalInfo} 
-              mediaId={id}
-              mediaType={type}
-            />
-          </TabsContent>
-          
-          <TabsContent value="critique" className="mt-0 mb-0">
-            <CritiqueTab 
-              mediaId={id} 
-              mediaType={type} 
-              initialRating={formattedMedia.userRating}
-              initialReview={formattedMedia.userReview}
-            />
-          </TabsContent>
-          
-          <TabsContent value="whereto" className="mt-0 mb-0">
-            <WhereToWatchTab 
-              mediaId={id} 
-              mediaType={type} 
-              title={formattedMedia.title || ""}
-            />
-          </TabsContent>
-          
-          <TabsContent value="progression" className="mt-0 mb-0">
-            <ProgressionTab 
-              mediaId={id} 
-              mediaType={type} 
-              mediaDetails={additionalInfo}
-            />
-          </TabsContent>
+          {renderTabContent()}
         </div>
       </ScrollArea>
-    </Tabs>
+    </div>
   );
 }
