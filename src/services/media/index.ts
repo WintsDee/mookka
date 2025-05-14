@@ -16,9 +16,7 @@ export {
   filterByKeywords,
   contentKeywords,
   extractTextContent,
-  // Also re-export types
-  ContentRating,
-  ContentFilterOptions,
-  FilterableMedia
 } from './filters';
+// Re-export types with proper 'export type' syntax
+export type { ContentRating, ContentFilterOptions, FilterableMedia } from './filters';
 export { getSocialShareSettings, updateSocialShareSettings } from './social-service';
