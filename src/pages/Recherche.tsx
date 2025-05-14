@@ -27,9 +27,25 @@ const Recherche = () => {
   const { toast } = useToast();
   const location = useLocation();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const previousSearchTerm = useRef<string>("");
+  const resultsCache = useRef<Record<string, any[]>>({});
   
   // Use a callback to prevent recreation of the search function on every render
   const fetchSearchResults = useCallback(async (query: string, type: MediaType) => {
+    // Ne pas rechercher si la requête est vide
+    if (!query.trim()) return;
+    
+    // Créer une clé de cache unique pour cette combinaison requête/type
+    const cacheKey = `${type}:${query}`;
+    
+    // Si nous avons déjà des résultats pour cette requête exacte, les utiliser
+    if (resultsCache.current[cacheKey]) {
+      console.log(`Using cached results for "${query}" in ${type}`);
+      setSearchResults(resultsCache.current[cacheKey]);
+      setIsLoading(false);
+      return;
+    }
+    
     // Cancel any previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -45,15 +61,22 @@ const Recherche = () => {
       // Pass the abort signal to the search function
       const result = await searchMedia(type as MediaType, query, abortControllerRef.current.signal);
       
-      if (result.results && result.results.length > 0) {
+      // Ne pas réinitialiser les résultats pendant la recherche
+      if (result.results && Array.isArray(result.results)) {
         console.log(`Search returned ${result.results.length} results`);
         const formattedResults = formatSearchResults(result.results, type as MediaType);
+        
+        // Stocker dans le cache et mettre à jour l'affichage
+        resultsCache.current[cacheKey] = formattedResults;
         setSearchResults(formattedResults);
       } else {
         console.log("Search returned no results");
+        
+        // Même pour les recherches sans résultat, on enregistre un tableau vide
+        resultsCache.current[cacheKey] = [];
         setSearchResults([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       // Ignore aborted requests
       if (error.name === 'AbortError') {
         console.log('Search request was cancelled');
@@ -74,21 +97,29 @@ const Recherche = () => {
 
   // Separate effect for handling search term changes
   useEffect(() => {
-    // Only run search when there's an actual query and type selected
-    if (!debouncedSearchTerm || !selectedType) {
-      // Don't clear results immediately when query is empty
-      if (!debouncedSearchTerm && searchResults.length > 0) {
-        // Optionally clear results after a short delay to prevent flickering
+    // Si le terme est vide, on efface les résultats après un court délai pour éviter les clignotements
+    if (!debouncedSearchTerm) {
+      if (searchResults.length > 0) {
+        // Seulement effacer si on passe d'une requête à vide
         const timer = setTimeout(() => {
           setSearchResults([]);
-        }, 200);
+          // On vide aussi le terme précédent pour marquer un nouveau cycle de recherche
+          previousSearchTerm.current = "";
+        }, 300);
         return () => clearTimeout(timer);
       }
-      
-      setIsLoading(false);
       return;
     }
 
+    // Vérifie si une requête est valide avant de la traiter
+    if (!selectedType || debouncedSearchTerm === previousSearchTerm.current) {
+      return;
+    }
+
+    // Mise à jour du terme précédent
+    previousSearchTerm.current = debouncedSearchTerm;
+    
+    // Lancer la recherche avec le terme débounced
     fetchSearchResults(debouncedSearchTerm, selectedType as MediaType);
     
     // Cleanup function
@@ -97,7 +128,17 @@ const Recherche = () => {
         abortControllerRef.current.abort();
       }
     };
-  }, [debouncedSearchTerm, selectedType, fetchSearchResults, searchResults.length]);
+  }, [debouncedSearchTerm, selectedType, fetchSearchResults]);
+
+  // Gère le changement de type de média
+  const handleTypeChange = useCallback((type: MediaType | "") => {
+    setSelectedType(type as MediaType);
+    // Si on a déjà une requête, relancer la recherche immédiatement avec le nouveau type
+    if (searchQuery) {
+      // On réinitialise les résultats uniquement si on change de type pour éviter le clignotement
+      setIsLoading(true);
+    }
+  }, [searchQuery]);
 
   return (
     <Background>
@@ -106,7 +147,7 @@ const Recherche = () => {
         <header className="px-6 mb-4">
           <MediaTypeSelector 
             selectedType={selectedType}
-            onSelectType={(type) => setSelectedType(type as MediaType)}
+            onSelectType={handleTypeChange}
             className="mt-6"
           />
           
@@ -124,6 +165,7 @@ const Recherche = () => {
           <ScrollArea className="h-full px-6">
             <div className="pb-24">
               <SearchResults 
+                key={`search-results-${selectedType}`}
                 results={searchResults}
                 isLoading={isLoading}
                 searchQuery={searchQuery}

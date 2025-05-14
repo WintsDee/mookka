@@ -28,12 +28,13 @@ export const SearchBar = ({
         onChange={onChange}
         className={`pl-10 py-6 border-none shadow-sm ${selectedTypeColor} h-[44px]`}
         disabled={isDisabled}
+        autoComplete="off"
       />
-      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center justify-center">
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
         {isLoading ? (
-          <Loader2 className="text-muted-foreground animate-spin" size={18} />
+          <Loader2 className="text-muted-foreground animate-spin h-[18px] w-[18px]" />
         ) : (
-          <Search className="text-muted-foreground" size={18} />
+          <Search className="text-muted-foreground h-[18px] w-[18px]" />
         )}
       </div>
     </div>

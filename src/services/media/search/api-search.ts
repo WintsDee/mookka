@@ -17,6 +17,12 @@ export async function searchExternalApis(
   abortSignal?: AbortSignal
 ): Promise<any[]> {
   try {
+    // Empêcher les recherches trop courtes pour éviter de surcharger les APIs externes
+    if (query.length < 2) {
+      console.log("Query too short for external API search");
+      return [];
+    }
+    
     // Call Supabase Function to fetch from external APIs
     const options: any = { body: { type, query } };
     
@@ -69,7 +75,7 @@ export async function searchExternalApis(
     
     console.log(`Formatted API results: ${apiResults.length} items`);
     return apiResults;
-  } catch (error) {
+  } catch (error: any) {
     // Check if it's an abort error (caused by request cancellation)
     if (error.name === 'AbortError') {
       console.log('API search request was cancelled');
