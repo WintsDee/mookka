@@ -66,6 +66,7 @@ export function useMediaActions({ mediaId, mediaType, mediaTitle }: UseMediaActi
 
   return {
     isInLibrary,
+    setIsInLibrary, // Expose the setter
     addDialogOpen,
     setAddDialogOpen,
     addCollectionDialogOpen,

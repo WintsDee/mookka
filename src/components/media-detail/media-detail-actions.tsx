@@ -16,6 +16,7 @@ interface MediaDetailActionsProps {
 export function MediaDetailActions({ media, type, onAddToCollection }: MediaDetailActionsProps) {
   const {
     isInLibrary,
+    setIsInLibrary,
     addDialogOpen,
     setAddDialogOpen,
     addCollectionDialogOpen,
@@ -40,7 +41,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
     if (isInLib !== isInLibrary) {
       setIsInLibrary(isInLib);
     }
-  }, [userMediaStatus]);
+  }, [userMediaStatus, isInLibrary, setIsInLibrary]);
 
   return (
     <>
