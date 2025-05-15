@@ -18,7 +18,6 @@ export function NewsTab({ type, title }: NewsTabProps) {
     toast({
       title: "Fonctionnalité en développement",
       description: "Les actualités pour ce média seront bientôt disponibles.",
-      duration: 5000,
     });
   }, [toast]);
 
