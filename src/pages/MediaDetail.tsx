@@ -35,7 +35,7 @@ const MediaDetail = () => {
     }
   };
 
-  // Effet pour s'assurer que les elements chargent correctement avec un titre de page
+  // Effect for ensuring elements load correctly with page title
   useEffect(() => {
     if (formattedMedia?.title) {
       document.title = `${formattedMedia.title} | Mookka`;
@@ -48,13 +48,12 @@ const MediaDetail = () => {
     };
   }, [formattedMedia]);
 
-  console.log("MediaDetail - Render state:", { isLoading, media, formattedMedia, error });
-
-  if (isLoading) {
+  // Show skeleton during initial load
+  if (isLoading && !media) {
     return (
       <Background>
         <MobileHeader />
-        <div className="flex flex-col items-center justify-center h-screen">
+        <div className="flex flex-col items-center justify-center min-h-screen">
           <div className="w-full max-w-md px-4">
             <MediaDetailSkeleton />
           </div>
@@ -63,11 +62,12 @@ const MediaDetail = () => {
     );
   }
 
+  // Handle errors
   if (error || !media) {
     return <MediaErrorState error={error} onGoBack={handleGoBack} />;
   }
 
-  // Protection supplémentaire - si formattedMedia est null malgré media présent
+  // Additional protection - if formattedMedia is null despite media being present
   if (!formattedMedia || !id || !type) {
     return <MediaFormatError onGoBack={handleGoBack} />;
   }
@@ -81,6 +81,6 @@ const MediaDetail = () => {
       additionalInfo={additionalInfo} 
     />
   );
-};
+}
 
 export default MediaDetail;

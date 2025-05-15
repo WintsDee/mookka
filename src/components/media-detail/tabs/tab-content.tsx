@@ -18,11 +18,11 @@ interface TabContentProps {
 }
 
 export function TabContent({ id, type, formattedMedia, additionalInfo }: TabContentProps) {
-  // Fonction pour afficher un placeholder si les données ne sont pas encore disponibles
-  const renderSkeletonIfNeeded = (isReady: boolean, content: React.ReactNode) => {
+  // Improved placeholder rendering with memoization
+  const renderSkeletonIfNeeded = React.useCallback((isReady: boolean, content: React.ReactNode) => {
     if (!isReady) {
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-pulse">
           <Skeleton className="h-6 w-3/4" />
           <Skeleton className="h-24 w-full" />
           <Skeleton className="h-16 w-2/3" />
@@ -30,7 +30,10 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       );
     }
     return content;
-  };
+  }, []);
+
+  // Check if all required data is available
+  const isDataReady = !!id && !!type && !!formattedMedia;
 
   return (
     <>
@@ -46,7 +49,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
       
       <TabsContent value="critique" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!id && !!type, 
+        {renderSkeletonIfNeeded(isDataReady, 
           <CritiqueTab
             mediaId={id} 
             mediaType={type} 
@@ -57,7 +60,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
       
       <TabsContent value="whereto" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!id && !!type, 
+        {renderSkeletonIfNeeded(isDataReady, 
           <WhereToWatchTab 
             mediaId={id} 
             mediaType={type} 
@@ -67,7 +70,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
 
       <TabsContent value="progression" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!id && !!type, 
+        {renderSkeletonIfNeeded(isDataReady, 
           <ProgressionTab 
             mediaId={id} 
             mediaType={type} 

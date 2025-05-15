@@ -21,16 +21,18 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { addMediaToCollection, isAddingToCollection } = useCollections();
   const { toast } = useToast();
-  const [isContentMounted, setIsContentMounted] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false);
 
-  // Effet pour éviter le clignotement au montage du composant
+  // Use a more reliable mounting strategy with requestAnimationFrame for smooth transitions
   useEffect(() => {
-    // Petit délai pour s'assurer que le contenu est bien monté
-    const timer = setTimeout(() => {
-      setIsContentMounted(true);
-    }, 50);
-
-    return () => clearTimeout(timer);
+    // Use requestAnimationFrame to ensure DOM has updated before showing content
+    const frameId = requestAnimationFrame(() => {
+      setIsContentVisible(true);
+    });
+    
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
   }, []);
 
   const handleAddToCollection = async (collectionId: string) => {
@@ -61,12 +63,9 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
     }
   };
 
-  // Afficher seulement quand les données sont prêtes pour éviter le clignotement
-  const showContent = isContentMounted && media && formattedMedia;
-
   return (
     <Background>
-      <div className="relative flex flex-col h-screen pt-safe animate-fade-in">
+      <div className={`relative flex flex-col h-screen pt-safe transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 
@@ -75,7 +74,7 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
         />
         
         <div className="flex-1 overflow-hidden">
-          {showContent && (
+          {isContentVisible && (
             <MediaContent 
               id={id} 
               type={type} 

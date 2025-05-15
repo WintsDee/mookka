@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { MediaType } from "@/types";
 import { TabNavigation } from "./tabs/tab-navigation";
@@ -17,23 +17,36 @@ interface MediaContentProps {
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
   // Use our custom hook for tab state management
   const { activeTab, handleTabChange } = useMediaTabs();
+  const [contentMounted, setContentMounted] = useState(false);
   
-  // Debug logging to track props
-  console.log("MediaContent props:", { id, type, formattedMedia: !!formattedMedia, additionalInfo: !!additionalInfo });
+  // Use effect to ensure proper mounting of tab content
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setContentMounted(true);
+    }, 50);
+    
+    return () => clearTimeout(timeout);
+  }, []);
+  
+  if (!formattedMedia) {
+    return null;
+  }
   
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
+    <div className={`w-full h-full flex flex-col overflow-hidden ${contentMounted ? 'animate-fade-in' : 'opacity-0'}`}>
+      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         
-        <TabContentContainer>
-          <TabContent 
-            id={id} 
-            type={type} 
-            formattedMedia={formattedMedia} 
-            additionalInfo={additionalInfo}
-          />
-        </TabContentContainer>
+        {contentMounted && (
+          <TabContentContainer>
+            <TabContent 
+              id={id} 
+              type={type} 
+              formattedMedia={formattedMedia} 
+              additionalInfo={additionalInfo}
+            />
+          </TabContentContainer>
+        )}
       </Tabs>
     </div>
   );

@@ -13,12 +13,18 @@ interface NewsTabProps {
 export function NewsTab({ type, title }: NewsTabProps) {
   const { toast } = useToast();
 
+  // Use a ref to ensure toast is only shown once
+  const hasShownToast = React.useRef(false);
+
   React.useEffect(() => {
-    // Indiquer à l'utilisateur que la fonctionnalité est en cours de développement
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "Les actualités pour ce média seront bientôt disponibles.",
-    });
+    // Only show the toast once to avoid excessive notifications
+    if (!hasShownToast.current) {
+      toast({
+        title: "Fonctionnalité en développement",
+        description: "Les actualités pour ce média seront bientôt disponibles.",
+      });
+      hasShownToast.current = true;
+    }
   }, [toast]);
 
   return (
