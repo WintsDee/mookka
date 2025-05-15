@@ -1,2 +1,4 @@
 
-export { NewsTab } from "../news-tab";
+import { NewsTab } from "./news-tab";
+
+export { NewsTab };

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Background } from "@/components/ui/background";
 import { MobileHeader } from "@/components/mobile-header";
@@ -34,6 +34,19 @@ const MediaDetail = () => {
       navigate(previousPath, { replace: true });
     }
   };
+
+  // Effet pour s'assurer que les elements chargent correctement avec un titre de page
+  useEffect(() => {
+    if (formattedMedia?.title) {
+      document.title = `${formattedMedia.title} | Mookka`;
+    } else {
+      document.title = "Détail du média | Mookka";
+    }
+
+    return () => {
+      document.title = "Mookka";
+    };
+  }, [formattedMedia]);
 
   console.log("MediaDetail - Render state:", { isLoading, media, formattedMedia, error });
 

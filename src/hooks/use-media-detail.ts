@@ -20,6 +20,8 @@ export function useMediaDetail() {
   // Use a stable dependency array to prevent unnecessary re-fetches
   useEffect(() => {
     let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 2;
     
     const fetchMediaDetails = async () => {
       if (!type || !id) {
@@ -77,6 +79,19 @@ export function useMediaDetail() {
         }
       } catch (error: any) {
         console.error("MediaDetail - Error fetching media:", error);
+        
+        // Implement retry logic for network errors
+        if (retryCount < maxRetries && (error.name === 'AbortError' || error.message.includes('network') || error.message.includes('timeout'))) {
+          retryCount++;
+          console.log(`MediaDetail - Retry attempt ${retryCount} of ${maxRetries}`);
+          
+          // Exponential backoff for retries
+          setTimeout(() => {
+            if (isMounted) fetchMediaDetails();
+          }, 1000 * Math.pow(2, retryCount));
+          return;
+        }
+        
         if (isMounted) {
           const errorMessage = error.message || "Impossible de récupérer les détails du média";
           setError(errorMessage);

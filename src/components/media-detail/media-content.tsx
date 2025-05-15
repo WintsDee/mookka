@@ -1,15 +1,11 @@
 
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
-import { OverviewTab } from "@/components/media-detail/tabs/overview-tab";
-import { CritiqueTab } from "@/components/media-detail/tabs/rating-tab";
-import { ProgressionTab } from "@/components/media-detail/tabs/progression";
-import { WhereToWatchTab } from "@/components/media-detail/tabs/where-to-watch";
 import { MediaType } from "@/types";
 import { TabNavigation } from "./tabs/tab-navigation";
 import { TabContentContainer } from "./tabs/tab-content-container";
 import { useMediaTabs } from "./tabs/use-media-tabs";
-import { NewsTab } from "./tabs/news-tab";
+import { TabContent } from "./tabs/tab-content";
 
 interface MediaContentProps {
   id: string;
@@ -25,62 +21,18 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   // Debug logging to track props
   console.log("MediaContent props:", { id, type, formattedMedia: !!formattedMedia, additionalInfo: !!additionalInfo });
   
-  // Render the appropriate tab content based on the active tab
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return (
-          <OverviewTab 
-            description={formattedMedia?.description || ""} 
-            additionalInfo={additionalInfo} 
-            mediaId={id}
-            mediaType={type}
-          />
-        );
-      case "critique":
-        return (
-          <CritiqueTab 
-            mediaId={id} 
-            mediaType={type} 
-            initialRating={formattedMedia?.userRating}
-            initialReview={formattedMedia?.userReview}
-          />
-        );
-      case "whereto":
-        return (
-          <WhereToWatchTab 
-            mediaId={id} 
-            mediaType={type} 
-            title={formattedMedia?.title || ""}
-          />
-        );
-      case "progression":
-        return (
-          <ProgressionTab 
-            mediaId={id} 
-            mediaType={type} 
-            mediaDetails={additionalInfo}
-          />
-        );
-      case "news":
-        return (
-          <NewsTab
-            type={type}
-            title={formattedMedia?.title}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         
         <TabContentContainer>
-          {renderTabContent()}
+          <TabContent 
+            id={id} 
+            type={type} 
+            formattedMedia={formattedMedia} 
+            additionalInfo={additionalInfo}
+          />
         </TabContentContainer>
       </Tabs>
     </div>

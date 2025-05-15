@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { Background } from "@/components/ui/background";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
@@ -7,6 +7,7 @@ import { useCollections } from "@/hooks/use-collections";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface MediaDetailViewProps {
   id: string;
@@ -19,13 +20,49 @@ interface MediaDetailViewProps {
 export function MediaDetailView({ id, type, media, formattedMedia, additionalInfo }: MediaDetailViewProps) {
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { addMediaToCollection, isAddingToCollection } = useCollections();
+  const { toast } = useToast();
+  const [isContentMounted, setIsContentMounted] = useState(false);
 
-  const handleAddToCollection = (collectionId: string) => {
-    if (!id) return;
+  // Effet pour éviter le clignotement au montage du composant
+  useEffect(() => {
+    // Petit délai pour s'assurer que le contenu est bien monté
+    const timer = setTimeout(() => {
+      setIsContentMounted(true);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleAddToCollection = async (collectionId: string) => {
+    if (!id) {
+      toast({
+        title: "Erreur",
+        description: "Identifiant du média manquant",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    addMediaToCollection({ collectionId, mediaId: id });
-    setAddToCollectionOpen(false);
+    try {
+      await addMediaToCollection({ collectionId, mediaId: id });
+      toast({
+        title: "Succès",
+        description: "Média ajouté à la collection"
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'ajout à la collection:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce média à la collection",
+        variant: "destructive",
+      });
+    } finally {
+      setAddToCollectionOpen(false);
+    }
   };
+
+  // Afficher seulement quand les données sont prêtes pour éviter le clignotement
+  const showContent = isContentMounted && media && formattedMedia;
 
   return (
     <Background>
@@ -38,16 +75,18 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
         />
         
         <div className="flex-1 overflow-hidden">
-          <MediaContent 
-            id={id} 
-            type={type} 
-            formattedMedia={formattedMedia} 
-            additionalInfo={additionalInfo} 
-          />
+          {showContent && (
+            <MediaContent 
+              id={id} 
+              type={type} 
+              formattedMedia={formattedMedia} 
+              additionalInfo={additionalInfo} 
+            />
+          )}
         </div>
         
         <MediaDetailActions 
-          media={media} 
+          media={media || {id}} 
           type={type} 
           onAddToCollection={() => setAddToCollectionOpen(true)} 
         />
