@@ -13,7 +13,7 @@ export const LibrarySearch = ({ value, onChange, onSearch }: LibrarySearchProps)
   return (
     <div className="relative flex-1">
       <Input
-        type="text"
+        type="search"
         placeholder="Rechercher dans ma bibliothèque..."
         className="pl-10 h-[44px]"
         value={value}
@@ -24,6 +24,7 @@ export const LibrarySearch = ({ value, onChange, onSearch }: LibrarySearchProps)
           }
         }}
         autoComplete="off"
+        enterKeyHint="search"
       />
       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
         <Search className="h-5 w-5 text-muted-foreground" />

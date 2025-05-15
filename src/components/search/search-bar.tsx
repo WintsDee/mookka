@@ -29,6 +29,8 @@ export const SearchBar = ({
         className={`pl-10 py-6 border-none shadow-sm ${selectedTypeColor} h-[44px]`}
         disabled={isDisabled}
         autoComplete="off"
+        type="search"
+        enterKeyHint="search"
       />
       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center pointer-events-none">
         {isLoading ? (
