@@ -8,10 +8,10 @@ interface TabContentContainerProps {
 
 export function TabContentContainer({ children }: TabContentContainerProps) {
   return (
-    <ScrollArea className="flex-1 overflow-auto">
-      <div className="px-4 py-4 pb-28">
+    <div className="flex-1 overflow-y-auto pb-28">
+      <div className="px-4 py-4">
         {children}
       </div>
-    </ScrollArea>
+    </div>
   );
 }

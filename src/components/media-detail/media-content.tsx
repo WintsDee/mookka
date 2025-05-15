@@ -33,7 +33,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   }
   
   return (
-    <div className={`w-full h-full flex flex-col overflow-hidden ${contentMounted ? 'animate-fade-in' : 'opacity-0'}`}>
+    <div className="w-full h-full flex flex-col overflow-y-auto">
       <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         

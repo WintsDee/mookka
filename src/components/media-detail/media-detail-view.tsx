@@ -65,7 +65,7 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
 
   return (
     <Background>
-      <div className={`relative flex flex-col h-screen pt-safe transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`relative flex flex-col h-screen transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
         <MediaDetailHeader 
           media={media} 
           formattedMedia={formattedMedia} 
@@ -73,7 +73,8 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
           onAddToCollection={() => setAddToCollectionOpen(true)}
         />
         
-        <div className="flex-1 overflow-hidden">
+        {/* Modifier cette partie pour permettre le défilement */}
+        <div className="flex-1 overflow-y-auto">
           {isContentVisible && (
             <MediaContent 
               id={id} 
