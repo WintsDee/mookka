@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { addMediaToLibrary } from "@/services/media";
 import { useProfile } from "@/hooks/use-profile";
+import { LoginButton, RetryButton, ViewLibraryButton } from "./toast-actions";
 
 interface UseAddMediaStateProps {
   mediaId: string;
@@ -167,14 +168,7 @@ export function useAddMediaState({
           title: "Connexion requise",
           description: "Connectez-vous pour ajouter ce média à votre bibliothèque.",
           variant: "destructive",
-          action: (
-            <button 
-              className="bg-white text-black px-2 py-1 rounded text-xs"
-              onClick={() => navigate('/auth')}
-            >
-              Se connecter
-            </button>
-          )
+          action: <LoginButton onLogin={() => navigate('/auth')} />
         });
       } 
       
@@ -208,18 +202,11 @@ export function useAddMediaState({
           toast({
             title: "Problème de connexion",
             description: "Problème de réseau détecté. Voulez-vous réessayer ?",
-            action: (
-              <button 
-                className="bg-white text-black px-2 py-1 rounded text-xs"
-                onClick={() => {
-                  setRetrying(true);
-                  setErrorMessage(null);
-                  handleAddToLibrary();
-                }}
-              >
-                Réessayer
-              </button>
-            )
+            action: <RetryButton onRetry={() => {
+              setRetrying(true);
+              setErrorMessage(null);
+              handleAddToLibrary();
+            }} />
           });
         }
       } 
@@ -235,17 +222,10 @@ export function useAddMediaState({
         toast({
           title: "Déjà dans la bibliothèque",
           description: `"${mediaTitle}" fait déjà partie de votre collection.`,
-          action: (
-            <button 
-              className="bg-white text-black px-2 py-1 rounded text-xs"
-              onClick={() => {
-                onOpenChange(false);
-                navigate('/bibliotheque');
-              }}
-            >
-              Voir ma bibliothèque
-            </button>
-          )
+          action: <ViewLibraryButton onViewLibrary={() => {
+            onOpenChange(false);
+            navigate('/bibliotheque');
+          }} />
         });
       }
       
