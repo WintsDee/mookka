@@ -33,10 +33,10 @@ export function addMediaWithValidation({ mediaId, mediaType, status }: ValidateM
  */
 function isValidStatus(status: MediaStatus, mediaType: MediaType): boolean {
   const validStatuses: Record<MediaType, MediaStatus[]> = {
-    book: ['to-read', 'reading', 'completed', 'dropped'],
-    film: ['to-watch', 'watching', 'completed', 'dropped'],
-    serie: ['to-watch', 'watching', 'completed', 'dropped'],
-    game: ['to-play', 'playing', 'completed', 'dropped'],
+    book: ['to-read', 'reading', 'completed', 'abandoned'],
+    film: ['to-watch', 'watching', 'completed', 'abandoned'],
+    serie: ['to-watch', 'watching', 'completed', 'abandoned'],
+    game: ['to-play', 'playing', 'completed', 'abandoned'],
   };
   
   return validStatuses[mediaType].includes(status);
