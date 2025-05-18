@@ -20,17 +20,17 @@ export async function addMediaToLibrary({
   try {
     console.log(`Starting addMediaToLibrary for ${mediaType}/${mediaId} with status: ${status}`);
     
-    // Check session and authentication
+    // 1. Vérification de l'authentification - amélioration des messages d'erreur
     const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
     
     if (sessionError) {
       console.error("Authentication error:", sessionError);
-      throw new Error("Utilisateur non authentifié - Veuillez vous connecter");
+      throw new Error("Utilisateur non authentifié - Veuillez vous reconnecter");
     }
     
     if (!sessionData.user) {
       console.error("No user found in session");
-      throw new Error("Utilisateur non connecté - Veuillez vous connecter");
+      throw new Error("Session utilisateur introuvable - Veuillez vous reconnecter");
     }
     
     const userId = sessionData.user.id;
@@ -52,25 +52,26 @@ export async function addMediaToLibrary({
         default:
           defaultStatus = 'to-watch';
       }
+      status = defaultStatus;
     }
     
-    const effectiveStatus = status || defaultStatus;
+    const effectiveStatus = status;
     console.log(`Adding/updating media ${mediaId} with status: ${effectiveStatus}`);
     
-    // Étape 1: Vérifier si le média existe déjà dans la table 'media'
+    // 2. Vérification d'existence du média - gestion améliorée des erreurs
     try {
       const { data: existingMediaInDb, error: mediaCheckError } = await supabase
         .from('media')
-        .select('id')
+        .select('id, title')
         .eq('id', mediaId)
         .maybeSingle();
       
       if (mediaCheckError) {
         console.error("Error checking media existence:", mediaCheckError);
-        throw new Error("Erreur lors de la vérification du média");
+        throw new Error("Erreur d'accès à la base de données - Veuillez réessayer");
       }
       
-      // Étape 2: Si le média n'existe pas encore dans la base de données, l'ajouter
+      // 3. Récupération depuis l'API externe si nécessaire
       if (!existingMediaInDb) {
         console.log(`Media ${mediaId} doesn't exist yet, fetching details...`);
         
@@ -88,10 +89,18 @@ export async function addMediaToLibrary({
           });
           
           if (!mediaFetchResponse.ok) {
-            console.error(`Error fetching media data: ${mediaFetchResponse.status} - ${mediaFetchResponse.statusText}`);
-            const errorText = await mediaFetchResponse.text();
-            console.error("Error response:", errorText);
-            throw new Error(`Erreur lors de la récupération des données du média (${mediaFetchResponse.status})`);
+            const statusCode = mediaFetchResponse.status;
+            let errorMessage;
+            
+            try {
+              const errorData = await mediaFetchResponse.json();
+              errorMessage = errorData.message || errorData.error || `Erreur API (${statusCode})`;
+            } catch (e) {
+              errorMessage = await mediaFetchResponse.text() || `Erreur API (${statusCode})`;
+            }
+            
+            console.error(`Error fetching media data: ${statusCode} - ${errorMessage}`);
+            throw new Error(`Impossible de récupérer les données du média (${errorMessage})`);
           }
           
           const mediaData = await mediaFetchResponse.json();
@@ -99,13 +108,13 @@ export async function addMediaToLibrary({
           
           if (!mediaData || !mediaData.id) {
             console.error("Invalid media data received:", mediaData);
-            throw new Error("Données du média invalides");
+            throw new Error("Données du média invalides ou incomplètes");
           }
           
-          // Prepare data for insertion
+          // Prepare data for insertion with validation
           const newMediaEntry = {
             id: mediaId,
-            title: mediaData.title,
+            title: mediaData.title || "Titre inconnu",
             type: mediaType,
             year: mediaData.year || null,
             description: mediaData.description || null,
@@ -125,19 +134,27 @@ export async function addMediaToLibrary({
           const { error: insertMediaError } = await supabase.from('media').insert(newMediaEntry);
           
           if (insertMediaError) {
-            console.error("Error inserting media:", insertMediaError);
-            throw new Error(`Erreur lors de l'ajout du média: ${insertMediaError.message}`);
+            // Gestion spécifique de l'erreur de duplication
+            if (insertMediaError.code === '23505') { // Code PostgreSQL pour violation d'unicité
+              console.log("Media already exists, continuing with user_media operation");
+            } else {
+              console.error("Error inserting media:", insertMediaError);
+              throw new Error(`Erreur lors de l'ajout du média dans la bibliothèque: ${insertMediaError.message}`);
+            }
           }
-        } catch (apiError) {
+        } catch (apiError: any) {
           console.error("API or insert error:", apiError);
-          throw new Error(apiError instanceof Error ? apiError.message : "Erreur lors de la récupération des données du média");
+          const errorMessage = apiError instanceof Error ? 
+            apiError.message : 
+            "Erreur lors de la récupération des données du média";
+          throw new Error(errorMessage);
         }
       }
       
-      // Étape 3: Vérifier si le média est déjà dans la bibliothèque de l'utilisateur
+      // 4. Vérification si déjà dans la bibliothèque - gestion améliorée
       const { data: existingMedia, error: userMediaCheckError } = await supabase
         .from('user_media')
-        .select('id, status')
+        .select('id, status, media_id')
         .eq('user_id', userId)
         .eq('media_id', mediaId)
         .maybeSingle();
@@ -147,13 +164,12 @@ export async function addMediaToLibrary({
         throw new Error("Erreur lors de la vérification de la bibliothèque");
       }
       
-      // Étape 4: Mettre à jour ou ajouter le média dans la bibliothèque de l'utilisateur
+      // 5. Ajout ou mise à jour dans la bibliothèque avec transaction optimiste
       if (existingMedia) {
-        // Si le média existe déjà et que le statut est le même, informer l'utilisateur
-        if (existingMedia.status === effectiveStatus) {
-          console.log(`Media ${mediaId} already in library with the same status: ${effectiveStatus}`);
-          throw new Error(`Ce média est déjà dans votre bibliothèque avec le statut "${effectiveStatus}"`);
-        }
+        console.log(`Media ${mediaId} already in library with status: ${existingMedia.status}`);
+        
+        // Ne pas lever d'erreur si même statut, procéder à la mise à jour silencieuse
+        // pour permettre la modification des notes ou de la notation
         
         // Mettre à jour le média existant
         const updateData: any = {
@@ -162,7 +178,7 @@ export async function addMediaToLibrary({
         
         if (effectiveStatus) updateData.status = effectiveStatus;
         if (notes !== undefined) updateData.notes = notes || null;
-        if (rating !== undefined) updateData.user_rating = rating !== null ? rating : null;
+        if (rating !== undefined) updateData.user_rating = rating;
         
         console.log("Updating existing user media:", updateData);
         
@@ -175,6 +191,8 @@ export async function addMediaToLibrary({
           console.error("Error updating user media:", updateError);
           throw new Error(`Erreur lors de la mise à jour du média: ${updateError.message}`);
         }
+        
+        console.log("Media successfully updated");
       } else {
         // Ajouter un nouveau média
         const newMediaData: any = {
@@ -185,7 +203,7 @@ export async function addMediaToLibrary({
         };
         
         if (notes !== undefined) newMediaData.notes = notes || null;
-        if (rating !== undefined) newMediaData.user_rating = rating !== null ? rating : null;
+        if (rating !== undefined) newMediaData.user_rating = rating;
         
         console.log("Adding new user media:", newMediaData);
         
@@ -195,15 +213,25 @@ export async function addMediaToLibrary({
         
         if (insertError) {
           console.error("Error inserting user media:", insertError);
-          throw new Error(`Erreur lors de l'ajout du média: ${insertError.message}`);
+          
+          // Gestion spécifique des erreurs d'insertion
+          if (insertError.code === '23505') {
+            throw new Error(`Ce média est déjà dans votre bibliothèque`);
+          } else if (insertError.code === '23503') {
+            throw new Error(`Référence incorrecte: le média ou l'utilisateur n'existe pas`);
+          } else {
+            throw new Error(`Erreur lors de l'ajout du média: ${insertError.message}`);
+          }
         }
+        
+        console.log("Media successfully added to library");
       }
     } catch (dbError) {
       console.error("Database operation error:", dbError);
       throw dbError;
     }
     
-    // Étape 5: Mettre à jour la progression si nécessaire
+    // 6. Mise à jour de la progression si nécessaire - rendue optionnelle pour ne pas bloquer l'ajout principal
     try {
       const { data: progression, error: progressionError } = await supabase
         .from('media_progressions')
@@ -212,66 +240,54 @@ export async function addMediaToLibrary({
         .eq('media_id', mediaId)
         .maybeSingle();
       
-      if (progressionError) {
-        console.error("Error checking media progression:", progressionError);
-        // Continue execution as this is not critical
-      }
-      
-      if (progression) {
-        // Initialiser progressionData comme un objet vide par défaut
-        let progressionData = {};
-        
-        if (progression.progression_data && 
-            typeof progression.progression_data === 'object' && 
-            progression.progression_data !== null &&
-            !Array.isArray(progression.progression_data)) {
-          progressionData = { ...progression.progression_data };
-        }
-        
-        // Ajouter les champs nécessaires
-        if (effectiveStatus) {
-          (progressionData as any).status = effectiveStatus;
-        }
-        
-        if (notes !== undefined) {
-          (progressionData as any).notes = notes || "";
-        }
-        
-        const { error: updateProgressionError } = await supabase
-          .from('media_progressions')
-          .update({
-            progression_data: progressionData,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', progression.id);
-        
-        if (updateProgressionError) {
-          console.error("Error updating progression:", updateProgressionError);
-          // Continue execution as this is not critical
-        }
-      } else {
-        // Créer une structure de progression basique
-        const progressionData: Record<string, any> = {};
-        
-        if (effectiveStatus) progressionData.status = effectiveStatus;
-        if (notes !== undefined) progressionData.notes = notes || "";
-        
-        const { error: insertProgressionError } = await supabase
-          .from('media_progressions')
-          .insert({
-            media_id: mediaId,
-            user_id: userId,
-            progression_data: progressionData
-          });
-        
-        if (insertProgressionError) {
-          console.error("Error inserting progression:", insertProgressionError);
-          // Continue execution as this is not critical
+      // Ne pas bloquer le flux principal si cette partie échoue
+      if (!progressionError) {
+        if (progression) {
+          // Initialiser progressionData comme un objet vide par défaut
+          let progressionData = {};
+          
+          if (progression.progression_data && 
+              typeof progression.progression_data === 'object' && 
+              progression.progression_data !== null &&
+              !Array.isArray(progression.progression_data)) {
+            progressionData = { ...progression.progression_data };
+          }
+          
+          // Ajouter les champs nécessaires
+          if (effectiveStatus) {
+            (progressionData as any).status = effectiveStatus;
+          }
+          
+          if (notes !== undefined) {
+            (progressionData as any).notes = notes || "";
+          }
+          
+          await supabase
+            .from('media_progressions')
+            .update({
+              progression_data: progressionData,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', progression.id);
+        } else {
+          // Créer une structure de progression basique
+          const progressionData: Record<string, any> = {};
+          
+          if (effectiveStatus) progressionData.status = effectiveStatus;
+          if (notes !== undefined) progressionData.notes = notes || "";
+          
+          await supabase
+            .from('media_progressions')
+            .insert({
+              media_id: mediaId,
+              user_id: userId,
+              progression_data: progressionData
+            });
         }
       }
     } catch (progressionError) {
+      // Log but don't throw - progression is secondary to the main library update
       console.error("Error handling progression data:", progressionError);
-      // Continue execution as progression updates are not critical
     }
     
     console.log(`Media ${mediaId} added/updated successfully`);

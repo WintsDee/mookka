@@ -68,7 +68,10 @@ export function useAddMediaState({
   };
 
   const handleAddToLibrary = async () => {
-    if (!selectedStatus) return;
+    if (!selectedStatus) {
+      setErrorMessage("Veuillez sélectionner un statut");
+      return;
+    }
     
     setIsAddingToLibrary(true);
     setErrorMessage(null);
@@ -127,9 +130,21 @@ export function useAddMediaState({
         errorMsg = error.message;
       }
       
-      // Authentication errors
-      if (errorMsg.includes("non connecté") || errorMsg.includes("non authentifié")) {
+      // Authentication errors - messages plus clairs
+      if (errorMsg.includes("non connecté") || 
+          errorMsg.includes("non authentifié") ||
+          errorMsg.includes("Session utilisateur introuvable")) {
         errorMsg = "Vous devez être connecté pour ajouter un média à votre bibliothèque.";
+      }
+      
+      // API errors - messages plus clairs
+      if (errorMsg.includes("Impossible de récupérer les données")) {
+        errorMsg = "Les informations du média n'ont pas pu être récupérées. Veuillez réessayer.";
+      }
+      
+      // Database errors - messages plus clairs
+      if (errorMsg.includes("déjà dans votre bibliothèque")) {
+        errorMsg = `"${mediaTitle}" est déjà dans votre bibliothèque.`;
       }
       
       // Set the error message for display in the UI
@@ -147,6 +162,8 @@ export function useAddMediaState({
 
   const handleRatingComplete = async (rating?: number) => {
     try {
+      setIsAddingToLibrary(true);
+      
       // Mettre à jour le média avec la note uniquement
       // puisqu'il a déjà été ajouté avec le statut "completed"
       await addMediaToLibrary({
@@ -182,6 +199,8 @@ export function useAddMediaState({
       if (error instanceof Error) {
         errorMsg = error.message;
       }
+      
+      setErrorMessage(errorMsg);
       
       toast({
         title: "Erreur",
