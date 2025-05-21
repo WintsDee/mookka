@@ -2,7 +2,11 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { LoginButton, RetryButton, ViewLibraryButton } from "./toast-actions";
+import { 
+  LoginButton, 
+  RetryButton, 
+  ViewLibraryButton 
+} from "./toast-actions";
 
 interface UseErrorHandlingProps {
   mediaTitle: string;

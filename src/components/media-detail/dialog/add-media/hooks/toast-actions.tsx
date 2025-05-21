@@ -1,33 +1,38 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 // This file exports React components that can be used in the toast actions
-// It must be a .tsx file since it contains JSX
 
 export const LoginButton = ({ onLogin }: { onLogin: () => void }) => (
-  <button 
-    className="bg-white text-black px-2 py-1 rounded text-xs"
+  <Button 
+    variant="outline"
+    size="sm"
     onClick={onLogin}
+    className="h-8 rounded-sm px-2 py-1 text-xs"
   >
     Se connecter
-  </button>
+  </Button>
 );
 
 export const RetryButton = ({ onRetry }: { onRetry: () => void }) => (
-  <button 
-    className="bg-white text-black px-2 py-1 rounded text-xs"
+  <Button
+    variant="outline"
+    size="sm"
     onClick={onRetry}
+    className="h-8 rounded-sm px-2 py-1 text-xs"
   >
     Réessayer
-  </button>
+  </Button>
 );
 
 export const ViewLibraryButton = ({ onViewLibrary }: { onViewLibrary: () => void }) => (
-  <button 
-    className="bg-white text-black px-2 py-1 rounded text-xs"
+  <Button
+    variant="outline"
+    size="sm"
     onClick={onViewLibrary}
+    className="h-8 rounded-sm px-2 py-1 text-xs"
   >
     Voir ma bibliothèque
-  </button>
+  </Button>
 );
