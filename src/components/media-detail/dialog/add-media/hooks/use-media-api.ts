@@ -20,9 +20,8 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       return mediaId;
     }
     
-    // Si ce n'est pas un UUID valide, générer un UUID basé sur l'ID externe
-    // et le type pour garantir la cohérence
-    return uuidv4(); // On génère un nouvel UUID pour garantir sa validité
+    // Si ce n'est pas un UUID valide, générer un nouvel UUID
+    return uuidv4();
   };
 
   const addToLibrary = async (status: MediaStatus, notes?: string) => {
@@ -145,7 +144,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       const { error: updateError } = await supabase
         .from("user_media")
         .update({
-          rating,
+          user_rating: rating,
           notes
         })
         .eq("id", existingMedia.id);
