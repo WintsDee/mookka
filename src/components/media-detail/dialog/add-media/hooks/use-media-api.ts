@@ -22,9 +22,8 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
     
     // Si ce n'est pas un UUID valide, générer un UUID basé sur l'ID externe
     // et le type pour garantir la cohérence
-    const stableId = `${mediaType}-${mediaId}`;
     return uuidv4(); // On génère un nouvel UUID pour garantir sa validité
-  }
+  };
 
   const addToLibrary = async (status: MediaStatus, notes?: string) => {
     try {
@@ -36,23 +35,57 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         throw new Error("Session utilisateur introuvable. Veuillez vous reconnecter.");
       }
       
-      // Utiliser un ID valide pour la base de données
-      const validDbId = validateMediaId();
+      // Vérifier d'abord si le média existe déjà dans la table media
+      const { data: existingMedia, error: mediaCheckError } = await supabase
+        .from("media")
+        .select("id")
+        .eq("external_id", mediaId)
+        .eq("type", mediaType)
+        .maybeSingle();
       
+      let mediaDbId: string;
+      
+      if (mediaCheckError) {
+        console.error("Erreur lors de la vérification du média:", mediaCheckError);
+        throw new Error("Erreur lors de la vérification du média dans la base de données");
+      }
+      
+      if (!existingMedia) {
+        // Le média n'existe pas encore, l'ajouter à la table media
+        const validDbId = validateMediaId();
+        
+        const { error: mediaInsertError } = await supabase
+          .from("media")
+          .insert({
+            id: validDbId,
+            external_id: mediaId,
+            title: mediaTitle,
+            type: mediaType,
+          });
+        
+        if (mediaInsertError) {
+          console.error("Erreur lors de l'ajout du média à la base:", mediaInsertError);
+          throw new Error("Erreur lors de l'ajout du média à la base de données");
+        }
+        
+        mediaDbId = validDbId;
+      } else {
+        // Le média existe déjà, utiliser son ID
+        mediaDbId = existingMedia.id;
+      }
+      
+      // Maintenant ajouter à la bibliothèque de l'utilisateur
       const { error } = await supabase
         .from("user_media")
         .insert({
-          id: validDbId, // ID interne généré avec UUID
-          external_id: mediaId, // ID externe de l'API
           user_id: userId,
-          media_type: mediaType,
+          media_id: mediaDbId,
           status,
           notes,
-          title: mediaTitle,
         });
       
       if (error) {
-        console.error("Erreur lors de l'ajout du média:", error);
+        console.error("Erreur lors de l'ajout du média à la bibliothèque:", error);
         throw new Error(error.message);
       }
       
@@ -75,13 +108,28 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         throw new Error("Session utilisateur introuvable. Veuillez vous reconnecter.");
       }
       
-      // Récupérer d'abord l'entrée du média pour l'utilisateur
+      // Rechercher d'abord le média dans la table media
+      const { data: mediaData, error: mediaError } = await supabase
+        .from("media")
+        .select("id")
+        .eq("external_id", mediaId)
+        .eq("type", mediaType)
+        .maybeSingle();
+      
+      if (mediaError) {
+        throw new Error("Erreur lors de la recherche du média");
+      }
+      
+      if (!mediaData) {
+        throw new Error("Le média n'existe pas dans la base de données");
+      }
+      
+      // Récupérer l'entrée du média pour l'utilisateur
       const { data: existingMedia, error: fetchError } = await supabase
         .from("user_media")
         .select()
         .eq("user_id", userId)
-        .eq("external_id", mediaId)
-        .eq("media_type", mediaType)
+        .eq("media_id", mediaData.id)
         .single();
       
       if (fetchError && fetchError.code !== "PGRST116") {
