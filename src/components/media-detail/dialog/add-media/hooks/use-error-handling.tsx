@@ -108,7 +108,22 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       });
     }
     
-    // 5. Autres erreurs
+    // 5. Erreurs de format UUID
+    else if (
+      errorMsg.includes("UUID") ||
+      errorMsg.includes("format d'identifiant") ||
+      errorMsg.includes("invalid input syntax for type uuid")
+    ) {
+      errorMsg = "Format d'identifiant de média incorrect.";
+      
+      toast({
+        title: "Erreur technique",
+        description: "Un problème technique est survenu avec l'identifiant du média.",
+        variant: "destructive"
+      });
+    }
+    
+    // 6. Autres erreurs
     else {
       toast({
         title: "Erreur",
