@@ -55,23 +55,30 @@ export function useAddMediaState({
 
   // Handler for form submission
   const handleAddToLibrary = async () => {
-    // Verify user is authenticated
-    if (!verifyAuth()) return;
-    
-    // Validate form data
-    if (!selectedStatus) {
-      handleError(new Error("Veuillez sélectionner un statut"));
-      return;
-    }
-    
-    // Clear any previous errors
-    clearError();
-    
     try {
+      console.log("Début de handleAddToLibrary");
+      
+      // Verify user is authenticated
+      if (!verifyAuth()) {
+        console.log("Échec de la vérification d'authentification");
+        return;
+      }
+      
+      // Validate form data
+      if (!selectedStatus) {
+        console.log("Aucun statut sélectionné");
+        handleError(new Error("Veuillez sélectionner un statut"));
+        return;
+      }
+      
+      // Clear any previous errors
+      clearError();
+      
       console.log(`Tentative d'ajout du média ${mediaId} à la bibliothèque avec le statut ${selectedStatus}`);
       
       // If status is completed, we'll show the rating step
       if (selectedStatus === 'completed') {
+        console.log("Le statut est 'completed', ajout d'abord à la bibliothèque puis affichage de l'étape de notation");
         // First add the media without rating
         await addToLibrary(selectedStatus, notes);
         showRating();
@@ -80,6 +87,7 @@ export function useAddMediaState({
       
       // For other statuses, add directly to library
       await addToLibrary(selectedStatus, notes);
+      console.log("Média ajouté avec succès, affichage de l'animation de succès");
       
       // Show success animation
       showSuccess();
@@ -89,7 +97,6 @@ export function useAddMediaState({
         completeForm();
         autoClose(1500);
       }, 1000);
-      
     } catch (error) {
       console.error("Erreur dans handleAddToLibrary:", error);
       handleError(error, handleAddToLibrary);
@@ -109,7 +116,6 @@ export function useAddMediaState({
         completeForm();
         autoClose(1500);
       }, 1000);
-      
     } catch (error) {
       console.error("Erreur dans handleRatingComplete:", error);
       handleError(error);

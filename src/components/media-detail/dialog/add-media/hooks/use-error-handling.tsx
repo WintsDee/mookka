@@ -31,11 +31,17 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     
     // Extraire un message d'erreur significatif
     let errorMsg = "Une erreur est survenue";
-    let errorId = Date.now().toString(); // Identifiant unique pour cette erreur
+    let errorId = error && typeof error === 'object' ? JSON.stringify(error) : String(Date.now()); // Identifiant unique pour cette erreur
     
     if (error instanceof Error) {
       errorMsg = error.message;
       errorId = error.message; // Utiliser le message comme identifiant
+    } else if (typeof error === 'string') {
+      errorMsg = error;
+      errorId = error;
+    } else if (error && error.message) {
+      errorMsg = error.message;
+      errorId = error.message;
     }
     
     // Éviter d'afficher plusieurs toasts pour les mêmes erreurs
@@ -55,6 +61,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("non authentifié") ||
       errorMsg.includes("Session utilisateur introuvable") ||
       errorMsg.includes("Session expirée") ||
+      errorMsg.includes("Veuillez vous connecter") ||
       errorMsg.includes("Veuillez vous reconnecter")
     ) {
       toast({
