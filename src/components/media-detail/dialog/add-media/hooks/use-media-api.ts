@@ -49,6 +49,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         console.log("Le média n'existe pas encore, création d'une nouvelle entrée");
         
         const newMediaId = uuidv4();
+        console.log("Generated UUID for new media:", newMediaId);
         
         const { error: insertError } = await supabase
           .from("media")
@@ -74,7 +75,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       // 3. Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
       const { data: existingUserMedia, error: userMediaCheckError } = await supabase
         .from("user_media")
-        .select("id")
+        .select("id, status")
         .eq("user_id", userId)
         .eq("media_id", internalMediaId)
         .maybeSingle();
@@ -86,7 +87,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       
       // 4. Ajouter ou mettre à jour dans la bibliothèque de l'utilisateur
       if (existingUserMedia) {
-        console.log(`Le média est déjà dans la bibliothèque, mise à jour du statut: ${status}`);
+        console.log(`Le média est déjà dans la bibliothèque avec le statut: ${existingUserMedia.status}, mise à jour vers: ${status}`);
         
         const { error: updateError } = await supabase
           .from("user_media")
@@ -101,6 +102,8 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
           console.error("Erreur lors de la mise à jour du média:", updateError);
           throw new Error(`Erreur lors de la mise à jour de la bibliothèque: ${updateError.message}`);
         }
+        
+        console.log("Média mis à jour avec succès");
       } else {
         console.log(`Ajout du média à la bibliothèque avec le statut: ${status}`);
         
@@ -123,9 +126,10 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
             throw new Error(`Erreur lors de l'ajout à votre bibliothèque: ${addError.message}`);
           }
         }
+        
+        console.log("Média ajouté avec succès à la bibliothèque");
       }
       
-      console.log("Média ajouté avec succès à la bibliothèque");
       return true;
     } catch (error) {
       console.error("Erreur dans addToLibrary:", error);

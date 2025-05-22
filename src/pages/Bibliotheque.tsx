@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -184,7 +183,7 @@ const Bibliotheque = () => {
               <p>Chargement de votre bibliothèque...</p>
             </div>
           ) : sortedMedia.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex flex-col items-center justify-center py-12 text-center mt-8">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque
                 {selectedType !== "all" && ` de type ${selectedType}`}

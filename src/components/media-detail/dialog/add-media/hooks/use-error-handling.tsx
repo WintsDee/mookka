@@ -44,6 +44,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       return;
     }
     
+    setErrorMessage(errorMsg);
     setLastErrorId(errorId);
     
     // Classification des erreurs par catégorie
@@ -56,8 +57,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("Session expirée") ||
       errorMsg.includes("Veuillez vous reconnecter")
     ) {
-      setErrorMessage("Vous devez être connecté pour ajouter un média à votre bibliothèque.");
-      
       toast({
         title: "Connexion requise",
         description: "Connectez-vous pour ajouter ce média à votre bibliothèque.",
@@ -72,8 +71,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("source externe") ||
       errorMsg.includes("service externe")
     ) {
-      setErrorMessage("Les informations du média n'ont pas pu être récupérées. Veuillez réessayer.");
-      
       toast({
         title: "Erreur de service",
         description: "Les services externes sont temporairement indisponibles. Réessayez plus tard.",
@@ -88,8 +85,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("timeout") || 
       errorMsg.includes("trop de temps")
     ) {
-      setErrorMessage("Problème de connexion. Vérifiez votre réseau et réessayez.");
-      
       if (!isRetrying && retryCallback) {
         toast({
           title: "Problème de connexion",
@@ -108,8 +103,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("déjà dans votre bibliothèque") ||
       errorMsg.includes("23505")
     ) {
-      setErrorMessage(`"${mediaTitle}" est déjà dans votre bibliothèque.`);
-      
       toast({
         title: "Déjà dans la bibliothèque",
         description: `"${mediaTitle}" fait déjà partie de votre collection.`,
@@ -126,8 +119,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("format d'identifiant") ||
       errorMsg.includes("invalid input syntax for type uuid")
     ) {
-      setErrorMessage("Format d'identifiant de média incorrect.");
-      
       toast({
         title: "Erreur technique",
         description: "Un problème technique est survenu avec l'identifiant du média.",
@@ -137,8 +128,6 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     
     // 6. Autres erreurs - afficher une seule fois
     else {
-      setErrorMessage(errorMsg);
-      
       toast({
         title: "Erreur",
         description: errorMsg,
