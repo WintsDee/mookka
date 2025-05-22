@@ -34,6 +34,11 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg = error.message;
     }
     
+    // Ne pas afficher plusieurs toasts pour les mêmes erreurs
+    if (errorMessage === errorMsg) {
+      return;
+    }
+    
     // Classification des erreurs par catégorie
     
     // 1. Erreurs d'authentification
@@ -44,7 +49,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("Session expirée") ||
       errorMsg.includes("Veuillez vous reconnecter")
     ) {
-      errorMsg = "Vous devez être connecté pour ajouter un média à votre bibliothèque.";
+      setErrorMessage("Vous devez être connecté pour ajouter un média à votre bibliothèque.");
       
       toast({
         title: "Connexion requise",
@@ -60,7 +65,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("source externe") ||
       errorMsg.includes("service externe")
     ) {
-      errorMsg = "Les informations du média n'ont pas pu être récupérées. Veuillez réessayer.";
+      setErrorMessage("Les informations du média n'ont pas pu être récupérées. Veuillez réessayer.");
       
       toast({
         title: "Erreur de service",
@@ -76,7 +81,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("timeout") || 
       errorMsg.includes("trop de temps")
     ) {
-      errorMsg = "Problème de connexion. Vérifiez votre réseau et réessayez.";
+      setErrorMessage("Problème de connexion. Vérifiez votre réseau et réessayez.");
       
       if (!isRetrying && retryCallback) {
         toast({
@@ -96,7 +101,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("déjà dans votre bibliothèque") ||
       errorMsg.includes("23505")
     ) {
-      errorMsg = `"${mediaTitle}" est déjà dans votre bibliothèque.`;
+      setErrorMessage(`"${mediaTitle}" est déjà dans votre bibliothèque.`);
       
       toast({
         title: "Déjà dans la bibliothèque",
@@ -114,7 +119,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("format d'identifiant") ||
       errorMsg.includes("invalid input syntax for type uuid")
     ) {
-      errorMsg = "Format d'identifiant de média incorrect.";
+      setErrorMessage("Format d'identifiant de média incorrect.");
       
       toast({
         title: "Erreur technique",
@@ -123,16 +128,16 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       });
     }
     
-    // 6. Autres erreurs
+    // 6. Autres erreurs - afficher une seule fois
     else {
+      setErrorMessage(errorMsg);
+      
       toast({
         title: "Erreur",
         description: errorMsg,
         variant: "destructive",
       });
     }
-    
-    setErrorMessage(errorMsg);
   };
 
   return {
