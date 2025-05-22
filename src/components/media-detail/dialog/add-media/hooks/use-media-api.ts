@@ -39,7 +39,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       const { data: existingMedia, error: mediaCheckError } = await supabase
         .from("media")
         .select("id")
-        .eq("external_id", mediaId)
+        .eq("external_id", mediaId.toString())
         .eq("type", mediaType)
         .maybeSingle();
       
@@ -55,12 +55,13 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       if (!existingMedia) {
         console.log("Le média n'existe pas encore dans la base de données, création d'une nouvelle entrée");
         
-        const newMediaId = uuidv4();
-        console.log(`UUID généré pour le nouveau média: ${newMediaId}`);
+        // Générer un UUID valide pour le nouveau média
+        internalMediaId = uuidv4();
+        console.log(`UUID généré pour le nouveau média: ${internalMediaId}`);
         
         const insertData = {
-          id: newMediaId,
-          external_id: mediaId,
+          id: internalMediaId,
+          external_id: mediaId.toString(),
           title: mediaTitle,
           type: mediaType
         };
@@ -76,7 +77,6 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
           throw new Error(`Erreur lors de l'ajout du média à la base de données: ${insertError.message}`);
         }
         
-        internalMediaId = newMediaId;
         console.log(`Média créé avec succès, ID interne: ${internalMediaId}`);
       } else {
         internalMediaId = existingMedia.id;
@@ -181,7 +181,7 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .select("id")
-        .eq("external_id", mediaId)
+        .eq("external_id", mediaId.toString())
         .eq("type", mediaType)
         .maybeSingle();
       

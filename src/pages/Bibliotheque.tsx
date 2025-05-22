@@ -184,7 +184,7 @@ const Bibliotheque = () => {
               <p>Chargement de votre bibliothèque...</p>
             </div>
           ) : sortedMedia.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center mt-12">
+            <div className="flex flex-col items-center justify-center py-12 text-center mt-20">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque
                 {selectedType !== "all" && ` de type ${selectedType}`}
