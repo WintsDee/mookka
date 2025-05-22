@@ -17,13 +17,18 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
     try {
       setIsAddingToLibrary(true);
       
-      const userId = (await supabase.auth.getSession()).data.session?.user.id;
+      // Vérifier l'authentification
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (!userId) {
+      if (sessionError || !sessionData.session) {
         throw new Error("Session utilisateur introuvable. Veuillez vous reconnecter.");
       }
       
-      // 1. Vérifier si le média existe déjà dans la base de données
+      const userId = sessionData.session.user.id;
+      
+      console.log(`Ajout du média ${mediaId} (${mediaType}) à la bibliothèque avec le statut: ${status}`);
+      
+      // 1. Vérifier si le média existe déjà dans la table media
       const { data: existingMedia, error: mediaCheckError } = await supabase
         .from("media")
         .select("id")
@@ -36,15 +41,15 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         throw new Error("Erreur lors de la vérification du média dans la base de données");
       }
       
-      // 2. Variable pour stocker l'ID interne du média
+      // Variable pour stocker l'ID du média dans notre base
       let internalMediaId: string;
       
-      // 3. Si le média n'existe pas encore, l'ajouter
+      // 2. Si le média n'existe pas encore, l'ajouter
       if (!existingMedia) {
-        // Générer un nouveau UUID pour le média
+        console.log("Le média n'existe pas encore, création d'une nouvelle entrée");
+        
         const newMediaId = uuidv4();
         
-        // Insérer le nouveau média
         const { error: insertError } = await supabase
           .from("media")
           .insert({
@@ -55,17 +60,18 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
           });
         
         if (insertError) {
-          console.error("Erreur lors de l'ajout du média:", insertError);
-          throw new Error("Erreur lors de l'ajout du média à la base de données");
+          console.error("Erreur lors de l'insertion du média:", insertError);
+          throw new Error(`Erreur lors de l'ajout du média à la base de données: ${insertError.message}`);
         }
         
         internalMediaId = newMediaId;
+        console.log(`Média créé avec l'ID interne: ${internalMediaId}`);
       } else {
-        // Utiliser l'ID du média existant
         internalMediaId = existingMedia.id;
+        console.log(`Média trouvé avec l'ID interne: ${internalMediaId}`);
       }
       
-      // 4. Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
+      // 3. Vérifier si l'utilisateur a déjà ce média dans sa bibliothèque
       const { data: existingUserMedia, error: userMediaCheckError } = await supabase
         .from("user_media")
         .select("id")
@@ -78,9 +84,10 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         throw new Error("Erreur lors de la vérification de la bibliothèque");
       }
       
-      // 5. Ajouter ou mettre à jour dans la bibliothèque
+      // 4. Ajouter ou mettre à jour dans la bibliothèque de l'utilisateur
       if (existingUserMedia) {
-        // Si le média est déjà dans la bibliothèque, mettre à jour
+        console.log(`Le média est déjà dans la bibliothèque, mise à jour du statut: ${status}`);
+        
         const { error: updateError } = await supabase
           .from("user_media")
           .update({
@@ -92,10 +99,11 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         
         if (updateError) {
           console.error("Erreur lors de la mise à jour du média:", updateError);
-          throw new Error("Erreur lors de la mise à jour de votre bibliothèque");
+          throw new Error(`Erreur lors de la mise à jour de la bibliothèque: ${updateError.message}`);
         }
       } else {
-        // Si le média n'est pas dans la bibliothèque, l'ajouter
+        console.log(`Ajout du média à la bibliothèque avec le statut: ${status}`);
+        
         const { error: addError } = await supabase
           .from("user_media")
           .insert({
@@ -107,13 +115,20 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         
         if (addError) {
           console.error("Erreur lors de l'ajout à la bibliothèque:", addError);
-          throw new Error("Erreur lors de l'ajout à votre bibliothèque");
+          
+          // Gestion spécifique des erreurs de contrainte
+          if (addError.code === '23505') {
+            throw new Error(`Ce média est déjà dans votre bibliothèque`);
+          } else {
+            throw new Error(`Erreur lors de l'ajout à votre bibliothèque: ${addError.message}`);
+          }
         }
       }
       
+      console.log("Média ajouté avec succès à la bibliothèque");
       return true;
     } catch (error) {
-      console.error("Erreur lors de l'ajout du média:", error);
+      console.error("Erreur dans addToLibrary:", error);
       throw error;
     } finally {
       setIsAddingToLibrary(false);
@@ -124,13 +139,16 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
     try {
       setIsAddingToLibrary(true);
       
-      const userId = (await supabase.auth.getSession()).data.session?.user.id;
+      // Vérifier l'authentification
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       
-      if (!userId) {
+      if (sessionError || !sessionData.session) {
         throw new Error("Session utilisateur introuvable. Veuillez vous reconnecter.");
       }
       
-      // 1. Rechercher le média interne
+      const userId = sessionData.session.user.id;
+      
+      // 1. Trouver l'ID interne du média
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .select("id")
@@ -139,26 +157,33 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         .maybeSingle();
       
       if (mediaError) {
+        console.error("Erreur lors de la recherche du média:", mediaError);
         throw new Error("Erreur lors de la recherche du média");
       }
       
       if (!mediaData) {
+        console.error("Média non trouvé dans la base de données");
         throw new Error("Le média n'existe pas dans la base de données");
       }
       
-      // 2. Rechercher l'entrée dans user_media
+      const internalMediaId = mediaData.id;
+      console.log(`ID interne du média trouvé: ${internalMediaId}`);
+      
+      // 2. Trouver l'entrée dans user_media
       const { data: userMedia, error: userMediaError } = await supabase
         .from("user_media")
         .select("id")
         .eq("user_id", userId)
-        .eq("media_id", mediaData.id)
+        .eq("media_id", internalMediaId)
         .maybeSingle();
       
       if (userMediaError) {
+        console.error("Erreur lors de la recherche dans la bibliothèque:", userMediaError);
         throw new Error("Erreur lors de la recherche dans votre bibliothèque");
       }
       
       if (!userMedia) {
+        console.error("Média non trouvé dans la bibliothèque de l'utilisateur");
         throw new Error("Ajoutez d'abord ce média à votre bibliothèque");
       }
       
@@ -173,12 +198,14 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
         .eq("id", userMedia.id);
       
       if (updateError) {
-        throw new Error("Erreur lors de la mise à jour de la note");
+        console.error("Erreur lors de la mise à jour de la note:", updateError);
+        throw new Error(`Erreur lors de la mise à jour de la note: ${updateError.message}`);
       }
       
+      console.log("Note ajoutée avec succès");
       return true;
     } catch (error) {
-      console.error("Erreur lors de l'ajout de la note:", error);
+      console.error("Erreur dans addRating:", error);
       throw error;
     } finally {
       setIsAddingToLibrary(false);

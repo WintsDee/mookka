@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -18,26 +18,33 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [lastErrorId, setLastErrorId] = useState<string | null>(null);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setErrorMessage(null);
     setIsRetrying(false);
-  };
+    setLastErrorId(null);
+  }, []);
 
-  const handleError = (error: any, retryCallback?: () => void) => {
+  const handleError = useCallback((error: any, retryCallback?: () => void) => {
     console.error("Error occurred:", error);
     
-    // Extract meaningful error message
+    // Extraire un message d'erreur significatif
     let errorMsg = "Une erreur est survenue";
+    let errorId = Date.now().toString(); // Identifiant unique pour cette erreur
     
     if (error instanceof Error) {
       errorMsg = error.message;
+      errorId = error.message; // Utiliser le message comme identifiant
     }
     
-    // Ne pas afficher plusieurs toasts pour les mêmes erreurs
-    if (errorMessage === errorMsg) {
+    // Éviter d'afficher plusieurs toasts pour les mêmes erreurs
+    if (errorMessage === errorMsg || lastErrorId === errorId) {
+      console.log("Erreur déjà affichée, ignorée:", errorMsg);
       return;
     }
+    
+    setLastErrorId(errorId);
     
     // Classification des erreurs par catégorie
     
@@ -138,7 +145,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
         variant: "destructive",
       });
     }
-  };
+  }, [errorMessage, isRetrying, lastErrorId, mediaTitle, navigate, onOpenChange, toast]);
 
   return {
     errorMessage,

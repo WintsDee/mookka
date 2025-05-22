@@ -68,6 +68,8 @@ export function useAddMediaState({
     clearError();
     
     try {
+      console.log(`Tentative d'ajout du média ${mediaId} à la bibliothèque avec le statut ${selectedStatus}`);
+      
       // If status is completed, we'll show the rating step
       if (selectedStatus === 'completed') {
         // First add the media without rating
@@ -89,6 +91,7 @@ export function useAddMediaState({
       }, 1000);
       
     } catch (error) {
+      console.error("Erreur dans handleAddToLibrary:", error);
       handleError(error, handleAddToLibrary);
     }
   };
@@ -96,6 +99,7 @@ export function useAddMediaState({
   // Handler for rating submission
   const handleRatingComplete = async (rating?: number) => {
     try {
+      console.log(`Ajout d'une note ${rating} au média ${mediaId}`);
       await addRating(notes, rating);
       
       showSuccess();
@@ -107,6 +111,7 @@ export function useAddMediaState({
       }, 1000);
       
     } catch (error) {
+      console.error("Erreur dans handleRatingComplete:", error);
       handleError(error);
     }
   };
