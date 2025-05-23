@@ -1,5 +1,6 @@
 
 import { supabase, isAuthError } from "@/integrations/supabase/client";
+import { v4 as uuidv4, validate as validateUuid } from "uuid";
 
 /**
  * Vérifie si un média existe déjà dans la base de données
@@ -13,16 +14,20 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
   
   while (retryCount <= MAX_RETRIES) {
     try {
+      console.log(`Vérification si le média avec external_id=${mediaId} existe dans la base de données`);
+      
       const { data, error } = await supabase
         .from('media')
         .select('id, title')
-        .eq('id', mediaId)
+        .eq('external_id', mediaId.toString())
         .maybeSingle();
       
       existingMediaInDb = data;
       mediaCheckError = error;
       
       if (mediaCheckError) {
+        console.error(`Erreur lors de la vérification du média: ${mediaCheckError.message}`);
+        
         if (isAuthError(mediaCheckError)) {
           // Problème d'authentification, on essaie de rafraîchir le token
           if (retryCount < MAX_RETRIES) {
@@ -50,6 +55,12 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
   if (mediaCheckError) {
     console.error("Error checking media existence after retries:", mediaCheckError);
     throw new Error("Erreur d'accès à la base de données - Veuillez réessayer");
+  }
+  
+  if (existingMediaInDb) {
+    console.log(`Média trouvé dans la base de données: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
+  } else {
+    console.log(`Média non trouvé dans la base de données avec external_id=${mediaId}`);
   }
   
   return existingMediaInDb;

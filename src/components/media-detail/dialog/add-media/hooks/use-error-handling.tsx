@@ -19,6 +19,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [lastErrorId, setLastErrorId] = useState<string | null>(null);
+  const [lastErrorTimestamp, setLastErrorTimestamp] = useState<number>(0);
 
   const clearError = useCallback(() => {
     setErrorMessage(null);
@@ -31,7 +32,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     
     // Extraire un message d'erreur significatif
     let errorMsg = "Une erreur est survenue";
-    let errorId = error && typeof error === 'object' ? JSON.stringify(error) : String(Date.now()); // Identifiant unique pour cette erreur
+    let errorId = error && typeof error === 'object' ? JSON.stringify(error) : String(Date.now());
     
     if (error instanceof Error) {
       errorMsg = error.message;
@@ -44,14 +45,19 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorId = error.message;
     }
     
-    // Éviter d'afficher plusieurs toasts pour les mêmes erreurs
-    if (errorMessage === errorMsg || lastErrorId === errorId) {
-      console.log("Erreur déjà affichée, ignorée:", errorMsg);
+    // Éviter d'afficher plusieurs toasts pour les mêmes erreurs dans un court laps de temps
+    const now = Date.now();
+    const isDuplicate = errorMessage === errorMsg && lastErrorId === errorId;
+    const isTooFrequent = (now - lastErrorTimestamp) < 3000; // 3 secondes
+    
+    if (isDuplicate || isTooFrequent) {
+      console.log("Erreur déjà affichée ou trop fréquente, ignorée:", errorMsg);
       return;
     }
     
     setErrorMessage(errorMsg);
     setLastErrorId(errorId);
+    setLastErrorTimestamp(now);
     
     // Classification des erreurs par catégorie
     
@@ -62,7 +68,9 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("Session utilisateur introuvable") ||
       errorMsg.includes("Session expirée") ||
       errorMsg.includes("Veuillez vous connecter") ||
-      errorMsg.includes("Veuillez vous reconnecter")
+      errorMsg.includes("Veuillez vous reconnecter") ||
+      errorMsg.includes("autorisation") ||
+      errorMsg.includes("autorisation")
     ) {
       toast({
         title: "Connexion requise",
@@ -76,7 +84,8 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     else if (
       errorMsg.includes("Impossible de récupérer les données") ||
       errorMsg.includes("source externe") ||
-      errorMsg.includes("service externe")
+      errorMsg.includes("service externe") ||
+      errorMsg.includes("indisponible")
     ) {
       toast({
         title: "Erreur de service",
@@ -87,10 +96,11 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     
     // 3. Erreurs de réseau
     else if (
-      errorMsg.includes("connexion") || 
-      errorMsg.includes("réseau") ||
-      errorMsg.includes("timeout") || 
-      errorMsg.includes("trop de temps")
+      errorMsg.toLowerCase().includes("connexion") || 
+      errorMsg.toLowerCase().includes("réseau") ||
+      errorMsg.toLowerCase().includes("timeout") || 
+      errorMsg.toLowerCase().includes("trop de temps") ||
+      errorMsg.toLowerCase().includes("network")
     ) {
       if (!isRetrying && retryCallback) {
         toast({
@@ -101,6 +111,12 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
             setErrorMessage(null);
             retryCallback();
           }} />
+        });
+      } else {
+        toast({
+          title: "Problème de connexion",
+          description: "Vérifiez votre connexion internet et réessayez.",
+          variant: "destructive"
         });
       }
     } 
@@ -120,7 +136,29 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       });
     }
     
-    // 5. Erreurs de format UUID
+    // 5. Erreurs de référence et clés étrangères
+    else if (
+      errorMsg.includes("Référence incorrecte") ||
+      errorMsg.includes("23503") ||
+      errorMsg.includes("n'existe pas dans la base") ||
+      errorMsg.includes("a référence")
+    ) {
+      toast({
+        title: "Erreur de référence",
+        description: "Une référence est manquante dans la base de données. Réessayez dans quelques instants.",
+        variant: "destructive"
+      });
+      
+      // Tenter de récupérer automatiquement après un court délai si un callback est fourni
+      if (retryCallback && !isRetrying) {
+        setTimeout(() => {
+          setIsRetrying(true);
+          retryCallback();
+        }, 2000);
+      }
+    }
+    
+    // 6. Erreurs de format UUID
     else if (
       errorMsg.includes("UUID") ||
       errorMsg.includes("format d'identifiant") ||
@@ -133,7 +171,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       });
     }
     
-    // 6. Autres erreurs - afficher une seule fois
+    // 7. Autres erreurs - afficher une seule fois
     else {
       toast({
         title: "Erreur",
@@ -141,7 +179,7 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
         variant: "destructive",
       });
     }
-  }, [errorMessage, isRetrying, lastErrorId, mediaTitle, navigate, onOpenChange, toast]);
+  }, [errorMessage, isRetrying, lastErrorId, lastErrorTimestamp, mediaTitle, navigate, onOpenChange, toast]);
 
   return {
     errorMessage,

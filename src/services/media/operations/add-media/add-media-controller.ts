@@ -5,6 +5,7 @@ import { validateUserSession } from "./auth-validator";
 import { checkExistingMedia } from "./media-validator";
 import { fetchMediaFromExternalApi } from "./external-api-service";
 import { addOrUpdateUserMedia } from "./user-media-service";
+import { v4 as uuidv4 } from "uuid";
 
 interface AddMediaParams {
   mediaId: string;
@@ -46,15 +47,59 @@ export async function addMediaToLibrary(params: AddMediaParams): Promise<void> {
     // 2. Vérifier si le média existe dans la base de données
     const existingMediaInDb = await checkExistingMedia(params.mediaId);
     
-    // 3. Récupérer depuis l'API externe si nécessaire
+    // UUID pour le nouveau média si nécessaire
+    let internalMediaId: string;
+    
+    // 3. Récupérer depuis l'API externe ou créer une entrée temporaire si nécessaire
     if (!existingMediaInDb) {
-      await fetchMediaFromExternalApi(params.mediaId, params.mediaType);
+      try {
+        console.log("Média non trouvé dans la base de données, tentative de récupération depuis l'API externe");
+        await fetchMediaFromExternalApi(params.mediaId, params.mediaType);
+        
+        // Vérifier à nouveau après récupération API
+        const mediaAfterFetch = await checkExistingMedia(params.mediaId);
+        
+        if (!mediaAfterFetch) {
+          // L'API n'a pas pu récupérer le média, créer une entrée temporaire
+          console.log("Création d'une entrée temporaire dans la base de données");
+          
+          internalMediaId = uuidv4();
+          
+          // Récupérer le titre depuis l'API externe si disponible ou utiliser un titre temporaire
+          let title = `Média ${params.mediaType} #${params.mediaId}`;
+          
+          // Insérer dans la table media
+          const { error: insertError } = await supabase
+            .from('media')
+            .insert({
+              id: internalMediaId,
+              external_id: params.mediaId.toString(),
+              title: title,
+              type: params.mediaType
+            });
+            
+          if (insertError) {
+            console.error("Erreur lors de la création de l'entrée temporaire:", insertError);
+            throw new Error(`Impossible de créer l'entrée média: ${insertError.message}`);
+          }
+          
+          console.log(`Entrée temporaire créée avec succès, ID: ${internalMediaId}`);
+        } else {
+          internalMediaId = mediaAfterFetch.id;
+        }
+      } catch (fetchError) {
+        console.error("Erreur lors de la récupération depuis l'API externe:", fetchError);
+        throw new Error("Impossible de récupérer les informations du média. Veuillez réessayer plus tard.");
+      }
+    } else {
+      internalMediaId = existingMediaInDb.id;
+      console.log(`Média trouvé dans la base de données avec l'ID: ${internalMediaId}`);
     }
     
     // 4. Ajouter ou mettre à jour dans la bibliothèque de l'utilisateur
     await addOrUpdateUserMedia({
       userId,
-      mediaId: params.mediaId,
+      mediaId: internalMediaId,
       status: effectiveStatus,
       notes: params.notes,
       rating: params.rating

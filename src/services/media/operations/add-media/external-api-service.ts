@@ -1,6 +1,7 @@
 
 import { supabase, isAuthError } from "@/integrations/supabase/client";
 import { MediaType } from "@/types";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Récupère les informations du média depuis une API externe
@@ -20,6 +21,8 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
     // Récupérer les informations du média depuis l'API externe avec timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 secondes timeout
+    
+    console.log(`Envoi de la requête à l'API pour récupérer le média ${mediaType}/${mediaId}`);
     
     const mediaFetchResponse = await fetch(`https://dfuawprsisgwyvdtfjvl.supabase.co/functions/v1/fetch-media`, {
       method: 'POST',
@@ -60,10 +63,10 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
     }
     
     const mediaData = await mediaFetchResponse.json();
-    console.log("Media data fetched:", mediaData);
+    console.log("Données du média récupérées:", mediaData);
     
     if (!mediaData || !mediaData.id) {
-      console.error("Invalid media data received:", mediaData);
+      console.error("Données invalides reçues:", mediaData);
       throw new Error("Données du média invalides ou incomplètes");
     }
     
@@ -73,20 +76,22 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
     // Préparer les données pour insertion
     const newMediaEntry = formatMediaEntry(mediaData, mediaId, mediaType);
     
-    console.log("Inserting new media entry:", newMediaEntry);
+    console.log("Insertion du média dans la base de données:", newMediaEntry);
     
     // Utiliser upsert pour éviter les erreurs de duplications
     const { error: insertMediaError } = await supabase
       .from('media')
-      .upsert(newMediaEntry, { onConflict: 'id' });
+      .upsert(newMediaEntry, { onConflict: 'external_id, type' });
     
     if (insertMediaError) {
       if (insertMediaError.code === '23505') { // Code PostgreSQL pour violation d'unicité
-        console.log("Media already exists, continuing with user_media operation");
+        console.log("Le média existe déjà, opération user_media continuée");
       } else {
-        console.error("Error inserting media:", insertMediaError);
+        console.error("Erreur lors de l'insertion du média:", insertMediaError);
         throw new Error(`Erreur lors de l'ajout du média dans la bibliothèque: ${insertMediaError.message}`);
       }
+    } else {
+      console.log("Média ajouté avec succès à la base de données");
     }
   } catch (apiError: any) {
     console.error("API or insert error:", apiError);
@@ -120,7 +125,8 @@ function validateMediaData(mediaData: any): void {
  */
 function formatMediaEntry(mediaData: any, mediaId: string, mediaType: MediaType) {
   return {
-    id: mediaId,
+    id: uuidv4(),
+    external_id: mediaId.toString(),
     title: mediaData.title || "Titre inconnu",
     type: mediaType,
     year: mediaData.year || null,
@@ -131,7 +137,6 @@ function formatMediaEntry(mediaData: any, mediaId: string, mediaType: MediaType)
     author: mediaData.author || (mediaData.authors ? (Array.isArray(mediaData.authors) ? mediaData.authors.join(', ') : mediaData.authors) : null),
     publisher: mediaData.publisher || null,
     platform: mediaData.platform || null,
-    rating: mediaData.rating || null,
-    external_id: mediaData.external_id || mediaData.id.toString()
+    rating: mediaData.rating || null
   };
 }

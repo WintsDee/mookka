@@ -3,6 +3,7 @@ import { useState } from "react";
 import { MediaStatus, MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { v4 as uuidv4 } from "uuid";
+import { addMediaToLibrary } from "@/services/media";
 
 interface UseMediaApiProps {
   mediaId: string;
@@ -13,10 +14,57 @@ interface UseMediaApiProps {
 export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps) {
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
 
+  // Version améliorée utilisant le service addMediaToLibrary
   const addToLibrary = async (status: MediaStatus, notes?: string) => {
     try {
       setIsAddingToLibrary(true);
-      console.log(`Début de l'ajout du média ${mediaId} (${mediaType}) à la bibliothèque avec le statut: ${status}`);
+      console.log(`Début de l'ajout du média ${mediaId} (${mediaType}) avec statut: ${status} à la bibliothèque`);
+      
+      await addMediaToLibrary({ 
+        mediaId, 
+        mediaType, 
+        status, 
+        notes 
+      });
+      
+      console.log("Média ajouté avec succès à la bibliothèque");
+      return true;
+    } catch (error) {
+      console.error("Erreur dans addToLibrary:", error);
+      throw error;
+    } finally {
+      setIsAddingToLibrary(false);
+    }
+  };
+
+  const addRating = async (notes?: string, rating?: number) => {
+    try {
+      setIsAddingToLibrary(true);
+      console.log(`Début de l'ajout de la note ${rating} pour le média ${mediaId}`);
+      
+      await addMediaToLibrary({
+        mediaId,
+        mediaType,
+        notes,
+        rating
+      });
+      
+      console.log("Note ajoutée avec succès");
+      return true;
+    } catch (error) {
+      console.error("Erreur dans addRating:", error);
+      throw error;
+    } finally {
+      setIsAddingToLibrary(false);
+    }
+  };
+
+  // Cette fonction legacy reste pour compatibilité mais utilise maintenant
+  // le service centralisé, à terme elle peut être supprimée
+  const legacyAddToLibrary = async (status: MediaStatus, notes?: string) => {
+    try {
+      setIsAddingToLibrary(true);
+      console.log(`[LEGACY] Début de l'ajout du média ${mediaId} (${mediaType}) à la bibliothèque avec le statut: ${status}`);
       
       // 1. Vérifier l'authentification
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -142,6 +190,8 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
           
           if (addError.code === '23505') {
             throw new Error("Ce média est déjà dans votre bibliothèque");
+          } else if (addError.code === '23503') {
+            throw new Error(`Référence incorrecte: le média ou l'utilisateur n'existe pas dans la base de données`);
           } else {
             throw new Error(`Erreur lors de l'ajout à votre bibliothèque: ${addError.message}`);
           }
@@ -160,10 +210,10 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
     }
   };
 
-  const addRating = async (notes?: string, rating?: number) => {
+  const legacyAddRating = async (notes?: string, rating?: number) => {
     try {
       setIsAddingToLibrary(true);
-      console.log(`Début de l'ajout de la note ${rating} pour le média ${mediaId}`);
+      console.log(`[LEGACY] Début de l'ajout de la note ${rating} pour le média ${mediaId}`);
       
       // Vérifier l'authentification
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
