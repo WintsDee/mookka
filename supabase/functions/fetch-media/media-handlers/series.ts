@@ -74,26 +74,48 @@ export const fetchSerieById = async (apiKey: string, id: string) => {
     const apiUrl = `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=fr-FR&include_adult=false&append_to_response=${appendParams}`
     console.log(`Requête à l'API TMDB pour la série: ${apiUrl}`);
     
-    const response = await fetch(apiUrl)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
     
-    if (!response.ok) {
-      console.error(`Erreur API TMDB: ${response.status} ${response.statusText}`);
-      throw new Error(`L'API a répondu avec le statut ${response.status}`);
+    try {
+      const response = await fetch(apiUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.error(`Erreur API TMDB: ${response.status} ${response.statusText}`);
+        throw new Error(`L'API a répondu avec le statut ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Valider la présence des données essentielles
+      if (!data || !data.id) {
+        console.error("Réponse API invalide:", data);
+        throw new Error("Réponse API invalide: données de série incomplètes");
+      }
+      
+      // S'assurer que la série a un nom
+      if (!data.name && !data.original_name) {
+        data.name = `Série #${id}`;
+        console.log(`Nom manquant, utilisation d'un nom par défaut: ${data.name}`);
+      } else if (!data.name) {
+        data.name = data.original_name;
+        console.log(`Nom français manquant, utilisation du nom original: ${data.name}`);
+      }
+      
+      console.log(`Données de série reçues avec succès pour l'ID ${id}`, { 
+        hasId: !!data.id, 
+        name: data.name 
+      });
+      
+      return data;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        throw new Error("Délai d'attente de l'API TMDB dépassé");
+      }
+      throw fetchError;
     }
-    
-    const data = await response.json()
-    
-    if (!data || !data.id || !data.name) {
-      console.error("Réponse API invalide:", data);
-      throw new Error("Réponse API invalide: données de série incomplètes");
-    }
-    
-    console.log(`Données de série reçues avec succès pour l'ID ${id}`, { 
-      hasId: !!data.id, 
-      name: data.name 
-    });
-    
-    return data;
   } catch (error) {
     console.error(`Erreur lors de la récupération de la série avec l'ID ${id}:`, error);
     throw error;

@@ -24,22 +24,33 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
       
       if (isUuid) {
         // Si c'est un UUID, chercher d'abord par ID interne
-        query = supabase.from('media').select('id, title, external_id').eq('id', mediaId);
-        console.log("Recherche par ID interne (UUID)");
-      } else {
-        // Sinon chercher par ID externe
-        query = supabase.from('media').select('id, title, external_id').eq('external_id', mediaId.toString());
-        console.log("Recherche par ID externe");
+        console.log("Recherche par ID interne (UUID):", mediaId);
+        const { data: internalData, error: internalError } = await supabase
+          .from('media')
+          .select('id, title, external_id')
+          .eq('id', mediaId);
+          
+        if (internalError) {
+          console.error("Erreur lors de la recherche par ID interne:", internalError);
+        } else if (internalData && internalData.length > 0) {
+          existingMediaInDb = internalData[0];
+          console.log(`Média trouvé dans la base de données par ID interne: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
+          break;
+        }
       }
       
-      const { data, error } = await query;
+      // Si pas trouvé par ID interne ou si ce n'est pas un UUID, chercher par ID externe
+      console.log("Recherche par ID externe:", mediaId);
+      const { data: externalData, error: externalError } = await supabase
+        .from('media')
+        .select('id, title, external_id')
+        .eq('external_id', mediaId.toString());
       
-      mediaCheckError = error;
-      
-      if (mediaCheckError) {
-        console.error(`Erreur lors de la vérification du média: ${mediaCheckError.message}`);
+      if (externalError) {
+        mediaCheckError = externalError;
+        console.error(`Erreur lors de la recherche par ID externe: ${externalError.message}`);
         
-        if (isAuthError(mediaCheckError)) {
+        if (isAuthError(externalError)) {
           // Problème d'authentification, on essaie de rafraîchir le token
           if (retryCount < MAX_RETRIES) {
             console.log(`Auth error detected, attempting retry ${retryCount + 1}/${MAX_RETRIES}`);
@@ -50,19 +61,20 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
             throw new Error("Problème d'authentification persistant - Veuillez vous reconnecter");
           }
         } else {
-          throw mediaCheckError;
+          throw externalError;
         }
       }
       
-      if (data && data.length > 0) {
-        existingMediaInDb = data[0];
-        console.log(`Média trouvé dans la base de données: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
+      if (externalData && externalData.length > 0) {
+        existingMediaInDb = externalData[0];
+        console.log(`Média trouvé dans la base de données par ID externe: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
         break;
       }
       
       // Si nous n'avons pas trouvé en cherchant par l'ID externe et que c'est un ID numérique (typiquement API externe)
       // tentons également une recherche en tant que nombre
       if (!isUuid && !isNaN(Number(mediaId)) && !existingMediaInDb) {
+        console.log("Recherche par ID externe numérique:", Number(mediaId));
         const { data: numericData, error: numericError } = await supabase
           .from('media')
           .select('id, title, external_id')

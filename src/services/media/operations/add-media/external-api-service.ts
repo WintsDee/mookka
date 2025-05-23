@@ -39,11 +39,11 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
       throw new Error("Aucune donnée reçue de l'API externe");
     }
     
-    console.log("Données du média récupérées:", mediaData);
+    console.log("Données du média récupérées:", JSON.stringify(mediaData, null, 2));
     
     // 3. Valider les données et préparer pour insertion
     try {
-      validateMediaData(mediaData);
+      validateMediaData(mediaData, mediaType);
       
       // Préparer les données pour insertion
       const newMediaEntry = formatMediaEntry(mediaData, mediaId, mediaType);
@@ -87,7 +87,7 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
 /**
  * Valide les données du média reçues de l'API externe
  */
-function validateMediaData(mediaData: any): void {
+function validateMediaData(mediaData: any, mediaType: MediaType): void {
   // 1. Vérifier si mediaData est null ou undefined
   if (!mediaData) {
     console.error("Les données du média sont nulles ou indéfinies");
@@ -100,10 +100,7 @@ function validateMediaData(mediaData: any): void {
     throw new Error("Format de données du média invalide");
   }
   
-  // 3. Différentes validations selon le type de média
-  const requiredFields = ['id'];
-  
-  // Résoudre l'ID selon le type de média
+  // 3. Validation de l'ID
   let idValue = null;
   
   if ('id' in mediaData) {
@@ -119,21 +116,40 @@ function validateMediaData(mediaData: any): void {
     throw new Error("Identifiant du média manquant ou invalide");
   }
   
-  // Résoudre le titre selon le type de média
+  // 4. Validation du titre selon le type de média
   let title = null;
+  console.log(`Validation du titre pour le média de type ${mediaType}`);
   
-  if ('title' in mediaData) {
-    title = mediaData.title; // Film (TMDB)
-  } else if ('name' in mediaData) {
-    title = mediaData.name; // Série (TMDB) ou Jeu (RAWG)
-  } else if ('volumeInfo' in mediaData && mediaData.volumeInfo?.title) {
-    title = mediaData.volumeInfo.title; // Livre (Google Books)
+  switch (mediaType) {
+    case 'film':
+      title = mediaData.title || mediaData.original_title;
+      break;
+    case 'serie':
+      title = mediaData.name || mediaData.original_name;
+      break;
+    case 'book':
+      title = mediaData.volumeInfo?.title;
+      break;
+    case 'game':
+      title = mediaData.name;
+      break;
   }
+  
+  // Afficher des logs détaillés pour aider au débogage
+  console.log(`Titre trouvé: ${title ? `"${title}"` : "non trouvé"}`);
+  console.log(`Structure de l'objet mediaData:`, JSON.stringify({
+    hasTitle: 'title' in mediaData,
+    hasName: 'name' in mediaData,
+    hasOriginalTitle: 'original_title' in mediaData,
+    hasOriginalName: 'original_name' in mediaData,
+    hasVolumeInfo: 'volumeInfo' in mediaData,
+    volumeInfoHasTitle: mediaData.volumeInfo ? 'title' in mediaData.volumeInfo : false
+  }, null, 2));
   
   // Vérifier si le titre est présent et valide
   if (!title || typeof title !== 'string' || title.trim() === '') {
-    console.error("Le titre du média est manquant ou invalide:", mediaData);
-    throw new Error("Titre du média manquant ou invalide");
+    console.error(`Le titre du média est manquant ou invalide pour le type ${mediaType}:`, mediaData);
+    throw new Error(`Titre du média manquant ou invalide pour le type ${mediaType}`);
   }
   
   console.log("Validation des données du média réussie pour:", title);
@@ -161,7 +177,7 @@ function formatMediaEntry(mediaData: any, mediaId: string, mediaType: MediaType)
   
   switch (mediaType) {
     case 'film':
-      title = mediaData.title || "Titre inconnu";
+      title = mediaData.title || mediaData.original_title || "Titre inconnu";
       year = mediaData.release_date ? parseInt(mediaData.release_date.substring(0, 4)) : null;
       description = mediaData.overview || null;
       coverImage = mediaData.poster_path ? `https://image.tmdb.org/t/p/w500${mediaData.poster_path}` : null;
@@ -209,6 +225,8 @@ function formatMediaEntry(mediaData: any, mediaId: string, mediaType: MediaType)
     default:
       title = "Média inconnu";
   }
+  
+  console.log(`Média formaté: titre=${title}, type=${mediaType}, année=${year}`);
   
   // Créer et retourner l'entrée formatée
   return {

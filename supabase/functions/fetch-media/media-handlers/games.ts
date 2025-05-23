@@ -70,26 +70,45 @@ export const fetchGameById = async (apiKey: string, id: string) => {
     const apiUrl = `https://api.rawg.io/api/games/${id}?key=${apiKey}&language=fr`;
     console.log(`Requête à l'API RAWG: ${apiUrl}`);
     
-    const response = await fetch(apiUrl);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
     
-    if (!response.ok) {
-      console.error(`Erreur API RAWG: ${response.status} ${response.statusText}`);
-      throw new Error(`L'API a répondu avec le statut ${response.status}`);
+    try {
+      const response = await fetch(apiUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.error(`Erreur API RAWG: ${response.status} ${response.statusText}`);
+        throw new Error(`L'API RAWG a répondu avec le statut ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Valider la présence des données essentielles
+      if (!data || !data.id) {
+        console.error("Réponse API invalide:", data);
+        throw new Error("Réponse API invalide: données de jeu incomplètes");
+      }
+      
+      // S'assurer que le jeu a un nom
+      if (!data.name || data.name.trim() === '') {
+        data.name = `Jeu #${id}`;
+        console.log(`Nom manquant, utilisation d'un nom par défaut: ${data.name}`);
+      }
+      
+      console.log(`Données de jeu reçues avec succès pour l'ID ${id}`, { 
+        hasId: !!data.id, 
+        name: data.name 
+      });
+      
+      return data;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        throw new Error("Délai d'attente de l'API RAWG dépassé");
+      }
+      throw fetchError;
     }
-    
-    const data = await response.json();
-    
-    if (!data || !data.id || !data.name) {
-      console.error("Réponse API invalide:", data);
-      throw new Error("Réponse API invalide: données de jeu incomplètes");
-    }
-    
-    console.log(`Données de jeu reçues avec succès pour l'ID ${id}`, { 
-      hasId: !!data.id, 
-      name: data.name 
-    });
-    
-    return data;
   } catch (error) {
     console.error(`Erreur lors de la récupération du jeu avec l'ID ${id}:`, error);
     throw error;
