@@ -83,14 +83,21 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
     // 2. Erreurs d'API externe
     else if (
       errorMsg.includes("Impossible de récupérer les données") ||
+      errorMsg.includes("Impossible de récupérer les informations") ||
       errorMsg.includes("source externe") ||
       errorMsg.includes("service externe") ||
-      errorMsg.includes("indisponible")
+      errorMsg.includes("indisponible") ||
+      errorMsg.includes("API") ||
+      errorMsg.includes("introuvable dans la source")
     ) {
       toast({
-        title: "Erreur de service",
-        description: "Les services externes sont temporairement indisponibles. Réessayez plus tard.",
-        variant: "destructive"
+        title: "Service indisponible",
+        description: errorMsg,
+        variant: "destructive",
+        action: retryCallback ? <RetryButton onRetry={() => {
+          setIsRetrying(true);
+          retryCallback();
+        }} /> : undefined
       });
     } 
     
@@ -100,7 +107,8 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.toLowerCase().includes("réseau") ||
       errorMsg.toLowerCase().includes("timeout") || 
       errorMsg.toLowerCase().includes("trop de temps") ||
-      errorMsg.toLowerCase().includes("network")
+      errorMsg.toLowerCase().includes("network") ||
+      errorMsg.toLowerCase().includes("internet")
     ) {
       if (!isRetrying && retryCallback) {
         toast({
@@ -141,7 +149,8 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       errorMsg.includes("Référence incorrecte") ||
       errorMsg.includes("23503") ||
       errorMsg.includes("n'existe pas dans la base") ||
-      errorMsg.includes("a référence")
+      errorMsg.includes("a référence") ||
+      errorMsg.includes("n'existe pas dans notre base de données")
     ) {
       toast({
         title: "Erreur de référence",
@@ -171,7 +180,22 @@ export function useErrorHandling({ mediaTitle, onOpenChange }: UseErrorHandlingP
       });
     }
     
-    // 7. Autres erreurs - afficher une seule fois
+    // 7. Erreurs spécifiques à l'API pour les fetch de média
+    else if (
+      errorMsg.includes("récupérer") && (errorMsg.includes("média") || errorMsg.includes("informations"))
+    ) {
+      toast({
+        title: "Échec de récupération",
+        description: "Impossible de récupérer les informations du média. Veuillez réessayer plus tard.",
+        variant: "destructive",
+        action: retryCallback ? <RetryButton onRetry={() => {
+          setIsRetrying(true);
+          retryCallback();
+        }} /> : undefined
+      });
+    }
+    
+    // 8. Autres erreurs - afficher une seule fois
     else {
       toast({
         title: "Erreur",

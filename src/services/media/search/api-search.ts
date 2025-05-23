@@ -23,6 +23,8 @@ export async function searchExternalApis(
       return [];
     }
     
+    console.log(`Searching for ${type} with query: "${query}"`);
+    
     // Call Supabase Function to fetch from external APIs
     const options: any = { body: { type, query } };
     
@@ -38,6 +40,11 @@ export async function searchExternalApis(
       throw apiError;
     }
 
+    if (!apiData) {
+      console.log("No data returned from API");
+      return [];
+    }
+
     console.log(`API search results:`, apiData);
     
     // Process API results based on media type
@@ -46,19 +53,19 @@ export async function searchExternalApis(
     if (apiData) {
       switch (type) {
         case 'film':
-          apiResults = apiData.results?.map(formatFilmSearchResult) || [];
+          apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatFilmSearchResult).filter(Boolean) : [];
           // Sort by popularity for TMDB
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
           
         case 'serie':
-          apiResults = apiData.results?.map(formatSerieSearchResult) || [];
+          apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatSerieSearchResult).filter(Boolean) : [];
           // Sort by popularity for TMDB
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
           
         case 'book':
-          apiResults = apiData.items?.map(formatBookSearchResult) || [];
+          apiResults = Array.isArray(apiData.items) ? apiData.items.map(formatBookSearchResult).filter(Boolean) : [];
           // Filter books with low relevance score
           apiResults = apiResults.filter(item => item.popularity > -20);
           // Sort by relevance score for Google Books
@@ -66,7 +73,7 @@ export async function searchExternalApis(
           break;
           
         case 'game':
-          apiResults = apiData.results?.map(formatGameSearchResult) || [];
+          apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatGameSearchResult).filter(Boolean) : [];
           // Sort by relevance for RAWG
           apiResults.sort((a, b) => b.popularity - a.popularity);
           break;

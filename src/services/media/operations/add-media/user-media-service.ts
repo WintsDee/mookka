@@ -33,7 +33,13 @@ export async function addOrUpdateUserMedia({
     
     if (userMediaCheckError) {
       console.error("Error checking user media:", userMediaCheckError);
-      throw new Error(`Erreur lors de la vérification de la bibliothèque: ${userMediaCheckError.message}`);
+      if (isAuthError(userMediaCheckError)) {
+        throw new Error(`Session expirée. Veuillez vous reconnecter pour continuer.`);
+      } else if (userMediaCheckError.code === '22P02') {
+        throw new Error(`Format d'identifiant média invalide. Veuillez réessayer.`);
+      } else {
+        throw new Error(`Erreur lors de la vérification de la bibliothèque: ${userMediaCheckError.message}`);
+      }
     }
     
     // 2. Ajout ou mise à jour dans la bibliothèque
@@ -70,6 +76,23 @@ export async function addOrUpdateUserMedia({
     } else {
       // Ajouter un nouveau média
       console.log(`Le média ${mediaId} n'est pas dans la bibliothèque, ajout avec statut: ${status}`);
+      
+      // Vérifier si le média existe dans la table media
+      const { data: mediaExists, error: mediaCheckError } = await supabase
+        .from('media')
+        .select('id')
+        .eq('id', mediaId)
+        .maybeSingle();
+      
+      if (mediaCheckError) {
+        console.error("Error checking if media exists:", mediaCheckError);
+        throw new Error(`Erreur lors de la vérification du média: ${mediaCheckError.message}`);
+      }
+      
+      if (!mediaExists) {
+        console.error(`Le média avec l'ID ${mediaId} n'existe pas dans la table media`);
+        throw new Error(`Le média n'existe pas dans notre base de données.`);
+      }
       
       const newMediaData: any = {
         user_id: userId,

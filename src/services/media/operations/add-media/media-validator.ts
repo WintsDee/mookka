@@ -16,11 +16,14 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
     try {
       console.log(`Vérification si le média avec external_id=${mediaId} existe dans la base de données`);
       
-      const { data, error } = await supabase
-        .from('media')
-        .select('id, title')
-        .eq('external_id', mediaId.toString())
-        .maybeSingle();
+      // Vérifier si l'ID est déjà un UUID interne Supabase
+      const isUuid = validateUuid(mediaId);
+      
+      const query = isUuid 
+        ? supabase.from('media').select('id, title').eq('id', mediaId).maybeSingle()
+        : supabase.from('media').select('id, title').eq('external_id', mediaId.toString()).maybeSingle();
+      
+      const { data, error } = await query;
       
       existingMediaInDb = data;
       mediaCheckError = error;

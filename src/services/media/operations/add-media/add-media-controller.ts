@@ -45,7 +45,13 @@ export async function addMediaToLibrary(params: AddMediaParams): Promise<void> {
     console.log(`Adding/updating media ${params.mediaId} with status: ${effectiveStatus}`);
     
     // 2. Vérifier si le média existe dans la base de données
-    const existingMediaInDb = await checkExistingMedia(params.mediaId);
+    let existingMediaInDb = null;
+    try {
+      existingMediaInDb = await checkExistingMedia(params.mediaId);
+    } catch (checkError) {
+      console.error("Error checking media existence:", checkError);
+      throw new Error(`Erreur lors de la vérification du média: ${checkError instanceof Error ? checkError.message : "Erreur inconnue"}`);
+    }
     
     // UUID pour le nouveau média si nécessaire
     let internalMediaId: string;
@@ -64,6 +70,7 @@ export async function addMediaToLibrary(params: AddMediaParams): Promise<void> {
           console.log("Création d'une entrée temporaire dans la base de données");
           
           internalMediaId = uuidv4();
+          console.log(`UUID généré pour le nouveau média: ${internalMediaId}`);
           
           // Récupérer le titre depuis l'API externe si disponible ou utiliser un titre temporaire
           let title = `Média ${params.mediaType} #${params.mediaId}`;
@@ -86,10 +93,15 @@ export async function addMediaToLibrary(params: AddMediaParams): Promise<void> {
           console.log(`Entrée temporaire créée avec succès, ID: ${internalMediaId}`);
         } else {
           internalMediaId = mediaAfterFetch.id;
+          console.log(`Média récupéré de l'API et ajouté à la base de données, ID: ${internalMediaId}`);
         }
       } catch (fetchError) {
         console.error("Erreur lors de la récupération depuis l'API externe:", fetchError);
-        throw new Error("Impossible de récupérer les informations du média. Veuillez réessayer plus tard.");
+        if (fetchError instanceof Error) {
+          throw fetchError; // Propagate the specific error message
+        } else {
+          throw new Error("Impossible de récupérer les informations du média. Veuillez réessayer plus tard.");
+        }
       }
     } else {
       internalMediaId = existingMediaInDb.id;
@@ -97,15 +109,20 @@ export async function addMediaToLibrary(params: AddMediaParams): Promise<void> {
     }
     
     // 4. Ajouter ou mettre à jour dans la bibliothèque de l'utilisateur
-    await addOrUpdateUserMedia({
-      userId,
-      mediaId: internalMediaId,
-      status: effectiveStatus,
-      notes: params.notes,
-      rating: params.rating
-    });
-    
-    console.log("Media successfully added or updated in library");
+    try {
+      await addOrUpdateUserMedia({
+        userId,
+        mediaId: internalMediaId,
+        status: effectiveStatus,
+        notes: params.notes,
+        rating: params.rating
+      });
+      
+      console.log("Media successfully added or updated in library");
+    } catch (userMediaError) {
+      console.error("Error in addOrUpdateUserMedia:", userMediaError);
+      throw userMediaError; // Propagate the specific error
+    }
     
   } catch (error) {
     console.error("Error in addMediaToLibrary:", error);
