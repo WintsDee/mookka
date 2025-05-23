@@ -19,10 +19,6 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
       throw new Error("Session utilisateur introuvable - Veuillez vous reconnecter");
     }
     
-    // Récupérer les informations du média depuis l'API externe avec timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000); // Increase timeout to 20 seconds
-    
     console.log(`Envoi de la requête à l'API pour récupérer le média ${mediaType}/${mediaId}`);
     
     // Directly invoke the edge function using the Supabase client
@@ -31,11 +27,8 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
         body: {
           type: mediaType,
           id: mediaId
-        },
-        signal: controller.signal
+        }
       });
-      
-      clearTimeout(timeoutId);
       
       if (funcError) {
         console.error("Edge function error:", funcError);
@@ -78,24 +71,11 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
         console.log("Média ajouté avec succès à la base de données");
       }
     } catch (fetchError: any) {
-      clearTimeout(timeoutId);
-      
-      // Si c'est une erreur d'abandon (timeout), message spécifique
-      if (fetchError.name === 'AbortError') {
-        console.error("Request timeout:", fetchError);
-        throw new Error("La requête a pris trop de temps. Vérifiez votre connexion et réessayez.");
-      }
-      
       console.error("API fetch error:", fetchError);
       throw new Error(`Impossible de récupérer les informations du média. Veuillez réessayer plus tard. (${fetchError.message})`);
     }
   } catch (apiError: any) {
     console.error("API or insert error:", apiError);
-    
-    // Si c'est une erreur d'abandon (timeout), message spécifique
-    if (apiError.name === 'AbortError') {
-      throw new Error("La requête a pris trop de temps. Vérifiez votre connexion et réessayez.");
-    }
     
     const errorMessage = apiError instanceof Error ? 
       apiError.message : 
