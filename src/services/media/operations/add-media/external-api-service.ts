@@ -50,20 +50,49 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
       
       console.log("Insertion du média dans la base de données:", newMediaEntry);
       
-      // 4. Utiliser upsert pour éviter les erreurs de duplications
-      const { error: insertMediaError } = await supabase
+      // 4. Modification: utiliser INSERT seulement, et gérer le cas où il existe déjà
+      // Vérifier d'abord si le média existe avec cet external_id et type
+      const { data: existingMedia, error: checkError } = await supabase
         .from('media')
-        .upsert(newMediaEntry, { onConflict: 'external_id, type' });
+        .select('id')
+        .eq('external_id', mediaId.toString())
+        .eq('type', mediaType)
+        .maybeSingle();
       
-      if (insertMediaError) {
-        if (insertMediaError.code === '23505') { // Code PostgreSQL pour violation d'unicité
-          console.log("Le média existe déjà, opération user_media continuée");
+      if (checkError) {
+        console.error("Erreur lors de la vérification du média existant:", checkError);
+        throw new Error(`Erreur lors de la vérification du média: ${checkError.message}`);
+      }
+      
+      if (existingMedia) {
+        console.log(`Le média ${mediaType}/${mediaId} existe déjà avec l'ID: ${existingMedia.id}`);
+        // Mise à jour optionnelle si besoin
+        const { error: updateError } = await supabase
+          .from('media')
+          .update({
+            title: newMediaEntry.title,
+            cover_image: newMediaEntry.cover_image,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingMedia.id);
+        
+        if (updateError) {
+          console.error("Erreur lors de la mise à jour du média:", updateError);
         } else {
-          console.error("Erreur lors de l'insertion du média:", insertMediaError);
-          throw new Error(`Erreur lors de l'ajout du média dans la bibliothèque: ${insertMediaError.message}`);
+          console.log("Données du média mises à jour avec succès");
         }
       } else {
-        console.log("Média ajouté avec succès à la base de données");
+        // Insertion d'un nouveau média
+        const { error: insertError } = await supabase
+          .from('media')
+          .insert(newMediaEntry);
+        
+        if (insertError) {
+          console.error("Erreur lors de l'insertion du média:", insertError);
+          throw new Error(`Erreur lors de l'ajout du média dans la bibliothèque: ${insertError.message}`);
+        } else {
+          console.log("Média ajouté avec succès à la base de données");
+        }
       }
     } catch (validationError) {
       console.error("Validation or insert error:", validationError);
