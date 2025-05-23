@@ -8,10 +8,10 @@ import { v4 as uuidv4 } from "uuid";
  * et les ajoute à la base de données
  */
 export async function fetchMediaFromExternalApi(mediaId: string, mediaType: MediaType): Promise<void> {
-  console.log(`Media ${mediaId} doesn't exist yet, fetching details...`);
+  console.log(`Début de fetchMediaFromExternalApi pour ${mediaType}/${mediaId}`);
   
   try {
-    // Récupérer la session pour l'authentification avec l'API
+    // 1. Récupérer la session pour l'authentification avec l'API
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError || !sessionData.session) {
@@ -21,33 +21,28 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
     
     console.log(`Envoi de la requête à l'API pour récupérer le média ${mediaType}/${mediaId}`);
     
-    // Directly invoke the edge function using the Supabase client
+    // 2. Appel à la fonction Edge pour récupérer les données du média
+    const { data: mediaData, error: funcError } = await supabase.functions.invoke('fetch-media', {
+      body: {
+        type: mediaType,
+        id: mediaId
+      }
+    });
+    
+    if (funcError) {
+      console.error("Edge function error:", funcError);
+      throw new Error(`Erreur lors de la récupération des données du média: ${funcError.message}`);
+    }
+    
+    if (!mediaData) {
+      console.error("No data received from API");
+      throw new Error("Aucune donnée reçue de l'API externe");
+    }
+    
+    console.log("Données du média récupérées:", mediaData);
+    
+    // 3. Valider les données et préparer pour insertion
     try {
-      const { data: mediaData, error: funcError } = await supabase.functions.invoke('fetch-media', {
-        body: {
-          type: mediaType,
-          id: mediaId
-        }
-      });
-      
-      if (funcError) {
-        console.error("Edge function error:", funcError);
-        throw new Error(`Erreur lors de la récupération des données du média: ${funcError.message}`);
-      }
-      
-      if (!mediaData) {
-        console.error("No data received from API");
-        throw new Error("Aucune donnée reçue de l'API externe");
-      }
-      
-      console.log("Données du média récupérées:", mediaData);
-      
-      if (!mediaData || !mediaData.id) {
-        console.error("Données invalides reçues:", mediaData);
-        throw new Error("Données du média invalides ou incomplètes");
-      }
-      
-      // Valider les données avant insertion
       validateMediaData(mediaData);
       
       // Préparer les données pour insertion
@@ -55,7 +50,7 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
       
       console.log("Insertion du média dans la base de données:", newMediaEntry);
       
-      // Utiliser upsert pour éviter les erreurs de duplications
+      // 4. Utiliser upsert pour éviter les erreurs de duplications
       const { error: insertMediaError } = await supabase
         .from('media')
         .upsert(newMediaEntry, { onConflict: 'external_id, type' });
@@ -70,10 +65,15 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
       } else {
         console.log("Média ajouté avec succès à la base de données");
       }
-    } catch (fetchError: any) {
-      console.error("API fetch error:", fetchError);
-      throw new Error(`Impossible de récupérer les informations du média. Veuillez réessayer plus tard. (${fetchError.message})`);
+    } catch (validationError) {
+      console.error("Validation or insert error:", validationError);
+      if (validationError instanceof Error) {
+        throw validationError;
+      } else {
+        throw new Error("Erreur lors de la validation ou de l'insertion des données du média");
+      }
     }
+    
   } catch (apiError: any) {
     console.error("API or insert error:", apiError);
     
@@ -88,30 +88,55 @@ export async function fetchMediaFromExternalApi(mediaId: string, mediaType: Medi
  * Valide les données du média reçues de l'API externe
  */
 function validateMediaData(mediaData: any): void {
-  // Liste des champs requis pour tous les types de médias
-  const requiredFields = ['id', 'title', 'type'];
-  
-  // Vérifier les champs requis
-  for (const field of requiredFields) {
-    if (mediaData[field] === undefined || mediaData[field] === null) {
-      console.error(`Données du média incomplètes: ${field} manquant`, mediaData);
-      throw new Error(`Données du média incomplètes: ${field} manquant`);
-    }
+  // 1. Vérifier si mediaData est null ou undefined
+  if (!mediaData) {
+    console.error("Les données du média sont nulles ou indéfinies");
+    throw new Error("Données du média invalides: données manquantes");
   }
   
-  // Vérifier si le titre est une chaîne vide
-  if (typeof mediaData.title === 'string' && mediaData.title.trim() === '') {
-    console.error("Le titre du média est vide");
-    throw new Error("Le titre du média ne peut pas être vide");
+  // 2. Vérifier le type de mediaData (doit être un objet)
+  if (typeof mediaData !== 'object' || Array.isArray(mediaData)) {
+    console.error("Les données du média ne sont pas un objet:", mediaData);
+    throw new Error("Format de données du média invalide");
   }
   
-  // Vérifier si l'ID est valide
-  if (!mediaData.id || mediaData.id.toString().trim() === '') {
-    console.error("L'ID du média est invalide");
-    throw new Error("L'ID du média est invalide");
+  // 3. Différentes validations selon le type de média
+  const requiredFields = ['id'];
+  
+  // Résoudre l'ID selon le type de média
+  let idValue = null;
+  
+  if ('id' in mediaData) {
+    idValue = mediaData.id;
+  } else if ('volumeInfo' in mediaData && mediaData.id) {
+    // Pour les livres de Google Books
+    idValue = mediaData.id;
   }
   
-  console.log("Validation des données du média réussie");
+  // Vérifier si l'ID est présent et valide
+  if (!idValue) {
+    console.error("L'identifiant du média est manquant ou invalide:", mediaData);
+    throw new Error("Identifiant du média manquant ou invalide");
+  }
+  
+  // Résoudre le titre selon le type de média
+  let title = null;
+  
+  if ('title' in mediaData) {
+    title = mediaData.title; // Film (TMDB)
+  } else if ('name' in mediaData) {
+    title = mediaData.name; // Série (TMDB) ou Jeu (RAWG)
+  } else if ('volumeInfo' in mediaData && mediaData.volumeInfo?.title) {
+    title = mediaData.volumeInfo.title; // Livre (Google Books)
+  }
+  
+  // Vérifier si le titre est présent et valide
+  if (!title || typeof title !== 'string' || title.trim() === '') {
+    console.error("Le titre du média est manquant ou invalide:", mediaData);
+    throw new Error("Titre du média manquant ou invalide");
+  }
+  
+  console.log("Validation des données du média réussie pour:", title);
 }
 
 /**
@@ -122,22 +147,83 @@ function formatMediaEntry(mediaData: any, mediaId: string, mediaType: MediaType)
   const internalId = uuidv4();
   console.log(`UUID généré pour le nouveau média: ${internalId}`);
   
-  // Créer l'entrée formatée
+  // Résoudre le titre selon le type de média
+  let title;
+  let year = null;
+  let description = null;
+  let coverImage = null;
+  let genres = [];
+  let director = null;
+  let author = null;
+  let publisher = null;
+  let platform = null;
+  let rating = null;
+  
+  switch (mediaType) {
+    case 'film':
+      title = mediaData.title || "Titre inconnu";
+      year = mediaData.release_date ? parseInt(mediaData.release_date.substring(0, 4)) : null;
+      description = mediaData.overview || null;
+      coverImage = mediaData.poster_path ? `https://image.tmdb.org/t/p/w500${mediaData.poster_path}` : null;
+      genres = Array.isArray(mediaData.genres) ? mediaData.genres.map((g: any) => g.name) : 
+              (Array.isArray(mediaData.genre_ids) ? mediaData.genre_ids : []);
+      director = mediaData.director || 
+                (mediaData.credits?.crew?.find((p: any) => p.job === 'Director')?.name) || null;
+      rating = mediaData.vote_average || null;
+      break;
+      
+    case 'serie':
+      title = mediaData.name || mediaData.original_name || "Titre inconnu";
+      year = mediaData.first_air_date ? parseInt(mediaData.first_air_date.substring(0, 4)) : null;
+      description = mediaData.overview || null;
+      coverImage = mediaData.poster_path ? `https://image.tmdb.org/t/p/w500${mediaData.poster_path}` : null;
+      genres = Array.isArray(mediaData.genres) ? mediaData.genres.map((g: any) => g.name) : 
+              (Array.isArray(mediaData.genre_ids) ? mediaData.genre_ids : []);
+      rating = mediaData.vote_average || null;
+      break;
+      
+    case 'book':
+      title = mediaData.volumeInfo?.title || "Titre inconnu";
+      year = mediaData.volumeInfo?.publishedDate ? parseInt(mediaData.volumeInfo.publishedDate.substring(0, 4)) : null;
+      description = mediaData.volumeInfo?.description || null;
+      coverImage = mediaData.volumeInfo?.imageLinks?.thumbnail || null;
+      genres = mediaData.volumeInfo?.categories || [];
+      author = mediaData.volumeInfo?.authors ? 
+              (Array.isArray(mediaData.volumeInfo.authors) ? mediaData.volumeInfo.authors.join(', ') : mediaData.volumeInfo.authors) 
+              : null;
+      publisher = mediaData.volumeInfo?.publisher || null;
+      rating = mediaData.volumeInfo?.averageRating || null;
+      break;
+      
+    case 'game':
+      title = mediaData.name || "Titre inconnu";
+      year = mediaData.released ? parseInt(mediaData.released.substring(0, 4)) : null;
+      description = mediaData.description_raw || mediaData.description || null;
+      coverImage = mediaData.background_image || null;
+      genres = Array.isArray(mediaData.genres) ? mediaData.genres.map((g: any) => g.name) : [];
+      publisher = mediaData.publishers?.length > 0 ? mediaData.publishers[0].name : null;
+      platform = mediaData.platforms?.map((p: any) => p.platform.name).join(', ') || null;
+      rating = mediaData.rating || null;
+      break;
+      
+    default:
+      title = "Média inconnu";
+  }
+  
+  // Créer et retourner l'entrée formatée
   return {
     id: internalId,
     external_id: mediaId.toString(),
-    title: mediaData.title || "Titre inconnu",
+    title: title,
     type: mediaType,
-    year: mediaData.year || mediaData.release_date ? parseInt(mediaData.release_date?.substring(0, 4)) : null,
-    description: mediaData.description || mediaData.overview || null,
-    cover_image: mediaData.poster_path ? `https://image.tmdb.org/t/p/w500${mediaData.poster_path}` : 
-                (mediaData.cover_image || mediaData.background_image || null),
-    genres: Array.isArray(mediaData.genres) ? mediaData.genres : 
-           (Array.isArray(mediaData.genre_ids) ? mediaData.genre_ids : []),
-    director: mediaData.director || null,
-    author: mediaData.author || (mediaData.authors ? (Array.isArray(mediaData.authors) ? mediaData.authors.join(', ') : mediaData.authors) : null),
-    publisher: mediaData.publisher || null,
-    platform: mediaData.platform || null,
-    rating: mediaData.rating || mediaData.vote_average || null
+    year: year,
+    description: description,
+    cover_image: coverImage,
+    genres: genres,
+    director: director,
+    author: author,
+    publisher: publisher,
+    platform: platform,
+    rating: rating
   };
 }

@@ -19,13 +19,21 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
       // Vérifier si l'ID est déjà un UUID interne Supabase
       const isUuid = validateUuid(mediaId);
       
-      const query = isUuid 
-        ? supabase.from('media').select('id, title').eq('id', mediaId).maybeSingle()
-        : supabase.from('media').select('id, title').eq('external_id', mediaId.toString()).maybeSingle();
+      // Double vérification: essayer d'abord par ID externe, puis par ID interne si c'est un UUID
+      let query;
+      
+      if (isUuid) {
+        // Si c'est un UUID, chercher d'abord par ID interne
+        query = supabase.from('media').select('id, title, external_id').eq('id', mediaId);
+        console.log("Recherche par ID interne (UUID)");
+      } else {
+        // Sinon chercher par ID externe
+        query = supabase.from('media').select('id, title, external_id').eq('external_id', mediaId.toString());
+        console.log("Recherche par ID externe");
+      }
       
       const { data, error } = await query;
       
-      existingMediaInDb = data;
       mediaCheckError = error;
       
       if (mediaCheckError) {
@@ -46,6 +54,29 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
         }
       }
       
+      if (data && data.length > 0) {
+        existingMediaInDb = data[0];
+        console.log(`Média trouvé dans la base de données: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
+        break;
+      }
+      
+      // Si nous n'avons pas trouvé en cherchant par l'ID externe et que c'est un ID numérique (typiquement API externe)
+      // tentons également une recherche en tant que nombre
+      if (!isUuid && !isNaN(Number(mediaId)) && !existingMediaInDb) {
+        const { data: numericData, error: numericError } = await supabase
+          .from('media')
+          .select('id, title, external_id')
+          .eq('external_id', Number(mediaId).toString());
+        
+        if (numericError) {
+          console.error(`Erreur lors de la vérification numérique du média: ${numericError.message}`);
+        } else if (numericData && numericData.length > 0) {
+          existingMediaInDb = numericData[0];
+          console.log(`Média trouvé dans la base de données (recherche numérique): ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
+          break;
+        }
+      }
+      
       // Si pas d'erreur, sortir de la boucle
       break;
     } catch (error) {
@@ -60,9 +91,7 @@ export async function checkExistingMedia(mediaId: string): Promise<{ id: string,
     throw new Error("Erreur d'accès à la base de données - Veuillez réessayer");
   }
   
-  if (existingMediaInDb) {
-    console.log(`Média trouvé dans la base de données: ${existingMediaInDb.id} - "${existingMediaInDb.title}"`);
-  } else {
+  if (!existingMediaInDb) {
     console.log(`Média non trouvé dans la base de données avec external_id=${mediaId}`);
   }
   

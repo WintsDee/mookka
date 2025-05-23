@@ -35,7 +35,79 @@ export const fetchTrendingBooks = async (apiKey: string) => {
 }
 
 export const fetchBookById = async (apiKey: string, id: string) => {
-  const apiUrl = `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
-  const response = await fetch(apiUrl)
-  return await response.json()
+  try {
+    console.log(`Récupération du livre avec ID=${id} depuis Google Books`);
+    
+    // Vérifier si l'ID est valide
+    if (!id || id === 'undefined' || id === 'null') {
+      throw new Error("ID de livre invalide");
+    }
+    
+    // Vérifier si l'ID est un UUID Supabase
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    
+    if (isUUID) {
+      console.log(`L'ID ${id} semble être un UUID Supabase et non un ID Google Books. Tentative de conversion...`);
+      
+      // Si c'est un UUID, essayons de récupérer d'abord l'ID externe depuis Supabase
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+      
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Variables d'environnement Supabase manquantes");
+      }
+      
+      const supabaseMediaResponse = await fetch(
+        `${supabaseUrl}/rest/v1/media?id=eq.${id}&select=external_id`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`
+          }
+        }
+      );
+      
+      if (!supabaseMediaResponse.ok) {
+        throw new Error(`Erreur lors de la récupération du média Supabase: ${supabaseMediaResponse.status}`);
+      }
+      
+      const supabaseMediaData = await supabaseMediaResponse.json();
+      
+      if (supabaseMediaData.length === 0 || !supabaseMediaData[0].external_id) {
+        throw new Error(`Aucun ID externe trouvé pour le média Supabase avec l'ID ${id}`);
+      }
+      
+      // Utiliser l'ID externe pour la requête Google Books
+      id = supabaseMediaData[0].external_id;
+      console.log(`ID externe Google Books récupéré: ${id}`);
+    }
+    
+    const apiUrl = `https://www.googleapis.com/books/v1/volumes/${id}?key=${apiKey}`
+    console.log(`Requête à l'API Google Books: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl);
+    
+    if (!response.ok) {
+      console.error(`Erreur API Google Books: ${response.status} ${response.statusText}`);
+      throw new Error(`L'API a répondu avec le statut ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data || !data.id || !data.volumeInfo) {
+      console.error("Réponse API invalide:", data);
+      throw new Error("Réponse API invalide: données de livre incomplètes");
+    }
+    
+    console.log(`Données de livre reçues avec succès pour l'ID ${id}`, { 
+      hasId: !!data.id, 
+      title: data.volumeInfo?.title 
+    });
+    
+    return data;
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du livre avec l'ID ${id}:`, error);
+    throw error;
+  }
 }
