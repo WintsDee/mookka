@@ -14,7 +14,6 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
   const { toast } = useToast();
 
-  // Utilise le service addMediaToLibrary pour toutes les opérations
   const addToLibrary = async (status: MediaStatus, notes?: string) => {
     try {
       setIsAddingToLibrary(true);
@@ -41,7 +40,28 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       return true;
     } catch (error) {
       console.error("Erreur dans addToLibrary:", error);
-      // Ne pas afficher de toast ici, l'erreur est déjà gérée par le hook d'erreur
+      
+      // Afficher l'erreur spécifique à l'utilisateur
+      let errorMessage = "Une erreur est survenue lors de l'ajout du média";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("Statut de média invalide")) {
+          errorMessage = `Statut invalide pour ce type de média. Veuillez réessayer.`;
+        } else if (error.message.includes("Session expirée")) {
+          errorMessage = "Votre session a expiré. Veuillez vous reconnecter.";
+        } else if (error.message.includes("déjà dans votre bibliothèque")) {
+          errorMessage = "Ce média est déjà dans votre bibliothèque";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      
       throw error;
     } finally {
       setIsAddingToLibrary(false);
@@ -53,7 +73,6 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       setIsAddingToLibrary(true);
       console.log(`Début de l'ajout de la note ${rating} pour le média ${mediaId}`);
       
-      // Délai court pour s'assurer que l'UI se met à jour
       await new Promise(resolve => setTimeout(resolve, 100));
       
       await addMediaToLibrary({
@@ -73,7 +92,18 @@ export function useMediaApi({ mediaId, mediaType, mediaTitle }: UseMediaApiProps
       return true;
     } catch (error) {
       console.error("Erreur dans addRating:", error);
-      // Ne pas afficher de toast ici, l'erreur est déjà gérée par le hook d'erreur
+      
+      let errorMessage = "Une erreur est survenue lors de l'ajout de la note";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      
       throw error;
     } finally {
       setIsAddingToLibrary(false);

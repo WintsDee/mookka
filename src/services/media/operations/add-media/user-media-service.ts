@@ -21,9 +21,15 @@ export async function addOrUpdateUserMedia({
   rating
 }: UpdateMediaParams): Promise<void> {
   try {
+    console.log(`addOrUpdateUserMedia called with:`, {
+      userId,
+      mediaId,
+      status,
+      notes: notes ? 'has notes' : 'no notes',
+      rating
+    });
+
     // 1. Vérification si déjà dans la bibliothèque
-    console.log(`Vérification si l'utilisateur ${userId} a déjà le média ${mediaId} dans sa bibliothèque`);
-    
     const { data: existingMedia, error: userMediaCheckError } = await supabase
       .from('user_media')
       .select('id, status, media_id')
@@ -35,8 +41,6 @@ export async function addOrUpdateUserMedia({
       console.error("Error checking user media:", userMediaCheckError);
       if (isAuthError(userMediaCheckError)) {
         throw new Error(`Session expirée. Veuillez vous reconnecter pour continuer.`);
-      } else if (userMediaCheckError.code === '22P02') {
-        throw new Error(`Format d'identifiant média invalide. Veuillez réessayer.`);
       } else {
         throw new Error(`Erreur lors de la vérification de la bibliothèque: ${userMediaCheckError.message}`);
       }
@@ -44,18 +48,17 @@ export async function addOrUpdateUserMedia({
     
     // 2. Ajout ou mise à jour dans la bibliothèque
     if (existingMedia) {
-      console.log(`Media ${mediaId} already in library with status: ${existingMedia.status}`);
+      console.log(`Media ${mediaId} already in library with status: ${existingMedia.status}, updating...`);
       
-      // Mettre à jour le média existant
       const updateData: any = {
+        status: status,
         updated_at: new Date().toISOString()
       };
       
-      if (status) updateData.status = status;
       if (notes !== undefined) updateData.notes = notes || null;
       if (rating !== undefined) updateData.user_rating = rating;
       
-      console.log("Updating existing user media:", updateData);
+      console.log("Update data:", updateData);
       
       const { error: updateError } = await supabase
         .from('user_media')
@@ -64,18 +67,12 @@ export async function addOrUpdateUserMedia({
       
       if (updateError) {
         console.error("Error updating user media:", updateError);
-        
-        if (isAuthError(updateError)) {
-          throw new Error("Votre session a expiré. Veuillez vous reconnecter pour continuer.");
-        } else {
-          throw new Error(`Erreur lors de la mise à jour du média: ${updateError.message}`);
-        }
+        throw new Error(`Erreur lors de la mise à jour du média: ${updateError.message}`);
       }
       
       console.log("Media successfully updated");
     } else {
-      // Ajouter un nouveau média
-      console.log(`Le média ${mediaId} n'est pas dans la bibliothèque, ajout avec statut: ${status}`);
+      console.log(`Media ${mediaId} not in library, adding with status: ${status}`);
       
       // Vérifier si le média existe dans la table media
       const { data: mediaExists, error: mediaCheckError } = await supabase
@@ -104,7 +101,7 @@ export async function addOrUpdateUserMedia({
       if (notes !== undefined) newMediaData.notes = notes || null;
       if (rating !== undefined) newMediaData.user_rating = rating;
       
-      console.log("Données à insérer:", newMediaData);
+      console.log("Insert data:", newMediaData);
       
       const { error: insertError } = await supabase
         .from('user_media')
@@ -113,11 +110,12 @@ export async function addOrUpdateUserMedia({
       if (insertError) {
         console.error("Error inserting user media:", insertError);
         
-        // Gestion spécifique des erreurs d'insertion
         if (insertError.code === '23505') {
           throw new Error(`Ce média est déjà dans votre bibliothèque`);
         } else if (insertError.code === '23503') {
           throw new Error(`Le média ou l'utilisateur n'existe pas dans la base de données`);
+        } else if (insertError.code === '23514') {
+          throw new Error(`Statut de média invalide: ${status}. Statuts valides: to-watch, watching, completed, abandoned, to-read, reading, to-play, playing`);
         } else if (isAuthError(insertError)) {
           throw new Error("Session expirée. Veuillez vous reconnecter pour ajouter ce média.");
         } else {
