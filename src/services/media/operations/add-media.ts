@@ -1,7 +1,7 @@
 
-// Export all necessary functions from add-media folder
-export { addMediaToLibrary } from './add-media/add-media-controller';
+// Export des fonctions optimisées
+export { addMediaToLibraryOptimized as addMediaToLibrary } from './add-media/add-media-controller-optimized';
 export { fetchMediaFromExternalApi } from './add-media/external-api-service';
-export { checkExistingMedia } from './add-media/media-validator';
-export { addOrUpdateUserMedia } from './add-media/user-media-service';
-export { validateUserSession } from './add-media/auth-validator';
+export { checkExistingMediaOptimized as checkExistingMedia } from './add-media/media-validator-optimized';
+export { addOrUpdateUserMediaOptimized as addOrUpdateUserMedia } from './add-media/user-media-service-optimized';
+export { validateUserSessionOptimized as validateUserSession } from './add-media/auth-validator-optimized';
