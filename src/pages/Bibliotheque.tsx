@@ -90,7 +90,7 @@ const Bibliotheque = () => {
       media.status === "to-play"
     ),
     completed: sortedMedia.filter(media => media.status === "completed"),
-    abandoned: sortedMedia.filter(media => media.status === "abandoned") // New group for abandoned media
+    abandoned: sortedMedia.filter(media => media.status === "abandoned")
   };
 
   const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
@@ -124,10 +124,10 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="flex flex-col h-screen pb-24">
-        {/* Header fixe avec filtres */}
-        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
+      <div className="flex flex-col h-screen">
+        {/* Header fixe avec filtres - hauteur optimisée */}
+        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 py-3 shadow-sm border-b border-border">
+          <div className="flex items-center gap-2 mb-3">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -177,14 +177,14 @@ const Bibliotheque = () => {
           </div>
         </header>
 
-        {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
-        <div className="mt-40 px-4 flex-1 overflow-y-auto pb-16">
+        {/* Contenu de la bibliothèque avec marge adaptée pour éviter le chevauchement */}
+        <div className="pt-[180px] px-4 flex-1 overflow-y-auto pb-24">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
             </div>
           ) : sortedMedia.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center mt-32">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque
                 {selectedType !== "all" && ` de type ${selectedType}`}

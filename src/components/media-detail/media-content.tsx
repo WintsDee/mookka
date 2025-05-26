@@ -15,8 +15,8 @@ interface MediaContentProps {
 }
 
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
-  // Use our custom hook for tab state management
-  const { activeTab, handleTabChange } = useMediaTabs();
+  // Use our custom hook for tab state management with "critique" as default
+  const { activeTab, handleTabChange } = useMediaTabs("critique");
   const [contentMounted, setContentMounted] = useState(false);
   
   // Use effect to ensure proper mounting of tab content
@@ -34,7 +34,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   
   return (
     <div className="w-full h-full flex flex-col overflow-y-auto">
-      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="critique">
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         
         {contentMounted && (

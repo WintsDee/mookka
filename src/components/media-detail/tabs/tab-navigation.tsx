@@ -15,14 +15,14 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
     <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
       <MediaTabTrigger 
-        value="overview" 
-        label="Aperçu"
+        value="critique" 
+        label="Critique"
         activeTab={activeTab}
         onClick={onTabChange}
       />
       <MediaTabTrigger 
-        value="critique" 
-        label="Critique"
+        value="overview" 
+        label="Aperçu"
         activeTab={activeTab}
         onClick={onTabChange}
       />

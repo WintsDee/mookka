@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,23 @@ export function MediaRating({
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState(initialNotes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRatingLoading, setIsRatingLoading] = useState(false);
   const { isAuthenticated, session } = useAuthState();
-  const { submitRating, isSubmitting: isRatingSubmitting, userRating, userReview } = useMediaRating(mediaId, mediaType);
+  const { 
+    submitRating, 
+    isSubmitting: isRatingSubmitting, 
+    userRating, 
+    userReview 
+  } = useMediaRating(mediaId, mediaType);
+  
+  // Initialiser avec les données existantes
+  useEffect(() => {
+    if (userRating !== null && userRating !== undefined) {
+      setRating(userRating);
+    }
+    if (userReview) {
+      setNotes(userReview);
+    }
+  }, [userRating, userReview]);
   
   const handleRatingChange = (value: number) => {
     setRating(value);
@@ -40,16 +54,26 @@ export function MediaRating({
   };
   
   const handleSubmit = async () => {
-    if (onRatingComplete) {
+    if (!rating || rating === 0) {
+      return;
+    }
+    
+    try {
       setIsSubmitting(true);
       
-      try {
-        await onRatingComplete(rating !== null ? rating : undefined);
-      } catch (error) {
-        console.error("Error during rating submission:", error);
-      } finally {
-        setIsSubmitting(false);
+      const success = await submitRating({
+        rating,
+        review: notes,
+        notes: notes
+      });
+      
+      if (success && onRatingComplete) {
+        onRatingComplete(rating);
       }
+    } catch (error) {
+      console.error("Error during rating submission:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -57,7 +81,7 @@ export function MediaRating({
     return <NotLoggedInCard />;
   }
   
-  if (isRatingLoading) {
+  if (isRatingSubmitting && !userRating) {
     return (
       <div className="flex justify-center items-center py-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -101,13 +125,14 @@ export function MediaRating({
             <ReviewTextarea 
               value={notes} 
               onChange={handleNotesChange}
+              placeholder="Partagez votre avis sur ce média..."
             />
           </div>
           
           <div className="flex justify-end">
             <Button 
               onClick={handleSubmit} 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !rating || rating === 0}
               className="gap-2"
             >
               {isSubmitting ? (
@@ -118,7 +143,7 @@ export function MediaRating({
               ) : (
                 <>
                   <Star className="h-4 w-4" />
-                  Publier ma critique
+                  {userRating ? "Mettre à jour" : "Publier ma critique"}
                 </>
               )}
             </Button>

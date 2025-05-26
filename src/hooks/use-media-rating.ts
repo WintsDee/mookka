@@ -29,7 +29,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
   const fetchUserRating = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!session?.user || !mediaId) return;
 
       const { data, error } = await supabase
         .from('user_media')
@@ -44,9 +44,14 @@ export function useMediaRating(mediaId: string, mediaType: string) {
       }
 
       if (data) {
-        setUserRating(data.user_rating);
+        setUserRating(data.user_rating || null);
         setUserReview(data.notes || null);
         setUserMediaStatus(data.status as MediaStatus || null);
+      } else {
+        // Reset state if no data found
+        setUserRating(null);
+        setUserReview(null);
+        setUserMediaStatus(null);
       }
     } catch (error) {
       console.error("Error in fetchUserRating:", error);
@@ -54,12 +59,17 @@ export function useMediaRating(mediaId: string, mediaType: string) {
   };
 
   useEffect(() => {
-    if (mediaId) {
+    if (mediaId && mediaType) {
       fetchUserRating();
     }
-  }, [mediaId]);
+  }, [mediaId, mediaType]);
 
   const submitRating = async ({ rating, review = "", notes = "", status }: RatingSubmission) => {
+    if (!mediaId || !rating) {
+      console.error("MediaId or rating missing");
+      return false;
+    }
+
     setIsSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -85,16 +95,21 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         throw checkError;
       }
 
+      const updateData: any = {
+        user_rating: rating,
+        notes: notes || review || null,
+        updated_at: new Date().toISOString()
+      };
+
+      if (status) {
+        updateData.status = status;
+      }
+
       if (existingUserMedia) {
         // Update the existing entry
         const { error: updateError } = await supabase
           .from('user_media')
-          .update({
-            user_rating: rating,
-            notes: notes,
-            ...(status && { status }),
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', existingUserMedia.id);
 
         if (updateError) throw updateError;
@@ -105,28 +120,27 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         }
       } else {
         // Insert a new entry
+        const insertData = {
+          user_id: session.user.id,
+          media_id: mediaId,
+          ...updateData,
+          status: status || 'completed',
+          added_at: new Date().toISOString()
+        };
+
         const { error: insertError } = await supabase
           .from('user_media')
-          .insert({
-            user_id: session.user.id,
-            media_id: mediaId,
-            user_rating: rating,
-            notes: notes,
-            status: status || 'completed',
-            added_at: new Date().toISOString()
-          });
+          .insert(insertData);
 
         if (insertError) throw insertError;
         
         // Update local state with new status
-        if (status) {
-          setUserMediaStatus(status);
-        }
+        setUserMediaStatus(status || 'completed');
       }
 
-      // Update state
+      // Update local state
       setUserRating(rating);
-      setUserReview(notes);
+      setUserReview(notes || review || null);
 
       toast({
         title: "Évaluation enregistrée",

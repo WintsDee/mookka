@@ -19,6 +19,10 @@ interface AddMediaParams {
 export async function addMediaToLibraryOptimized(params: AddMediaParams): Promise<void> {
   console.log(`Ajout média optimisé: ${params.mediaType}/${params.mediaId}`);
   
+  if (!params.mediaId || !params.mediaType) {
+    throw new Error("MediaId et mediaType sont requis");
+  }
+  
   try {
     // 1. Validation utilisateur (avec cache)
     const userId = await validateUserSessionOptimized();
@@ -51,8 +55,8 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
       userId,
       mediaId: internalMediaId,
       status: effectiveStatus,
-      notes: params.notes,
-      rating: params.rating
+      notes: params.notes || null,
+      rating: params.rating || null
     });
     
     console.log("Média ajouté avec succès à la bibliothèque");
