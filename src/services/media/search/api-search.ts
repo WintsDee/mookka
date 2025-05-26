@@ -55,27 +55,27 @@ export async function searchExternalApis(
         case 'film':
           apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatFilmSearchResult).filter(Boolean) : [];
           // Sort by popularity for TMDB
-          apiResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
           
         case 'serie':
           apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatSerieSearchResult).filter(Boolean) : [];
           // Sort by popularity for TMDB
-          apiResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
           
         case 'book':
           apiResults = Array.isArray(apiData.items) ? apiData.items.map(formatBookSearchResult).filter(Boolean) : [];
           // Filter books with low relevance score
-          apiResults = apiResults.filter(item => (item.popularity || 0) > -20);
+          apiResults = apiResults.filter(item => item.popularity > -20);
           // Sort by relevance score for Google Books
-          apiResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
           
         case 'game':
           apiResults = Array.isArray(apiData.results) ? apiData.results.map(formatGameSearchResult).filter(Boolean) : [];
           // Sort by relevance for RAWG
-          apiResults.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          apiResults.sort((a, b) => b.popularity - a.popularity);
           break;
       }
     }

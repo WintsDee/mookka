@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MediaType } from "@/types";
 import { removeMediaFromLibrary } from "@/services/media";
@@ -25,11 +25,10 @@ export function useMediaActions({ mediaId, mediaType, mediaTitle }: UseMediaActi
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInLibrary, setIsInLibrary] = useState(false);
 
-  // Check if media is in user's library based on userMediaStatus
-  useEffect(() => {
-    const isInLib = userMediaStatus !== null;
-    setIsInLibrary(isInLib);
-  }, [userMediaStatus]);
+  // Check if media is in user's library
+  useState(() => {
+    setIsInLibrary(userMediaStatus !== null);
+  });
 
   const handleGoBack = () => {
     navigate(-1);
@@ -45,11 +44,6 @@ export function useMediaActions({ mediaId, mediaType, mediaTitle }: UseMediaActi
         title: "Média supprimé", 
         description: "Le média a été supprimé de votre bibliothèque" 
       });
-      
-      // Update local state
-      setIsInLibrary(false);
-      
-      // Optionally navigate to library
       navigate("/bibliotheque");
     } catch (error) {
       console.error("Erreur lors de la suppression du média:", error);
@@ -66,26 +60,13 @@ export function useMediaActions({ mediaId, mediaType, mediaTitle }: UseMediaActi
 
   const handleAddToCollection = async (collectionId: string) => {
     if (!mediaId) return;
-    try {
-      await addMediaToCollection({ collectionId, mediaId });
-      toast({
-        title: "Succès",
-        description: "Média ajouté à la collection"
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'ajout à la collection:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à la collection",
-        variant: "destructive",
-      });
-    }
+    addMediaToCollection({ collectionId, mediaId });
     setAddCollectionDialogOpen(false);
   };
 
   return {
     isInLibrary,
-    setIsInLibrary,
+    setIsInLibrary, // Expose the setter
     addDialogOpen,
     setAddDialogOpen,
     addCollectionDialogOpen,

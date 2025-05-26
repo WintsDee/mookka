@@ -14,13 +14,6 @@ interface MediaDetailActionsProps {
 }
 
 export function MediaDetailActions({ media, type, onAddToCollection }: MediaDetailActionsProps) {
-  // Ensure media has required properties
-  const safeMedia = {
-    id: media?.id || '',
-    title: media?.title || 'Média sans titre',
-    ...media
-  };
-
   const {
     isInLibrary,
     setIsInLibrary,
@@ -37,9 +30,9 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
     handleAddToCollection,
     userMediaStatus
   } = useMediaActions({
-    mediaId: safeMedia.id,
+    mediaId: media.id,
     mediaType: type,
-    mediaTitle: safeMedia.title
+    mediaTitle: media.title
   });
   
   // Update isInLibrary when userMediaStatus changes
@@ -50,17 +43,12 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
     }
   }, [userMediaStatus, isInLibrary, setIsInLibrary]);
 
-  // Don't render if essential data is missing
-  if (!safeMedia.id) {
-    return null;
-  }
-
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40 px-4 py-3 shadow-md">
         <MediaActionButtons
           isInLibrary={isInLibrary}
-          mediaId={safeMedia.id}
+          mediaId={media.id}
           mediaType={type}
           userMediaStatus={userMediaStatus}
           onGoBack={handleGoBack}
@@ -73,15 +61,15 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
       <AddMediaDialog
         isOpen={addDialogOpen}
         onOpenChange={setAddDialogOpen}
-        mediaId={safeMedia.id}
+        mediaId={media.id}
         mediaType={type}
-        mediaTitle={safeMedia.title}
+        mediaTitle={media.title}
       />
       
       <AddToCollectionDialog
         open={addCollectionDialogOpen}
         onOpenChange={setAddCollectionDialogOpen}
-        mediaId={safeMedia.id}
+        mediaId={media.id}
         onAddToCollection={handleAddToCollection}
         isAddingToCollection={isAddingToCollection}
       />
@@ -91,7 +79,7 @@ export function MediaDetailActions({ media, type, onAddToCollection }: MediaDeta
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteMedia}
         isDeleting={isDeleting}
-        mediaTitle={safeMedia.title}
+        mediaTitle={media.title}
       />
     </>
   );

@@ -21,10 +21,6 @@ export interface Media {
   author?: string; // Pour livres
   publisher?: string; // Pour jeux
   platform?: string; // Pour jeux
-  // User-specific properties for library media
-  addedAt?: string;
-  userRating?: number;
-  userReview?: string;
 }
 
 export interface User {

@@ -1,39 +1,43 @@
 
 import React from "react";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MediaType } from "@/types";
-import { Star, Info, Eye, BarChart3, Folder, Newspaper } from "lucide-react";
+import { TabsList } from "@/components/ui/tabs";
+import { MediaTabTrigger } from "./tab-trigger";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface TabNavigationProps {
-  type: MediaType;
-  defaultValue?: string;
+  activeTab: string;
+  onTabChange: (value: string) => void;
 }
 
-export function TabNavigation({ type, defaultValue = "critique" }: TabNavigationProps) {
-  const tabs = [
-    { value: "critique", label: "Notes & Critiques", icon: Star },
-    { value: "overview", label: "Aperçu", icon: Info },
-    { value: "whereto", label: "Où regarder", icon: Eye },
-    { value: "progression", label: "Progression", icon: BarChart3 },
-    { value: "collections", label: "Collections", icon: Folder },
-    { value: "news", label: "Actualités", icon: Newspaper }
-  ];
-
+export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <TabsList className="grid w-full grid-cols-3 gap-1 bg-muted/30 p-1 h-auto">
-      {tabs.slice(0, 6).map((tab) => {
-        const IconComponent = tab.icon;
-        return (
-          <TabsTrigger 
-            key={tab.value}
-            value={tab.value}
-            className="text-xs py-2 px-1 data-[state=active]:bg-background data-[state=active]:text-foreground flex flex-col items-center gap-1"
-          >
-            <IconComponent className="h-4 w-4" />
-            <span className="text-[10px] leading-tight text-center">{tab.label}</span>
-          </TabsTrigger>
-        );
-      })}
+    <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
+      <MediaTabTrigger 
+        value="overview" 
+        label="Aperçu"
+        activeTab={activeTab}
+        onClick={onTabChange}
+      />
+      <MediaTabTrigger 
+        value="critique" 
+        label="Critique"
+        activeTab={activeTab}
+        onClick={onTabChange}
+      />
+      <MediaTabTrigger 
+        value="whereto" 
+        label={isMobile ? "Voir/Acheter" : "Où voir/acheter"}
+        activeTab={activeTab}
+        onClick={onTabChange}
+      />
+      <MediaTabTrigger 
+        value="progression" 
+        label="Progression"
+        activeTab={activeTab}
+        onClick={onTabChange}
+      />
     </TabsList>
   );
 }

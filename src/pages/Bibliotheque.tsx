@@ -12,6 +12,8 @@ import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
 import { PlusCircle, SortAsc } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { StatusDropdown } from "@/components/media-detail/status-dropdown";
 import { LibraryTypeSelector } from "@/components/library/library-type-selector";
 import { 
   DropdownMenu, 
@@ -24,7 +26,6 @@ import {
 interface UserMedia extends Media {
   addedAt?: string;
   userRating?: number;
-  userReview?: string;
 }
 
 const Bibliotheque = () => {
@@ -55,6 +56,7 @@ const Bibliotheque = () => {
   // Trier les médias
   const sortedMedia = [...filteredMedia].sort((a, b) => {
     if (sortBy === "date") {
+      // Cast to UserMedia interface to access the addedAt property
       const userMediaA = a as UserMedia;
       const userMediaB = b as UserMedia;
       
@@ -64,6 +66,7 @@ const Bibliotheque = () => {
     } else if (sortBy === "title") {
       return a.title.localeCompare(b.title);
     } else if (sortBy === "rating") {
+      // Cast to UserMedia interface to access the userRating property
       const userMediaA = a as UserMedia;
       const userMediaB = b as UserMedia;
       
@@ -87,7 +90,7 @@ const Bibliotheque = () => {
       media.status === "to-play"
     ),
     completed: sortedMedia.filter(media => media.status === "completed"),
-    abandoned: sortedMedia.filter(media => media.status === "abandoned")
+    abandoned: sortedMedia.filter(media => media.status === "abandoned") // New group for abandoned media
   };
 
   const StatusSection = ({ title, medias }: { title: string, medias: Media[] }) => {
@@ -121,10 +124,10 @@ const Bibliotheque = () => {
   return (
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
-      <div className="flex flex-col h-screen">
-        {/* Header fixe avec filtres - hauteur ajustée pour éviter l'empiètement */}
-        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 py-3 shadow-sm border-b border-border/50">
-          <div className="flex items-center gap-2 mb-3">
+      <div className="flex flex-col h-screen pb-24">
+        {/* Header fixe avec filtres */}
+        <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 pt-4 pb-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
             <LibrarySearch
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -141,7 +144,7 @@ const Bibliotheque = () => {
                   <SortAsc size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border border-border z-50">
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem 
                   onClick={() => setSortBy("date")}
                   className={sortBy === "date" ? "bg-accent text-accent-foreground" : ""}
@@ -164,26 +167,24 @@ const Bibliotheque = () => {
             </DropdownMenu>
           </div>
           
-          {/* Section des filtres avec scroll horizontal mobile */}
+          {/* Section des filtres */}
           <div>
             <p className="text-xs text-muted-foreground mb-2">Type de média</p>
-            <div className="overflow-x-auto scrollbar-hide">
-              <LibraryTypeSelector 
-                selectedType={selectedType} 
-                onSelectType={setSelectedType} 
-              />
-            </div>
+            <LibraryTypeSelector 
+              selectedType={selectedType} 
+              onSelectType={setSelectedType} 
+            />
           </div>
         </header>
 
-        {/* Contenu de la bibliothèque avec padding ajusté pour éviter l'empiètement */}
-        <div className="pt-40 px-4 flex-1 overflow-y-auto pb-24">
+        {/* Contenu de la bibliothèque avec espace suffisant pour éviter le chevauchement */}
+        <div className="mt-40 px-4 flex-1 overflow-y-auto pb-16">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
             </div>
           ) : sortedMedia.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex flex-col items-center justify-center py-12 text-center mt-32">
               <p className="text-muted-foreground mb-4">
                 Aucun média dans votre bibliothèque
                 {selectedType !== "all" && ` de type ${selectedType}`}
@@ -199,6 +200,7 @@ const Bibliotheque = () => {
             </div>
           ) : (
             <>
+              {/* Affichage par sections de statut */}
               <StatusSection 
                 title="En cours" 
                 medias={groupedMedia.inProgress} 

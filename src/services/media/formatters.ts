@@ -1,162 +1,205 @@
 
-import { Media, MediaType } from "@/types";
+import { MediaType } from "@/types";
 
-export function formatLibraryMedia(item: any): Media {
-  const media = item.media;
+/**
+ * Format film search result
+ */
+export const formatFilmSearchResult = (item: any) => ({
+  id: item.id.toString(),
+  title: item.title,
+  type: 'film' as MediaType,
+  coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+  year: item.release_date ? parseInt(item.release_date.substring(0, 4)) : null,
+  rating: item.vote_average || null,
+  popularity: item.popularity || 0,
+  externalData: item
+});
+
+/**
+ * Format serie search result
+ */
+export const formatSerieSearchResult = (item: any) => ({
+  id: item.id.toString(),
+  title: item.name,
+  type: 'serie' as MediaType,
+  coverImage: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '/placeholder.svg',
+  year: item.first_air_date ? parseInt(item.first_air_date.substring(0, 4)) : null,
+  rating: item.vote_average || null,
+  popularity: item.popularity || 0,
+  externalData: item
+});
+
+/**
+ * Format book search result with relevance scoring
+ */
+export const formatBookSearchResult = (item: any) => {
+  const publishedDate = item.volumeInfo?.publishedDate;
+  const publishedYear = publishedDate ? parseInt(publishedDate.substring(0, 4)) : null;
+  const categories = item.volumeInfo?.categories || [];
+  const title = item.volumeInfo?.title || 'Sans titre';
+  const description = item.volumeInfo?.description || '';
   
-  if (!media) {
-    console.error("Media data is missing in formatLibraryMedia:", item);
-    return {
-      id: item.id || 'unknown',
-      title: 'Média inconnu',
-      type: 'film' as MediaType,
-      year: null,
-      rating: null,
-      genres: [],
-      description: null,
-      coverImage: null,
-      status: item.status || null,
-      addedAt: item.added_at,
-      userRating: item.user_rating,
-      userReview: item.notes
-    };
+  // Calculer un score de pertinence basé sur le contenu
+  let relevanceScore = 0;
+  
+  // Liste des catégories préférées (divertissement)
+  const preferredCategories = [
+    'fiction', 'roman', 'manga', 'bande dessinée', 'bd', 'comics', 'graphic novel',
+    'fantasy', 'sci-fi', 'science fiction', 'thriller', 'mystery', 'policier', 'adventure',
+    'aventure', 'young adult', 'jeunesse', 'fantastique', 'horreur', 'horror'
+  ];
+  
+  // Liste des catégories à éviter (académiques, essais, etc.)
+  const avoidCategories = [
+    'academic', 'textbook', 'manuel', 'thesis', 'thèse', 'dissertation', 'essay', 
+    'essai', 'biography', 'biographie', 'self-help', 'développement personnel',
+    'business', 'management', 'education', 'reference', 'science', 'mathematics',
+    'mathématiques', 'philosophy', 'philosophie', 'religion', 'political', 'politique',
+    'economics', 'économie', 'medical', 'médical', 'law', 'droit', 'computer science'
+  ];
+  
+  // Vérifier les catégories
+  for (const category of categories) {
+    const lowerCategory = category.toLowerCase();
+    
+    // Bonus pour les catégories préférées
+    for (const preferred of preferredCategories) {
+      if (lowerCategory.includes(preferred)) {
+        relevanceScore += 20;
+        break;
+      }
+    }
+    
+    // Pénalité pour les catégories à éviter
+    for (const avoid of avoidCategories) {
+      if (lowerCategory.includes(avoid)) {
+        relevanceScore -= 30;
+        break;
+      }
+    }
   }
-
+  
+  // Vérifier le titre et la description pour les mots-clés pertinents
+  const lowerTitle = title.toLowerCase();
+  const lowerDescription = description.toLowerCase();
+  const contentText = `${lowerTitle} ${lowerDescription}`;
+  
+  for (const preferred of preferredCategories) {
+    if (contentText.includes(preferred)) {
+      relevanceScore += 10;
+    }
+  }
+  
+  for (const avoid of avoidCategories) {
+    if (contentText.includes(avoid)) {
+      relevanceScore -= 15;
+    }
+  }
+  
+  // Bonus pour les livres avec des images de couverture (généralement plus pertinents)
+  if (item.volumeInfo?.imageLinks?.thumbnail) {
+    relevanceScore += 15;
+  }
+  
+  // Bonus pour les livres avec des avis (généralement plus pertinents)
+  if (item.volumeInfo?.averageRating) {
+    relevanceScore += item.volumeInfo.averageRating * 5;
+  }
+  
+  if (item.volumeInfo?.ratingsCount) {
+    relevanceScore += Math.min(item.volumeInfo.ratingsCount / 10, 20);
+  }
+  
+  // Bonus pour les livres récents (mais pas trop non plus pour les classiques)
+  if (publishedYear) {
+    if (publishedYear > 2000) {
+      relevanceScore += Math.min((publishedYear - 2000) / 5, 15);
+    } else if (publishedYear < 1900) {
+      // Bonus pour les classiques
+      relevanceScore += 10;
+    }
+  }
+  
   return {
-    id: media.id,
-    title: media.title,
-    type: media.type as MediaType,
-    year: media.year,
-    rating: media.rating,
-    genres: media.genres || [],
-    description: media.description,
-    coverImage: media.cover_image,
-    duration: media.duration,
-    director: media.director,
-    author: media.author,
-    publisher: media.publisher,
-    platform: media.platform,
-    // User-specific data from user_media table
-    status: item.status,
-    addedAt: item.added_at,
-    userRating: item.user_rating,
-    userReview: item.notes
-  };
-}
-
-export function formatSearchResult(item: any, type: MediaType): Media {
-  return {
-    id: item.id?.toString() || item.tmdbId?.toString() || item.igdbId?.toString() || Math.random().toString(),
-    title: item.title || item.name || 'Titre inconnu',
-    type,
-    year: item.release_date ? new Date(item.release_date).getFullYear() : 
-          item.first_air_date ? new Date(item.first_air_date).getFullYear() :
-          item.published_date ? new Date(item.published_date).getFullYear() :
-          item.released ? new Date(item.released).getFullYear() : null,
-    rating: item.vote_average || item.rating || item.averageRating || null,
-    genres: item.genres?.map((g: any) => typeof g === 'string' ? g : g.name) || 
-            item.genre_ids?.map((id: number) => getGenreName(id, type)) || [],
-    description: item.overview || item.description || item.summary || null,
-    coverImage: formatImageUrl(item.poster_path || item.backdrop_path || item.cover || item.background_image, type),
-    duration: item.runtime ? `${item.runtime} min` : 
-              item.episode_run_time?.[0] ? `${item.episode_run_time[0]} min` : null,
-    director: item.director || (item.crew?.find((c: any) => c.job === 'Director')?.name) || null,
-    author: item.authors?.[0] || item.author || null,
-    publisher: item.publisher || null,
-    platform: item.platforms?.map((p: any) => p.platform?.name || p.name).join(', ') || null
-  };
-}
-
-// Add the missing specific formatter functions
-export function formatFilmSearchResult(item: any): any {
-  return {
-    id: item.id?.toString() || Math.random().toString(),
-    title: item.title || item.original_title || 'Titre inconnu',
-    type: 'film' as MediaType,
-    year: item.release_date ? new Date(item.release_date).getFullYear() : null,
-    rating: item.vote_average || null,
-    genres: item.genres?.map((g: any) => typeof g === 'string' ? g : g.name) || 
-            item.genre_ids?.map((id: number) => getGenreName(id, 'film')) || [],
-    description: item.overview || null,
-    coverImage: formatImageUrl(item.poster_path || item.backdrop_path, 'film'),
-    duration: item.runtime ? `${item.runtime} min` : null,
-    director: item.crew?.find((c: any) => c.job === 'Director')?.name || null,
-    popularity: item.popularity || 0
-  };
-}
-
-export function formatSerieSearchResult(item: any): any {
-  return {
-    id: item.id?.toString() || Math.random().toString(),
-    title: item.name || item.original_name || 'Titre inconnu',
-    type: 'serie' as MediaType,
-    year: item.first_air_date ? new Date(item.first_air_date).getFullYear() : null,
-    rating: item.vote_average || null,
-    genres: item.genres?.map((g: any) => typeof g === 'string' ? g : g.name) || 
-            item.genre_ids?.map((id: number) => getGenreName(id, 'serie')) || [],
-    description: item.overview || null,
-    coverImage: formatImageUrl(item.poster_path || item.backdrop_path, 'serie'),
-    duration: item.number_of_seasons ? `${item.number_of_seasons} saison${item.number_of_seasons > 1 ? 's' : ''}` : null,
-    popularity: item.popularity || 0
-  };
-}
-
-export function formatBookSearchResult(item: any): any {
-  return {
-    id: item.id?.toString() || Math.random().toString(),
-    title: item.volumeInfo?.title || 'Titre inconnu',
+    id: item.id,
+    title: title,
     type: 'book' as MediaType,
-    year: item.volumeInfo?.publishedDate ? new Date(item.volumeInfo.publishedDate).getFullYear() : null,
-    rating: item.volumeInfo?.averageRating ? (item.volumeInfo.averageRating * 2) : null, // Convert from 5 to 10 scale
-    genres: item.volumeInfo?.categories || [],
-    description: item.volumeInfo?.description || null,
-    coverImage: item.volumeInfo?.imageLinks?.thumbnail || null,
-    author: item.volumeInfo?.authors?.join(', ') || null,
-    publisher: item.volumeInfo?.publisher || null,
-    popularity: item.volumeInfo?.ratingsCount || 0
+    coverImage: item.volumeInfo?.imageLinks?.thumbnail || '/placeholder.svg',
+    year: publishedYear,
+    author: item.volumeInfo?.authors ? item.volumeInfo.authors[0] : null,
+    popularity: relevanceScore,
+    categories: categories,
+    externalData: item
   };
-}
+};
 
-export function formatGameSearchResult(item: any): any {
-  return {
-    id: item.id?.toString() || Math.random().toString(),
-    title: item.name || 'Titre inconnu',
-    type: 'game' as MediaType,
-    year: item.released ? new Date(item.released).getFullYear() : null,
-    rating: item.rating ? (item.rating * 2) : null, // Convert from 5 to 10 scale
-    genres: item.genres?.map((g: any) => g.name) || [],
-    description: item.description_raw || item.description || null,
-    coverImage: item.background_image ? item.background_image.replace('//images.igdb.com/', 'https://images.igdb.com/').replace('/t_thumb/', '/t_cover_big/') : null,
-    publisher: item.publishers?.[0]?.name || null,
-    platform: item.platforms?.map((p: any) => p.platform?.name || p.name).join(', ') || null,
-    popularity: item.rating || 0
-  };
-}
-
-function formatImageUrl(path: string | null, type: MediaType): string | null {
-  if (!path) return null;
+/**
+ * Format game search result with relevance scoring
+ */
+export const formatGameSearchResult = (item: any) => {
+  const releaseYear = item.released ? parseInt(item.released.substring(0, 4)) : null;
   
-  if (path.startsWith('http')) return path;
+  // Calcul d'un score de pertinence amélioré pour les jeux
+  let gameRelevance = 0;
   
-  switch (type) {
-    case 'film':
-    case 'serie':
-      return `https://image.tmdb.org/t/p/w500${path}`;
-    case 'game':
-      return path.replace('//images.igdb.com/', 'https://images.igdb.com/').replace('/t_thumb/', '/t_cover_big/');
-    default:
-      return path;
+  // Prioriser les jeux avec des notes élevées
+  if (item.rating) {
+    gameRelevance += item.rating * 10; // 0-50 points basé sur la notation 0-5
   }
-}
-
-function getGenreName(id: number, type: MediaType): string {
-  const movieGenres: { [key: number]: string } = {
-    28: 'Action', 12: 'Aventure', 16: 'Animation', 35: 'Comédie',
-    80: 'Crime', 99: 'Documentaire', 18: 'Drame', 10751: 'Familial',
-    14: 'Fantastique', 36: 'Histoire', 27: 'Horreur', 10402: 'Musique',
-    9648: 'Mystère', 10749: 'Romance', 878: 'Science-Fiction',
-    10770: 'Téléfilm', 53: 'Thriller', 10752: 'Guerre', 37: 'Western'
-  };
   
-  return movieGenres[id] || 'Inconnu';
-}
+  // Prioriser les jeux populaires
+  if (item.ratings_count) {
+    gameRelevance += Math.min(item.ratings_count / 100, 40); // Max 40 points
+  }
+  
+  // Bonus pour les jeux récents
+  if (releaseYear) {
+    if (releaseYear >= 2015) {
+      gameRelevance += Math.min((releaseYear - 2015) * 2, 20); // Max 20 points
+    }
+  }
+  
+  // Bonus pour les jeux avec des images
+  if (item.background_image) {
+    gameRelevance += 15;
+  }
+  
+  // Bonus pour les jeux avec beaucoup de plateformes (généralement plus connus)
+  if (item.platforms && Array.isArray(item.platforms)) {
+    gameRelevance += Math.min(item.platforms.length * 2, 20); // Max 20 points
+  }
+  
+  return {
+    id: item.id.toString(),
+    title: item.name,
+    type: 'game' as MediaType,
+    coverImage: item.background_image || '/placeholder.svg',
+    year: releaseYear,
+    rating: item.rating || null,
+    popularity: gameRelevance,
+    externalData: item
+  };
+};
+
+/**
+ * Format library media item
+ */
+export const formatLibraryMedia = (item: any) => ({
+  id: item.media.id,
+  title: item.media.title,
+  type: item.media.type as MediaType,
+  coverImage: item.media.cover_image,
+  year: item.media.year,
+  rating: item.media.rating,
+  userRating: item.user_rating,
+  genres: item.media.genres,
+  description: item.media.description,
+  status: (item.status || 'to-watch') as 'to-watch' | 'watching' | 'completed',
+  addedAt: item.added_at,
+  notes: item.notes,
+  duration: item.media.duration,
+  director: item.media.director,
+  author: item.media.author,
+  publisher: item.media.publisher,
+  platform: item.media.platform
+});
