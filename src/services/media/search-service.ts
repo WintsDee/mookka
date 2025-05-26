@@ -1,8 +1,12 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Media, MediaType } from "@/types";
 import { filterAdultContent } from './filters';
-import { formatBookSearchResult, formatFilmSearchResult, formatGameSearchResult, formatSerieSearchResult } from './formatters';
+import { 
+  formatFilmSearchResult, 
+  formatSerieSearchResult, 
+  formatBookSearchResult, 
+  formatGameSearchResult 
+} from './formatters';
 
 /**
  * Recherche fuzzy qui détecte les termes similaires et les fautes de frappe
@@ -64,7 +68,7 @@ function isSimilarText(text: string, query: string, threshold: number = 0.7): bo
 /**
  * Search for media in external APIs and local database
  */
-export async function searchMedia(type: MediaType, query: string): Promise<any> {
+export async function searchMedia(type: MediaType, query: string, abortSignal?: AbortSignal): Promise<any> {
   console.log(`Searching for "${query}" in media type: ${type}`);
   
   try {
@@ -85,9 +89,14 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     console.log(`Local database search results: ${localMedia?.length || 0} items found`);
     
     // 2. Ensuite, rechercher via l'API externe
-    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', {
-      body: { type, query }
-    });
+    const options: any = { body: { type, query } };
+    
+    // Only add the signal if it exists (for compatibility)
+    if (abortSignal) {
+      options.signal = abortSignal;
+    }
+    
+    const { data: apiData, error: apiError } = await supabase.functions.invoke('fetch-media', options);
 
     if (apiError) {
       console.error("Erreur lors de la recherche de médias via API:", apiError);
@@ -215,7 +224,13 @@ export async function searchMedia(type: MediaType, query: string): Promise<any> 
     console.log(`Final merged results: ${mergedResults.length} items`);
     
     return { results: mergedResults };
-  } catch (error) {
+  } catch (error: any) {
+    // Check if it's an abort error (caused by request cancellation)
+    if (error.name === 'AbortError') {
+      console.log('Search request was cancelled');
+      return { results: [] };
+    }
+    
     console.error("Erreur dans searchMedia:", error);
     throw error;
   }
@@ -241,4 +256,3 @@ export async function getMediaById(type: MediaType, id: string): Promise<any> {
     throw error;
   }
 }
-

@@ -90,7 +90,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
         throw checkError;
       }
 
-      const updateData = {
+      const updateData: any = {
         user_rating: rating > 0 ? rating : null,
         notes: notes || null,
         updated_at: new Date().toISOString()
