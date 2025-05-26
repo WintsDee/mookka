@@ -1,11 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Tabs } from "@/components/ui/tabs";
-import { MediaType } from "@/types";
 import { TabNavigation } from "./tabs/tab-navigation";
-import { TabContentContainer } from "./tabs/tab-content-container";
-import { useMediaTabs } from "./tabs/use-media-tabs";
 import { TabContent } from "./tabs/tab-content";
+import { MediaType } from "@/types";
 
 interface MediaContentProps {
   id: string;
@@ -15,38 +13,19 @@ interface MediaContentProps {
 }
 
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
-  // Use our custom hook for tab state management
-  const { activeTab, handleTabChange } = useMediaTabs();
-  const [contentMounted, setContentMounted] = useState(false);
-  
-  // Use effect to ensure proper mounting of tab content
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setContentMounted(true);
-    }, 50);
-    
-    return () => clearTimeout(timeout);
-  }, []);
-  
-  if (!formattedMedia) {
-    return null;
-  }
-  
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto">
-      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
-        <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+    <div className="px-4 pb-20">
+      <Tabs defaultValue="critique" className="w-full">
+        <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-30 py-4 border-b border-border/50">
+          <TabNavigation type={type} defaultValue="critique" />
+        </div>
         
-        {contentMounted && (
-          <TabContentContainer>
-            <TabContent 
-              id={id} 
-              type={type} 
-              formattedMedia={formattedMedia} 
-              additionalInfo={additionalInfo}
-            />
-          </TabContentContainer>
-        )}
+        <TabContent 
+          id={id} 
+          type={type} 
+          formattedMedia={formattedMedia} 
+          additionalInfo={additionalInfo} 
+        />
       </Tabs>
     </div>
   );

@@ -1,43 +1,35 @@
 
 import React from "react";
-import { TabsList } from "@/components/ui/tabs";
-import { MediaTabTrigger } from "./tab-trigger";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MediaType } from "@/types";
+import { TabTrigger } from "./tab-trigger";
 
 interface TabNavigationProps {
-  activeTab: string;
-  onTabChange: (value: string) => void;
+  type: MediaType;
+  defaultValue?: string;
 }
 
-export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
-  const isMobile = useIsMobile();
-  
+export function TabNavigation({ type, defaultValue = "critique" }: TabNavigationProps) {
+  const tabs = [
+    { value: "critique", label: "Notes & Critiques", icon: "star" },
+    { value: "overview", label: "Aperçu", icon: "info" },
+    { value: "whereto", label: "Où regarder", icon: "eye" },
+    { value: "progression", label: "Progression", icon: "progress" },
+    { value: "collections", label: "Collections", icon: "folder" },
+    { value: "news", label: "Actualités", icon: "newspaper" }
+  ];
+
   return (
-    <TabsList className="grid grid-cols-4 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border rounded-none p-0 shadow-sm">
-      <MediaTabTrigger 
-        value="overview" 
-        label="Aperçu"
-        activeTab={activeTab}
-        onClick={onTabChange}
-      />
-      <MediaTabTrigger 
-        value="critique" 
-        label="Critique"
-        activeTab={activeTab}
-        onClick={onTabChange}
-      />
-      <MediaTabTrigger 
-        value="whereto" 
-        label={isMobile ? "Voir/Acheter" : "Où voir/acheter"}
-        activeTab={activeTab}
-        onClick={onTabChange}
-      />
-      <MediaTabTrigger 
-        value="progression" 
-        label="Progression"
-        activeTab={activeTab}
-        onClick={onTabChange}
-      />
+    <TabsList className="grid w-full grid-cols-3 gap-1 bg-muted/30 p-1 h-auto">
+      {tabs.slice(0, 6).map((tab) => (
+        <TabTrigger 
+          key={tab.value}
+          value={tab.value} 
+          label={tab.label}
+          icon={tab.icon}
+          className="text-xs py-2 px-1 data-[state=active]:bg-background data-[state=active]:text-foreground"
+        />
+      ))}
     </TabsList>
   );
 }
