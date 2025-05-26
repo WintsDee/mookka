@@ -37,9 +37,13 @@ export function MediaRating({
     if (userRating) {
       setRating(userRating);
       setIsEditing(false);
+    } else {
+      setRating(0);
     }
     if (userReview) {
       setNotes(userReview);
+    } else {
+      setNotes("");
     }
   }, [userRating, userReview]);
 
@@ -52,7 +56,7 @@ export function MediaRating({
   };
   
   const handleSubmit = async () => {
-    if (notes.length < 10 && notes.length > 0) {
+    if (notes.length > 0 && notes.length < 10) {
       return; // Validation error handled in UI
     }
 

@@ -12,8 +12,6 @@ import { getUserMediaLibrary } from "@/services/media";
 import { useQuery } from "@tanstack/react-query";
 import { PlusCircle, SortAsc } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
-import { StatusDropdown } from "@/components/media-detail/status-dropdown";
 import { LibraryTypeSelector } from "@/components/library/library-type-selector";
 import { 
   DropdownMenu, 
@@ -26,6 +24,7 @@ import {
 interface UserMedia extends Media {
   addedAt?: string;
   userRating?: number;
+  userReview?: string;
 }
 
 const Bibliotheque = () => {
@@ -123,7 +122,7 @@ const Bibliotheque = () => {
     <Background>
       <MobileHeader title="Ma Bibliothèque" />
       <div className="flex flex-col h-screen">
-        {/* Header fixe avec filtres - hauteur réduite et positionnement amélioré */}
+        {/* Header fixe avec filtres - hauteur ajustée pour éviter l'empiètement */}
         <header className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-sm z-40 px-4 py-3 shadow-sm border-b border-border/50">
           <div className="flex items-center gap-2 mb-3">
             <LibrarySearch
@@ -142,7 +141,7 @@ const Bibliotheque = () => {
                   <SortAsc size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-background border border-border z-50">
                 <DropdownMenuItem 
                   onClick={() => setSortBy("date")}
                   className={sortBy === "date" ? "bg-accent text-accent-foreground" : ""}
@@ -177,8 +176,8 @@ const Bibliotheque = () => {
           </div>
         </header>
 
-        {/* Contenu de la bibliothèque avec padding suffisant pour éviter le chevauchement */}
-        <div className="pt-36 px-4 flex-1 overflow-y-auto pb-24">
+        {/* Contenu de la bibliothèque avec padding ajusté pour éviter l'empiètement */}
+        <div className="pt-40 px-4 flex-1 overflow-y-auto pb-24">
           {isLoading ? (
             <div className="flex justify-center py-12">
               <p>Chargement de votre bibliothèque...</p>
