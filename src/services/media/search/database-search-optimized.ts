@@ -32,7 +32,7 @@ export async function searchLocalDatabaseOptimized(
       .select('id, title, type, year, rating, cover_image, author, director')
       .eq('type', type)
       .or(`title.ilike.%${query}%, author.ilike.%${query}%, director.ilike.%${query}%`)
-      .order('rating', { ascending: false, nullsLast: true })
+      .order('rating', { ascending: false, nullsFirst: false })
       .limit(limit);
     
     if (error) {

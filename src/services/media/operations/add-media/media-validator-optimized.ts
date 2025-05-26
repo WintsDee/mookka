@@ -45,7 +45,10 @@ export async function checkExistingMediaOptimized(mediaId: string): Promise<{ id
         if (retryError) {
           throw new Error("Problème d'authentification - Veuillez vous reconnecter");
         }
-        data = retryData;
+        // Mettre en cache le résultat du retry
+        mediaCache.set(cacheKey, retryData);
+        cacheTimestamps.set(cacheKey, Date.now());
+        return retryData;
       } else {
         throw error;
       }
