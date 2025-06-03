@@ -19,28 +19,40 @@ interface MediaDetailViewProps {
 }
 
 export function MediaDetailView({ id, type, media, formattedMedia, additionalInfo }: MediaDetailViewProps) {
+  console.log("MediaDetailView: Rendering with props:", { 
+    id, 
+    type, 
+    hasMedia: !!media, 
+    hasFormattedMedia: !!formattedMedia,
+    hasAdditionalInfo: !!additionalInfo 
+  });
+  
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const { addMediaToCollection, isAddingToCollection } = useCollections();
   const { toast } = useToast();
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [isViewReady, setIsViewReady] = useState(false);
 
-  // Improved mounting strategy with better error handling
   useEffect(() => {
+    console.log("MediaDetailView: Effect running with:", { id, type, formattedMedia: !!formattedMedia });
+    
     if (!id || !type || !formattedMedia) {
       console.error("MediaDetailView: Missing required props", { id, type, formattedMedia: !!formattedMedia });
       return;
     }
 
-    // Set view as ready when all required data is available
+    console.log("MediaDetailView: Setting view as ready");
     setIsViewReady(true);
     
-    // Use a more reliable mounting strategy
     const timeoutId = setTimeout(() => {
+      console.log("MediaDetailView: Setting content as visible");
       setIsContentVisible(true);
     }, 50);
     
-    return () => clearTimeout(timeoutId);
+    return () => {
+      console.log("MediaDetailView: Cleaning up timeout");
+      clearTimeout(timeoutId);
+    };
   }, [id, type, formattedMedia]);
 
   const handleAddToCollection = async (collectionId: string) => {
@@ -73,61 +85,72 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
 
   // Show loading state while data is being prepared
   if (!isViewReady) {
+    console.log("MediaDetailView: Showing loading state - view not ready");
     return (
       <Background>
         <div className="relative flex flex-col h-screen">
-          {/* Header skeleton */}
           <div className="h-52 w-full bg-muted animate-pulse" />
-          
-          {/* Content skeleton */}
           <div className="flex-1 p-4 space-y-4">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-24 w-3/4" />
           </div>
-          
-          {/* Actions skeleton */}
           <div className="h-20 bg-muted animate-pulse" />
         </div>
       </Background>
     );
   }
 
-  return (
-    <Background>
-      <div className={`relative flex flex-col h-screen transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
-        <MediaDetailHeader 
-          media={media} 
-          formattedMedia={formattedMedia} 
-          type={type}
-          onAddToCollection={() => setAddToCollectionOpen(true)}
-        />
-        
-        <div className="flex-1 overflow-y-auto">
-          {isContentVisible && (
-            <MediaContent 
-              id={id} 
-              type={type} 
-              formattedMedia={formattedMedia} 
-              additionalInfo={additionalInfo} 
-            />
-          )}
+  console.log("MediaDetailView: Rendering main content", { isContentVisible });
+
+  try {
+    return (
+      <Background>
+        <div className={`relative flex flex-col h-screen transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <MediaDetailHeader 
+            media={media} 
+            formattedMedia={formattedMedia} 
+            type={type}
+            onAddToCollection={() => setAddToCollectionOpen(true)}
+          />
+          
+          <div className="flex-1 overflow-y-auto">
+            {isContentVisible && (
+              <MediaContent 
+                id={id} 
+                type={type} 
+                formattedMedia={formattedMedia} 
+                additionalInfo={additionalInfo} 
+              />
+            )}
+          </div>
+          
+          <MediaDetailActions 
+            media={media || {id}} 
+            type={type} 
+            onAddToCollection={() => setAddToCollectionOpen(true)} 
+          />
         </div>
         
-        <MediaDetailActions 
-          media={media || {id}} 
-          type={type} 
-          onAddToCollection={() => setAddToCollectionOpen(true)} 
+        <AddToCollectionDialog
+          open={addToCollectionOpen}
+          onOpenChange={setAddToCollectionOpen}
+          mediaId={id}
+          onAddToCollection={handleAddToCollection}
+          isAddingToCollection={isAddingToCollection}
         />
-      </div>
-      
-      <AddToCollectionDialog
-        open={addToCollectionOpen}
-        onOpenChange={setAddToCollectionOpen}
-        mediaId={id}
-        onAddToCollection={handleAddToCollection}
-        isAddingToCollection={isAddingToCollection}
-      />
-    </Background>
-  );
+      </Background>
+    );
+  } catch (error) {
+    console.error("MediaDetailView: Error during render:", error);
+    return (
+      <Background>
+        <div className="relative flex flex-col h-screen p-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <strong>Erreur de rendu MediaDetailView:</strong> {error instanceof Error ? error.message : "Erreur inconnue"}
+          </div>
+        </div>
+      </Background>
+    );
+  }
 }

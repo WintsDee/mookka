@@ -19,72 +19,90 @@ export function CritiqueTab({
   initialRating = 0, 
   initialReview = "" 
 }: CritiqueTabProps) {
-  const { userRating, userReview, isSubmitting } = useMediaRating(mediaId, mediaType);
+  console.log("CritiqueTab: Rendering with:", { mediaId, mediaType, initialRating, initialReview });
   
-  // Loading state with better UX
-  if (!mediaId || !mediaType) {
+  try {
+    const { userRating, userReview, isSubmitting } = useMediaRating(mediaId, mediaType);
+    
+    console.log("CritiqueTab: Hook data:", { userRating, userReview, isSubmitting });
+    
+    // Loading state with better UX
+    if (!mediaId || !mediaType) {
+      console.warn("CritiqueTab: Missing required props");
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center space-y-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+              <p className="text-sm text-muted-foreground">Chargement de vos critiques...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-sm text-muted-foreground">Chargement de vos critiques...</p>
+        {/* Header Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold">Votre critique</h2>
+            {userRating && (
+              <Badge variant="secondary" className="ml-auto">
+                {userRating}/10
+              </Badge>
+            )}
           </div>
+          <p className="text-sm text-muted-foreground">
+            Partagez votre avis et attribuez une note à ce média
+          </p>
+        </div>
+
+        {/* Existing Review Summary (if exists) */}
+        {userRating && userReview && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Votre critique actuelle
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Note :</span>
+                <Badge variant="outline">{userRating}/10</Badge>
+              </div>
+              {userReview && (
+                <div className="space-y-1">
+                  <span className="text-sm font-medium">Avis :</span>
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                    {userReview}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
+        {/* Rating Component */}
+        <MediaRating 
+          mediaId={mediaId} 
+          mediaType={mediaType}
+          initialNotes={initialReview || userReview || ""}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error("CritiqueTab: Error during render:", error);
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Erreur dans l'onglet Critique:</strong> {error instanceof Error ? error.message : "Erreur inconnue"}
+          <br />
+          <small>Paramètres: mediaId={mediaId}, mediaType={mediaType}</small>
         </div>
       </div>
     );
   }
-
-  return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Votre critique</h2>
-          {userRating && (
-            <Badge variant="secondary" className="ml-auto">
-              {userRating}/10
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Partagez votre avis et attribuez une note à ce média
-        </p>
-      </div>
-
-      {/* Existing Review Summary (if exists) */}
-      {userRating && userReview && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Votre critique actuelle
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Note :</span>
-              <Badge variant="outline">{userRating}/10</Badge>
-            </div>
-            {userReview && (
-              <div className="space-y-1">
-                <span className="text-sm font-medium">Avis :</span>
-                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                  {userReview}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Rating Component */}
-      <MediaRating 
-        mediaId={mediaId} 
-        mediaType={mediaType}
-        initialNotes={initialReview || userReview || ""}
-      />
-    </div>
-  );
 }

@@ -16,26 +16,34 @@ interface MediaContentProps {
 }
 
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
-  const { activeTab, handleTabChange, isInitialized } = useMediaTabs("critique");
+  console.log("MediaContent: Rendering with props:", { id, type, hasFormattedMedia: !!formattedMedia });
+  
+  // Temporairement utiliser "overview" comme défaut au lieu de "critique"
+  const { activeTab, handleTabChange, isInitialized } = useMediaTabs("overview");
   const [contentMounted, setContentMounted] = useState(false);
   
-  // Improved mounting strategy with error handling
   useEffect(() => {
+    console.log("MediaContent: Effect running with:", { id, type, formattedMedia: !!formattedMedia });
+    
     if (!id || !type || !formattedMedia) {
-      console.log("MediaContent: Missing required props", { id, type, formattedMedia: !!formattedMedia });
+      console.warn("MediaContent: Missing required props", { id, type, formattedMedia: !!formattedMedia });
       return;
     }
     
-    // Ensure content is mounted only when all data is available
     const timer = setTimeout(() => {
+      console.log("MediaContent: Setting content as mounted");
       setContentMounted(true);
     }, 100);
     
-    return () => clearTimeout(timer);
+    return () => {
+      console.log("MediaContent: Cleaning up timer");
+      clearTimeout(timer);
+    };
   }, [id, type, formattedMedia]);
   
   // Show loading state while data is being prepared
   if (!id || !type || !formattedMedia) {
+    console.log("MediaContent: Showing loading state - missing props");
     return (
       <div className="w-full h-full flex flex-col p-4">
         <div className="space-y-4">
@@ -49,6 +57,7 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   
   // Show loading state while tabs initialize
   if (!isInitialized || !contentMounted) {
+    console.log("MediaContent: Showing loading state - not initialized", { isInitialized, contentMounted });
     return (
       <div className="w-full h-full flex flex-col">
         <div className="h-12 bg-muted animate-pulse rounded-t" />
@@ -61,20 +70,33 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
     );
   }
   
-  return (
-    <div className="w-full h-full flex flex-col overflow-y-auto">
-      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="critique">
-        <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
-        
-        <TabContentContainer>
-          <TabContent 
-            id={id} 
-            type={type} 
-            formattedMedia={formattedMedia} 
-            additionalInfo={additionalInfo}
-          />
-        </TabContentContainer>
-      </Tabs>
-    </div>
-  );
+  console.log("MediaContent: Rendering main content with activeTab:", activeTab);
+  
+  try {
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto">
+        <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
+          <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
+          
+          <TabContentContainer>
+            <TabContent 
+              id={id} 
+              type={type} 
+              formattedMedia={formattedMedia} 
+              additionalInfo={additionalInfo}
+            />
+          </TabContentContainer>
+        </Tabs>
+      </div>
+    );
+  } catch (error) {
+    console.error("MediaContent: Error during render:", error);
+    return (
+      <div className="w-full h-full flex flex-col p-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <strong>Erreur de rendu:</strong> {error instanceof Error ? error.message : "Erreur inconnue"}
+        </div>
+      </div>
+    );
+  }
 }

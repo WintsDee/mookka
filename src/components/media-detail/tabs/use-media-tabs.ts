@@ -1,22 +1,29 @@
 
 import { useState, useCallback, useEffect } from "react";
 
-export function useMediaTabs(initialTab: string = "critique") {
+export function useMediaTabs(initialTab: string = "overview") {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // Ensure proper initialization on mount
-  useEffect(() => {
-    if (!isInitialized) {
-      setActiveTab(initialTab);
-      setIsInitialized(true);
-    }
-  }, [initialTab, isInitialized]);
+  console.log("useMediaTabs: Initializing with tab:", initialTab);
   
-  // Use a callback to prevent unnecessary re-renders when changing tabs
+  useEffect(() => {
+    console.log("useMediaTabs: Setting up with initialTab:", initialTab);
+    
+    // Temporairement, forcer l'onglet "overview" pour débugger
+    const safeTab = "overview"; // Changé de initialTab à "overview"
+    console.log("useMediaTabs: Using safe tab:", safeTab);
+    
+    setActiveTab(safeTab);
+    setIsInitialized(true);
+    
+    console.log("useMediaTabs: Initialization complete, activeTab:", safeTab);
+  }, [initialTab]);
+  
   const handleTabChange = useCallback((value: string) => {
+    console.log("useMediaTabs: Changing tab from", activeTab, "to", value);
     setActiveTab(value);
-  }, []);
+  }, [activeTab]);
   
   return {
     activeTab,
