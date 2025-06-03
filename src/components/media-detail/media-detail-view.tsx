@@ -8,6 +8,7 @@ import { MediaDetailHeader } from "@/components/media-detail/media-detail-header
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MediaDetailViewProps {
   id: string;
@@ -22,18 +23,25 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
   const { addMediaToCollection, isAddingToCollection } = useCollections();
   const { toast } = useToast();
   const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isViewReady, setIsViewReady] = useState(false);
 
-  // Use a more reliable mounting strategy with requestAnimationFrame for smooth transitions
+  // Improved mounting strategy with better error handling
   useEffect(() => {
-    // Use requestAnimationFrame to ensure DOM has updated before showing content
-    const frameId = requestAnimationFrame(() => {
-      setIsContentVisible(true);
-    });
+    if (!id || !type || !formattedMedia) {
+      console.error("MediaDetailView: Missing required props", { id, type, formattedMedia: !!formattedMedia });
+      return;
+    }
+
+    // Set view as ready when all required data is available
+    setIsViewReady(true);
     
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
-  }, []);
+    // Use a more reliable mounting strategy
+    const timeoutId = setTimeout(() => {
+      setIsContentVisible(true);
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
+  }, [id, type, formattedMedia]);
 
   const handleAddToCollection = async (collectionId: string) => {
     if (!id) {
@@ -63,6 +71,28 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
     }
   };
 
+  // Show loading state while data is being prepared
+  if (!isViewReady) {
+    return (
+      <Background>
+        <div className="relative flex flex-col h-screen">
+          {/* Header skeleton */}
+          <div className="h-52 w-full bg-muted animate-pulse" />
+          
+          {/* Content skeleton */}
+          <div className="flex-1 p-4 space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-24 w-3/4" />
+          </div>
+          
+          {/* Actions skeleton */}
+          <div className="h-20 bg-muted animate-pulse" />
+        </div>
+      </Background>
+    );
+  }
+
   return (
     <Background>
       <div className={`relative flex flex-col h-screen transition-opacity duration-300 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}>
@@ -73,7 +103,6 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
           onAddToCollection={() => setAddToCollectionOpen(true)}
         />
         
-        {/* Modifier cette partie pour permettre le défilement */}
         <div className="flex-1 overflow-y-auto">
           {isContentVisible && (
             <MediaContent 

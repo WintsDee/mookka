@@ -9,6 +9,8 @@ import { NewsTab } from "./news-tab";
 import { MediaType } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CollectionsTab } from "./collections-tab";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TabContentProps {
   id: string;
@@ -18,8 +20,22 @@ interface TabContentProps {
 }
 
 export function TabContent({ id, type, formattedMedia, additionalInfo }: TabContentProps) {
-  // Improved placeholder rendering with memoization
-  const renderSkeletonIfNeeded = React.useCallback((isReady: boolean, content: React.ReactNode) => {
+  // Improved placeholder rendering with error handling
+  const renderTabContent = React.useCallback((
+    tabValue: string,
+    isReady: boolean, 
+    content: React.ReactNode,
+    errorMessage?: string
+  ) => {
+    if (errorMessage) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      );
+    }
+    
     if (!isReady) {
       return (
         <div className="space-y-4 animate-pulse">
@@ -29,70 +45,88 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
         </div>
       );
     }
+    
     return content;
   }, []);
 
-  // Check if all required data is available
-  const isDataReady = !!id && !!type && !!formattedMedia;
+  // Validate required data
+  const hasRequiredData = !!id && !!type && !!formattedMedia;
+  const errorMessage = !hasRequiredData ? "Données du média indisponibles" : undefined;
 
   return (
     <>
-      <TabsContent value="overview" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!formattedMedia?.description, 
-          <OverviewTab 
-            description={formattedMedia?.description || ""} 
-            additionalInfo={additionalInfo} 
-            mediaId={id}
-            mediaType={type}
-          />
-        )}
-      </TabsContent>
-      
       <TabsContent value="critique" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(isDataReady, 
+        {renderTabContent(
+          "critique",
+          hasRequiredData,
           <CritiqueTab
             mediaId={id} 
             mediaType={type} 
             initialRating={formattedMedia?.userRating}
             initialReview={formattedMedia?.userReview}
-          />
+          />,
+          errorMessage
+        )}
+      </TabsContent>
+      
+      <TabsContent value="overview" className="space-y-6 mt-4">
+        {renderTabContent(
+          "overview",
+          !!formattedMedia?.description, 
+          <OverviewTab 
+            description={formattedMedia?.description || ""} 
+            additionalInfo={additionalInfo} 
+            mediaId={id}
+            mediaType={type}
+          />,
+          !formattedMedia?.description ? "Description non disponible" : undefined
         )}
       </TabsContent>
       
       <TabsContent value="whereto" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(isDataReady, 
+        {renderTabContent(
+          "whereto",
+          hasRequiredData, 
           <WhereToWatchTab 
             mediaId={id} 
             mediaType={type} 
             title={formattedMedia?.title || ""}
-          />
+          />,
+          errorMessage
         )}
       </TabsContent>
 
       <TabsContent value="progression" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(isDataReady, 
+        {renderTabContent(
+          "progression",
+          hasRequiredData, 
           <ProgressionTab 
             mediaId={id} 
             mediaType={type} 
             mediaDetails={additionalInfo}
-          />
+          />,
+          errorMessage
         )}
       </TabsContent>
 
       <TabsContent value="collections" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!id, 
-          <CollectionsTab
-            mediaId={id}
-          />
+        {renderTabContent(
+          "collections",
+          !!id, 
+          <CollectionsTab mediaId={id} />,
+          !id ? "Identifiant du média manquant" : undefined
         )}
       </TabsContent>
       
       <TabsContent value="news" className="space-y-6 mt-4">
-        {renderSkeletonIfNeeded(!!type, 
+        {renderTabContent(
+          "news",
+          !!type && !!formattedMedia?.title, 
           <NewsTab
             type={type}
             title={formattedMedia?.title}
-          />
+          />,
+          !type || !formattedMedia?.title ? "Informations du média manquantes" : undefined
         )}
       </TabsContent>
     </>

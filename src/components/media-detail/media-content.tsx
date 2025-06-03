@@ -6,6 +6,7 @@ import { TabNavigation } from "./tabs/tab-navigation";
 import { TabContentContainer } from "./tabs/tab-content-container";
 import { useMediaTabs } from "./tabs/use-media-tabs";
 import { TabContent } from "./tabs/tab-content";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MediaContentProps {
   id: string;
@@ -15,21 +16,49 @@ interface MediaContentProps {
 }
 
 export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
-  // Use our custom hook for tab state management with "critique" as default
-  const { activeTab, handleTabChange } = useMediaTabs("critique");
+  const { activeTab, handleTabChange, isInitialized } = useMediaTabs("critique");
   const [contentMounted, setContentMounted] = useState(false);
   
-  // Use effect to ensure proper mounting of tab content
+  // Improved mounting strategy with error handling
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setContentMounted(true);
-    }, 50);
+    if (!id || !type || !formattedMedia) {
+      console.log("MediaContent: Missing required props", { id, type, formattedMedia: !!formattedMedia });
+      return;
+    }
     
-    return () => clearTimeout(timeout);
-  }, []);
+    // Ensure content is mounted only when all data is available
+    const timer = setTimeout(() => {
+      setContentMounted(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [id, type, formattedMedia]);
   
-  if (!formattedMedia) {
-    return null;
+  // Show loading state while data is being prepared
+  if (!id || !type || !formattedMedia) {
+    return (
+      <div className="w-full h-full flex flex-col p-4">
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-24 w-3/4" />
+        </div>
+      </div>
+    );
+  }
+  
+  // Show loading state while tabs initialize
+  if (!isInitialized || !contentMounted) {
+    return (
+      <div className="w-full h-full flex flex-col">
+        <div className="h-12 bg-muted animate-pulse rounded-t" />
+        <div className="flex-1 p-4 space-y-4">
+          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-24 w-3/4" />
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -37,16 +66,14 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
       <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="critique">
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
         
-        {contentMounted && (
-          <TabContentContainer>
-            <TabContent 
-              id={id} 
-              type={type} 
-              formattedMedia={formattedMedia} 
-              additionalInfo={additionalInfo}
-            />
-          </TabContentContainer>
-        )}
+        <TabContentContainer>
+          <TabContent 
+            id={id} 
+            type={type} 
+            formattedMedia={formattedMedia} 
+            additionalInfo={additionalInfo}
+          />
+        </TabContentContainer>
       </Tabs>
     </div>
   );

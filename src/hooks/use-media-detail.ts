@@ -17,12 +17,13 @@ export function useMediaDetail() {
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
 
-  // Memoized fetch function to prevent unnecessary re-creation
+  // Memoized fetch function with improved error handling
   const fetchMediaDetails = useCallback(async () => {
     if (!type || !id) {
-      setError("Type de média ou identifiant manquant");
+      const errorMsg = "Type de média ou identifiant manquant";
+      setError(errorMsg);
       setIsLoading(false);
-      console.error("MediaDetail - Missing type or ID");
+      console.error("MediaDetail - Missing type or ID:", { type, id });
       return;
     }
     
@@ -50,18 +51,22 @@ export function useMediaDetail() {
         throw new Error("Données de média incorrectes");
       }
       
+      // Process the data with better validation
       const processedData = { ...mediaData };
       
+      // Clean description
       if (processedData.description) {
         processedData.description = processedData.description.replace(/<br>/g, '\n');
       }
       
+      // Handle book authors
       if (type === 'book' && !processedData.author && processedData.authors) {
         processedData.author = Array.isArray(processedData.authors) 
           ? processedData.authors.join(', ')
           : processedData.authors;
       }
       
+      // Handle game descriptions
       if (type === 'game' && processedData.description_raw && !processedData.locale_descriptions) {
         processedData.locale_descriptions = {
           'fr': processedData.description_raw
@@ -69,6 +74,7 @@ export function useMediaDetail() {
       }
       
       setMedia(processedData);
+      console.log("MediaDetail - Successfully loaded media data");
     } catch (error: any) {
       console.error("MediaDetail - Error fetching media:", error);
       
@@ -86,7 +92,7 @@ export function useMediaDetail() {
     }
   }, [type, id, toast]);
 
-  // Use a stable effect for fetching
+  // Effect with cleanup
   useEffect(() => {
     fetchMediaDetails();
     
@@ -96,7 +102,7 @@ export function useMediaDetail() {
     };
   }, [fetchMediaDetails]);
 
-  // Pre-compute formatted media and additional info only when dependencies change
+  // Computed values with null checks
   const formattedMedia = media && type ? formatMediaDetails(media, type as MediaType) : null;
   const additionalInfo = media && formattedMedia ? getAdditionalMediaInfo(media, formattedMedia, type as MediaType) : null;
 
