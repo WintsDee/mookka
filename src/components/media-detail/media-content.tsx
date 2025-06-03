@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { MediaType } from "@/types";
 import { TabNavigation } from "./tabs/tab-navigation";
@@ -7,6 +7,7 @@ import { TabContentContainer } from "./tabs/tab-content-container";
 import { useMediaTabs } from "./tabs/use-media-tabs";
 import { TabContent } from "./tabs/tab-content";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MediaDetailErrorBoundary } from "./error-boundary";
 
 interface MediaContentProps {
   id: string;
@@ -15,35 +16,24 @@ interface MediaContentProps {
   additionalInfo: any;
 }
 
-export function MediaContent({ id, type, formattedMedia, additionalInfo }: MediaContentProps) {
-  console.log("MediaContent: Rendering with props:", { id, type, hasFormattedMedia: !!formattedMedia });
-  
-  // Temporairement utiliser "overview" comme défaut au lieu de "critique"
+const MediaContentComponent = ({ id, type, formattedMedia, additionalInfo }: MediaContentProps) => {
   const { activeTab, handleTabChange, isInitialized } = useMediaTabs("overview");
   const [contentMounted, setContentMounted] = useState(false);
   
   useEffect(() => {
-    console.log("MediaContent: Effect running with:", { id, type, formattedMedia: !!formattedMedia });
-    
     if (!id || !type || !formattedMedia) {
-      console.warn("MediaContent: Missing required props", { id, type, formattedMedia: !!formattedMedia });
       return;
     }
     
     const timer = setTimeout(() => {
-      console.log("MediaContent: Setting content as mounted");
       setContentMounted(true);
-    }, 100);
+    }, 50); // Réduit le délai pour un affichage plus rapide
     
-    return () => {
-      console.log("MediaContent: Cleaning up timer");
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [id, type, formattedMedia]);
   
   // Show loading state while data is being prepared
   if (!id || !type || !formattedMedia) {
-    console.log("MediaContent: Showing loading state - missing props");
     return (
       <div className="w-full h-full flex flex-col p-4">
         <div className="space-y-4">
@@ -57,7 +47,6 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
   
   // Show loading state while tabs initialize
   if (!isInitialized || !contentMounted) {
-    console.log("MediaContent: Showing loading state - not initialized", { isInitialized, contentMounted });
     return (
       <div className="w-full h-full flex flex-col">
         <div className="h-12 bg-muted animate-pulse rounded-t" />
@@ -70,10 +59,8 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
     );
   }
   
-  console.log("MediaContent: Rendering main content with activeTab:", activeTab);
-  
-  try {
-    return (
+  return (
+    <MediaDetailErrorBoundary>
       <div className="w-full h-full flex flex-col overflow-y-auto">
         <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="overview">
           <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
@@ -88,15 +75,18 @@ export function MediaContent({ id, type, formattedMedia, additionalInfo }: Media
           </TabContentContainer>
         </Tabs>
       </div>
-    );
-  } catch (error) {
-    console.error("MediaContent: Error during render:", error);
-    return (
-      <div className="w-full h-full flex flex-col p-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong>Erreur de rendu:</strong> {error instanceof Error ? error.message : "Erreur inconnue"}
-        </div>
-      </div>
-    );
-  }
-}
+    </MediaDetailErrorBoundary>
+  );
+};
+
+// Mémoïsation pour éviter les re-rendus inutiles
+export const MediaContent = memo(MediaContentComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.type === nextProps.type &&
+    JSON.stringify(prevProps.formattedMedia) === JSON.stringify(nextProps.formattedMedia) &&
+    JSON.stringify(prevProps.additionalInfo) === JSON.stringify(nextProps.additionalInfo)
+  );
+});
+
+MediaContent.displayName = 'MediaContent';

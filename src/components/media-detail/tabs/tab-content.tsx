@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo, useMemo } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { OverviewTab } from "./overview-tab";
 import { CritiqueTab } from "./rating-tab";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CollectionsTab } from "./collections-tab";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MediaDetailErrorBoundary } from "../error-boundary";
 
 interface TabContentProps {
   id: string;
@@ -19,17 +20,43 @@ interface TabContentProps {
   additionalInfo: any;
 }
 
-export function TabContent({ id, type, formattedMedia, additionalInfo }: TabContentProps) {
-  console.log("TabContent: Rendering with:", { id, type, hasFormattedMedia: !!formattedMedia });
-  
-  const renderTabContent = React.useCallback((
-    tabValue: string,
+const TabContentComponent = ({ id, type, formattedMedia, additionalInfo }: TabContentProps) => {
+  // Validation des données avec useMemo pour éviter les recalculs
+  const dataValidation = useMemo(() => {
+    const hasRequiredData = Boolean(id && type && formattedMedia);
+    const errorMessage = !hasRequiredData ? "Données du média indisponibles" : undefined;
+    
+    return { hasRequiredData, errorMessage };
+  }, [id, type, formattedMedia]);
+
+  const { hasRequiredData, errorMessage } = dataValidation;
+
+  // Composant pour le rendu sécurisé avec ErrorBoundary
+  const SafeTabContent = memo(({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
+    return (
+      <MediaDetailErrorBoundary
+        fallback={
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Erreur dans l'onglet {tabName}. Veuillez réessayer.
+            </AlertDescription>
+          </Alert>
+        }
+      >
+        {children}
+      </MediaDetailErrorBoundary>
+    );
+  });
+
+  SafeTabContent.displayName = 'SafeTabContent';
+
+  // Fonction de rendu optimisée
+  const renderTabContent = (
     isReady: boolean, 
     content: React.ReactNode,
     errorMessage?: string
   ) => {
-    console.log(`TabContent: Rendering ${tabValue} tab`, { isReady, hasError: !!errorMessage });
-    
     if (errorMessage) {
       return (
         <Alert variant="destructive">
@@ -50,37 +77,14 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
     }
     
     return content;
-  }, []);
-
-  const hasRequiredData = !!id && !!type && !!formattedMedia;
-  const errorMessage = !hasRequiredData ? "Données du média indisponibles" : undefined;
-
-  console.log("TabContent: Data validation", { hasRequiredData, errorMessage });
-
-  // Wrapper pour les onglets avec gestion d'erreur
-  const SafeTabContent = ({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
-    try {
-      return <>{children}</>;
-    } catch (error) {
-      console.error(`TabContent: Error in ${tabName} tab:`, error);
-      return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Erreur dans l'onglet {tabName}: {error instanceof Error ? error.message : "Erreur inconnue"}
-          </AlertDescription>
-        </Alert>
-      );
-    }
   };
 
   return (
     <>
       <TabsContent value="overview" className="space-y-6 mt-4">
-        <SafeTabContent tabName="Overview">
+        <SafeTabContent tabName="Aperçu">
           {renderTabContent(
-            "overview",
-            !!formattedMedia?.description, 
+            Boolean(formattedMedia?.description), 
             <OverviewTab 
               description={formattedMedia?.description || ""} 
               additionalInfo={additionalInfo} 
@@ -95,7 +99,6 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       <TabsContent value="critique" className="space-y-6 mt-4">
         <SafeTabContent tabName="Critique">
           {renderTabContent(
-            "critique",
             hasRequiredData,
             <CritiqueTab
               mediaId={id} 
@@ -109,9 +112,8 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
       
       <TabsContent value="whereto" className="space-y-6 mt-4">
-        <SafeTabContent tabName="WhereToWatch">
+        <SafeTabContent tabName="Où voir/acheter">
           {renderTabContent(
-            "whereto",
             hasRequiredData, 
             <WhereToWatchTab 
               mediaId={id} 
@@ -126,7 +128,6 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       <TabsContent value="progression" className="space-y-6 mt-4">
         <SafeTabContent tabName="Progression">
           {renderTabContent(
-            "progression",
             hasRequiredData, 
             <ProgressionTab 
               mediaId={id} 
@@ -141,8 +142,7 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       <TabsContent value="collections" className="space-y-6 mt-4">
         <SafeTabContent tabName="Collections">
           {renderTabContent(
-            "collections",
-            !!id, 
+            Boolean(id), 
             <CollectionsTab mediaId={id} />,
             !id ? "Identifiant du média manquant" : undefined
           )}
@@ -150,10 +150,9 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
       
       <TabsContent value="news" className="space-y-6 mt-4">
-        <SafeTabContent tabName="News">
+        <SafeTabContent tabName="Actualités">
           {renderTabContent(
-            "news",
-            !!type && !!formattedMedia?.title, 
+            Boolean(type && formattedMedia?.title), 
             <NewsTab
               type={type}
               title={formattedMedia?.title}
@@ -164,4 +163,16 @@ export function TabContent({ id, type, formattedMedia, additionalInfo }: TabCont
       </TabsContent>
     </>
   );
-}
+};
+
+// Mémoïsation pour éviter les re-rendus inutiles
+export const TabContent = memo(TabContentComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.type === nextProps.type &&
+    JSON.stringify(prevProps.formattedMedia) === JSON.stringify(nextProps.formattedMedia) &&
+    JSON.stringify(prevProps.additionalInfo) === JSON.stringify(nextProps.additionalInfo)
+  );
+});
+
+TabContent.displayName = 'TabContent';
