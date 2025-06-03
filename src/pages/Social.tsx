@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,15 +20,57 @@ const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [media, setMedia] = useState<Record<string, Media>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useProfile();
   const navigate = useNavigate();
 
+  // Mémoïser les handlers pour éviter les re-rendus inutiles
+  const handleLike = useCallback((activityId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour aimer une activité",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Fonctionnalité en développement",
+      description: "La fonctionnalité 'J'aime' sera disponible prochainement",
+    });
+  }, [isAuthenticated, toast]);
+
+  const handleComment = useCallback((activityId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour commenter une activité",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Fonctionnalité en développement",
+      description: "La fonctionnalité 'Commenter' sera disponible prochainement",
+    });
+  }, [isAuthenticated, toast]);
+
+  const handleShare = useCallback((activityId: string) => {
+    toast({
+      title: "Fonctionnalité en développement",
+      description: "La fonctionnalité 'Partager' sera disponible prochainement",
+    });
+  }, [toast]);
+
   const fetchActivities = useCallback(async () => {
     setLoading(true);
+    setError(null);
+    
     try {
-      // Récupérer les 20 dernières activités des utilisateurs
       const { data: userMedia, error: userMediaError } = await supabase
         .from('user_media')
         .select('id, user_id, media_id, status, added_at, user_rating')
@@ -39,7 +81,7 @@ const Social = () => {
 
       if (!userMedia || userMedia.length === 0) {
         setActivities([]);
-        setLoading(false);
+        setMedia({});
         return;
       }
 
@@ -68,7 +110,6 @@ const Social = () => {
 
       const userIds = [...new Set(userMedia.map(item => item.user_id))];
       
-      // Récupérer les profils utilisateurs depuis Supabase
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url')
@@ -85,7 +126,6 @@ const Social = () => {
         };
       });
       
-      // Pour les utilisateurs sans profil, créer un profil par défaut
       userIds.forEach(id => {
         if (!profilesMap[id]) {
           profilesMap[id] = {
@@ -112,7 +152,6 @@ const Social = () => {
             action = 'a ajouté';
         }
         
-        // Si l'utilisateur a noté le média, ajouter cette information
         if (item.user_rating) {
           action = `a noté ${item.user_rating}/10`;
         }
@@ -137,6 +176,7 @@ const Social = () => {
       setActivities(activitiesData);
     } catch (error) {
       console.error("Erreur lors de la récupération des activités:", error);
+      setError("Impossible de charger les activités sociales");
       toast({
         title: "Erreur",
         description: "Impossible de charger les activités sociales",
@@ -150,7 +190,6 @@ const Social = () => {
   useEffect(() => {
     fetchActivities();
     
-    // Configurer un canal temps réel pour les mises à jour de user_media
     const channel = supabase
       .channel('public:user_media')
       .on('postgres_changes', {
@@ -158,7 +197,6 @@ const Social = () => {
         schema: 'public',
         table: 'user_media'
       }, () => {
-        // Actualiser les activités lorsque des changements se produisent
         fetchActivities();
       })
       .subscribe();
@@ -168,49 +206,10 @@ const Social = () => {
     };
   }, [fetchActivities]);
 
-  const handleLike = (activityId: string) => {
+  // Mémoïser le contenu pour éviter les re-rendus
+  const socialContent = useMemo(() => {
     if (!isAuthenticated) {
-      toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour aimer une activité",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "La fonctionnalité 'J'aime' sera disponible prochainement",
-    });
-  };
-
-  const handleComment = (activityId: string) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Connexion requise",
-        description: "Veuillez vous connecter pour commenter une activité",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "La fonctionnalité 'Commenter' sera disponible prochainement",
-    });
-  };
-
-  const handleShare = (activityId: string) => {
-    toast({
-      title: "Fonctionnalité en développement",
-      description: "La fonctionnalité 'Partager' sera disponible prochainement",
-    });
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <Background>
-        <MobileHeader title="Social" />
+      return (
         <div className="flex flex-col items-center justify-center h-[80vh] px-6 text-center">
           <h2 className="text-2xl font-bold mb-4">Connectez-vous pour accéder aux fonctionnalités sociales</h2>
           <p className="text-muted-foreground mb-6">
@@ -220,10 +219,48 @@ const Social = () => {
             Se connecter
           </Button>
         </div>
-        <MobileNav />
-      </Background>
+      );
+    }
+
+    return (
+      <Tabs defaultValue="activity" className="w-full">
+        <TabsList className="w-full grid grid-cols-3 mb-2">
+          <TabsTrigger value="activity">Activité</TabsTrigger>
+          <TabsTrigger value="friends">Amis</TabsTrigger>
+          <TabsTrigger value="discover">Découvrir</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="activity" className="mt-4 animate-fade-in">
+          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'}`}>
+            <ActivityFeed
+              activities={activities}
+              media={media}
+              loading={loading}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
+          </ScrollArea>
+        </TabsContent>
+        
+        <TabsContent value="friends" className="animate-fade-in">
+          <div className="flex flex-col items-center justify-center h-40 text-center px-6">
+            <p className="text-muted-foreground">
+              Fonctionnalité à venir dans la prochaine mise à jour
+            </p>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="discover" className="animate-fade-in">
+          <div className="flex flex-col items-center justify-center h-40 text-center px-6">
+            <p className="text-muted-foreground">
+              Fonctionnalité à venir dans la prochaine mise à jour
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
     );
-  }
+  }, [isAuthenticated, navigate, isMobile, activities, media, loading, handleLike, handleComment, handleShare]);
 
   return (
     <Background>
@@ -231,42 +268,13 @@ const Social = () => {
       <div className="pb-24 pt-safe mt-16 animate-fade-in transition-opacity duration-300 ease-in-out">
         <header className="px-6 mb-6">
           <div className="mt-4">
-            <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="w-full grid grid-cols-3 mb-2">
-                <TabsTrigger value="activity">Activité</TabsTrigger>
-                <TabsTrigger value="friends">Amis</TabsTrigger>
-                <TabsTrigger value="discover">Découvrir</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="activity" className="mt-4 animate-fade-in">
-                <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'}`}>
-                  <ActivityFeed
-                    activities={activities}
-                    media={media}
-                    loading={loading}
-                    onLike={handleLike}
-                    onComment={handleComment}
-                    onShare={handleShare}
-                  />
-                </ScrollArea>
-              </TabsContent>
-              
-              <TabsContent value="friends" className="animate-fade-in">
-                <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-                  <p className="text-muted-foreground">
-                    Fonctionnalité à venir dans la prochaine mise à jour
-                  </p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="discover" className="animate-fade-in">
-                <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-                  <p className="text-muted-foreground">
-                    Fonctionnalité à venir dans la prochaine mise à jour
-                  </p>
-                </div>
-              </TabsContent>
-            </Tabs>
+            {error ? (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            ) : (
+              socialContent
+            )}
           </div>
         </header>
       </div>

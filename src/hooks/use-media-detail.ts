@@ -14,15 +14,25 @@ export function useMediaDetail() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const fetchInProgress = useRef(false);
+  const mountedRef = useRef(true);
   const previousPath = location.state?.from || "/recherche";
   const searchParams = location.state?.search || "";
 
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      fetchInProgress.current = false;
+    };
+  }, []);
+
   // Memoized fetch function with improved error handling
   const fetchMediaDetails = useCallback(async () => {
-    if (!type || !id) {
+    if (!type || !id || !mountedRef.current) {
       const errorMsg = "Type de média ou identifiant manquant";
-      setError(errorMsg);
-      setIsLoading(false);
+      if (mountedRef.current) {
+        setError(errorMsg);
+        setIsLoading(false);
+      }
       console.error("MediaDetail - Missing type or ID:", { type, id });
       return;
     }
@@ -34,12 +44,16 @@ export function useMediaDetail() {
     }
     
     fetchInProgress.current = true;
-    setIsLoading(true);
-    setError(null);
+    if (mountedRef.current) {
+      setIsLoading(true);
+      setError(null);
+    }
     
     try {
       console.log(`MediaDetail - Fetching media details for ${type}/${id}`);
       const mediaData = await getMediaById(type as MediaType, id);
+      
+      if (!mountedRef.current) return;
       
       if (!mediaData) {
         console.error(`MediaDetail - No data found for ${type}/${id}`);
@@ -73,38 +87,39 @@ export function useMediaDetail() {
         };
       }
       
-      setMedia(processedData);
-      console.log("MediaDetail - Successfully loaded media data");
+      if (mountedRef.current) {
+        setMedia(processedData);
+        console.log("MediaDetail - Successfully loaded media data");
+      }
     } catch (error: any) {
       console.error("MediaDetail - Error fetching media:", error);
       
-      const errorMessage = error.message || "Impossible de récupérer les détails du média";
-      setError(errorMessage);
-      
-      toast({
-        title: "Erreur",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      if (mountedRef.current) {
+        const errorMessage = error.message || "Impossible de récupérer les détails du média";
+        setError(errorMessage);
+        
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
-      setIsLoading(false);
       fetchInProgress.current = false;
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [type, id, toast]);
 
   // Effect with cleanup
   useEffect(() => {
     fetchMediaDetails();
-    
-    // Cleanup function
-    return () => {
-      fetchInProgress.current = false;
-    };
   }, [fetchMediaDetails]);
 
-  // Computed values with null checks
-  const formattedMedia = media && type ? formatMediaDetails(media, type as MediaType) : null;
-  const additionalInfo = media && formattedMedia ? getAdditionalMediaInfo(media, formattedMedia, type as MediaType) : null;
+  // Computed values with null checks - mémoïsés pour éviter les recalculs
+  const formattedMedia = media && type && mountedRef.current ? formatMediaDetails(media, type as MediaType) : null;
+  const additionalInfo = media && formattedMedia && mountedRef.current ? getAdditionalMediaInfo(media, formattedMedia, type as MediaType) : null;
 
   return {
     isLoading,

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Heart, MessageCircle, Share2 } from "lucide-react";
@@ -17,17 +17,37 @@ interface ActivityItemProps {
   onShare: () => void;
 }
 
-export const ActivityItem = ({
+const ActivityItemComponent = ({
   activity,
   media,
   onLike,
   onComment,
   onShare,
 }: ActivityItemProps) => {
-  // Extraction des deux premières lettres du nom pour le fallback de l'avatar
-  const avatarFallback = activity.user.name 
-    ? activity.user.name.substring(0, 2).toUpperCase()
-    : "U";
+  const [imageError, setImageError] = useState(false);
+
+  // Mémoïser le fallback de l'avatar
+  const avatarFallback = useMemo(() => {
+    return activity.user.name 
+      ? activity.user.name.substring(0, 2).toUpperCase()
+      : "U";
+  }, [activity.user.name]);
+
+  // Mémoïser le timestamp formaté
+  const formattedTime = useMemo(() => {
+    return formatDistanceToNow(new Date(activity.timestamp), { 
+      addSuffix: true,
+      locale: fr
+    });
+  }, [activity.timestamp]);
+
+  // Gestionnaire d'erreur d'image mémoïsé
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    if (!imageError) {
+      setImageError(true);
+      (e.target as HTMLImageElement).src = "/placeholder.svg";
+    }
+  };
     
   return (
     <Card className="bg-secondary/40 border-border/50">
@@ -38,6 +58,7 @@ export const ActivityItem = ({
               src={activity.user.avatar} 
               alt={activity.user.name}
               className="object-cover"
+              loading="eager"
             />
             <AvatarFallback className="bg-primary/10 text-primary">
               {avatarFallback}
@@ -50,10 +71,7 @@ export const ActivityItem = ({
               <span className="font-medium">{activity.media.title}</span>
             </p>
             <p className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(activity.timestamp), { 
-                addSuffix: true,
-                locale: fr
-              })}
+              {formattedTime}
             </p>
           </div>
         </div>
@@ -65,10 +83,8 @@ export const ActivityItem = ({
                 src={media.coverImage}
                 alt={media.title}
                 className="w-16 h-24 rounded-md object-cover"
-                onError={(e) => {
-                  // En cas d'erreur de chargement de l'image
-                  (e.target as HTMLImageElement).src = "/placeholder.svg";
-                }}
+                loading="eager"
+                onError={handleImageError}
               />
             </Link>
             <div>
@@ -84,21 +100,21 @@ export const ActivityItem = ({
         
         <div className="flex justify-between mt-4">
           <button 
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
             onClick={onLike}
           >
             <Heart size={14} />
             <span>J'aime</span>
           </button>
           <button 
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
             onClick={onComment}
           >
             <MessageCircle size={14} />
             <span>Commenter</span>
           </button>
           <button 
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
             onClick={onShare}
           >
             <Share2 size={14} />
@@ -109,3 +125,17 @@ export const ActivityItem = ({
     </Card>
   );
 };
+
+// Mémoïsation avec comparaison personnalisée
+export const ActivityItem = memo(ActivityItemComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.activity.id === nextProps.activity.id &&
+    prevProps.activity.timestamp === nextProps.activity.timestamp &&
+    prevProps.media?.id === nextProps.media?.id &&
+    prevProps.onLike === nextProps.onLike &&
+    prevProps.onComment === nextProps.onComment &&
+    prevProps.onShare === nextProps.onShare
+  );
+});
+
+ActivityItem.displayName = 'ActivityItem';

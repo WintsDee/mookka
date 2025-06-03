@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { MediaType, MediaStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { updateMediaStatus } from "@/services/media";
@@ -8,10 +8,16 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
   const [isLoading, setIsLoading] = useState(true);
   const [progression, setProgression] = useState<any>(null);
   const [userMediaStatus, setUserMediaStatus] = useState<MediaStatus | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Create a default progression based on media type
-  const createDefaultProgression = (type: MediaType) => {
-    // Define default statuses based on media type
+  const createDefaultProgression = useCallback((type: MediaType) => {
     let defaultStatus: MediaStatus;
     
     switch (type) {
@@ -53,14 +59,16 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           status: defaultStatus
         };
     }
-  };
+  }, [mediaDetails]);
   
   // Fetch user_media status to ensure consistency
-  const fetchUserMediaStatus = async () => {
+  const fetchUserMediaStatus = useCallback(async () => {
+    if (!mountedRef.current) return null;
+    
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      if (!user.user) return null;
+      if (!user.user || !mountedRef.current) return null;
       
       const { data, error } = await supabase
         .from('user_media')
@@ -79,21 +87,25 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
       console.error('Erreur lors de la récupération du statut:', error);
       return null;
     }
-  };
+  }, [mediaId]);
   
-  const fetchProgression = async () => {
+  const fetchProgression = useCallback(async () => {
+    if (!mountedRef.current) return;
+    
     try {
       setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
       
       // Get user media status first for consistency
       const status = await fetchUserMediaStatus();
-      setUserMediaStatus(status);
+      if (mountedRef.current) {
+        setUserMediaStatus(status);
+      }
       
       // Create a default progression regardless of user status
       const defaultProgression = createDefaultProgression(mediaType);
       
-      if (user.user) {
+      if (user.user && mountedRef.current) {
         const { data, error } = await supabase
           .from('media_progressions')
           .select('progression_data')
@@ -105,49 +117,59 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           console.error('Erreur lors de la récupération de la progression:', error);
         }
         
-        // If progression data exists, use it, but ensure status is consistent with user_media
-        if (data && data.progression_data) {
-          const progressionData = data.progression_data;
-          
-          // If we have a status from user_media and it's different from progression status, update progression
-          if (status && typeof progressionData === 'object' && progressionData !== null) {
-            // Check if progressionData has a status property and fix it if needed
-            if ('status' in progressionData && progressionData.status !== status) {
-              progressionData.status = status;
+        if (mountedRef.current) {
+          // If progression data exists, use it, but ensure status is consistent with user_media
+          if (data && data.progression_data) {
+            const progressionData = data.progression_data;
+            
+            // If we have a status from user_media and it's different from progression status, update progression
+            if (status && typeof progressionData === 'object' && progressionData !== null) {
+              // Check if progressionData has a status property and fix it if needed
+              if ('status' in progressionData && progressionData.status !== status) {
+                progressionData.status = status;
+              }
             }
+            
+            setProgression(progressionData);
+          } else {
+            // Use default progression if no data, but use status from user_media if available
+            if (status && defaultProgression && typeof defaultProgression === 'object') {
+              defaultProgression.status = status;
+            }
+            setProgression(defaultProgression);
           }
-          
-          setProgression(progressionData);
-        } else {
-          // Use default progression if no data, but use status from user_media if available
-          if (status && defaultProgression && typeof defaultProgression === 'object') {
-            defaultProgression.status = status;
-          }
-          setProgression(defaultProgression);
         }
-      } else {
+      } else if (mountedRef.current) {
         // Use default progression if no user
         setProgression(defaultProgression);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération de la progression:', error);
       // In case of error, use default progression
-      const defaultProgression = createDefaultProgression(mediaType);
-      setProgression(defaultProgression);
+      if (mountedRef.current) {
+        const defaultProgression = createDefaultProgression(mediaType);
+        setProgression(defaultProgression);
+      }
     } finally {
-      setIsLoading(false);
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  };
+  }, [mediaId, mediaType, fetchUserMediaStatus, createDefaultProgression]);
   
   useEffect(() => {
-    fetchProgression();
-  }, [mediaId, mediaType]);
+    if (mediaId && mediaType) {
+      fetchProgression();
+    }
+  }, [fetchProgression, mediaId, mediaType]);
 
-  const handleProgressionUpdate = async (progressionData: any) => {
+  const handleProgressionUpdate = useCallback(async (progressionData: any) => {
+    if (!mountedRef.current) return;
+    
     try {
       const { data: user } = await supabase.auth.getUser();
       
-      if (!user.user) return;
+      if (!user.user || !mountedRef.current) return;
       
       console.log('Mise à jour de la progression:', progressionData);
       
@@ -156,7 +178,9 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
         const newStatus = progressionData.status as MediaStatus;
         console.log(`Mise à jour du statut: ${userMediaStatus} -> ${newStatus}`);
         await updateMediaStatus(mediaId, newStatus);
-        setUserMediaStatus(newStatus);
+        if (mountedRef.current) {
+          setUserMediaStatus(newStatus);
+        }
       }
       
       const { data: existingProgression } = await supabase
@@ -184,11 +208,13 @@ export function useProgression(mediaId: string, mediaType: MediaType, mediaDetai
           });
       }
       
-      setProgression(progressionData);
+      if (mountedRef.current) {
+        setProgression(progressionData);
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la progression:', error);
     }
-  };
+  }, [mediaId, userMediaStatus]);
 
   return {
     isLoading,
