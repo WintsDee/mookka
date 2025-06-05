@@ -19,7 +19,6 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Debug logs
   console.log("MediaDetailHeader props:", { 
     media: !!media, 
     formattedMedia: !!formattedMedia,
@@ -29,7 +28,6 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   });
   
   const handleGoBack = () => {
-    // Check if there's state from react-router indicating where we came from
     if (location.state?.from) {
       const previousPath = location.state.from;
       const searchParams = location.state.search || "";
@@ -43,7 +41,6 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         navigate(previousPath, { replace: true });
       }
     } else {
-      // Default fallback
       navigate(-1);
     }
   };
@@ -57,12 +54,41 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
   const duration = formattedMedia?.duration;
   const genres = formattedMedia?.genres || [];
 
-  // Function to navigate to critique tab when clicking the user rating badge
+  // Navigation vers l'onglet critique améliorée
   const handleUserRatingClick = () => {
-    const tabsElement = document.querySelector('[value="critique"]');
-    if (tabsElement instanceof HTMLElement) {
-      tabsElement.click();
+    console.log('Tentative de navigation vers l\'onglet critique');
+    
+    // Méthode 1: Utiliser le data attribute
+    const critiqueTrigger = document.querySelector('[data-state="inactive"][value="critique"]') as HTMLElement;
+    if (critiqueTrigger) {
+      console.log('Navigation via data-state');
+      critiqueTrigger.click();
+      return;
     }
+
+    // Méthode 2: Utiliser l'attribut value
+    const critiqueTab = document.querySelector('[value="critique"]') as HTMLElement;
+    if (critiqueTab) {
+      console.log('Navigation via value attribute');
+      critiqueTab.click();
+      return;
+    }
+
+    // Méthode 3: Event personnalisé
+    const customEvent = new CustomEvent('switchToCritique', { 
+      detail: { targetTab: 'critique' },
+      bubbles: true 
+    });
+    document.dispatchEvent(customEvent);
+    console.log('Event personnalisé dispatché');
+
+    // Fallback: Scroll vers l'onglet critique
+    setTimeout(() => {
+      const critiqueSection = document.getElementById('critique-tab');
+      if (critiqueSection) {
+        critiqueSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   return (
@@ -91,12 +117,23 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
         )}
         
         {userRating && userRating > 0 && (
-          <div className="flex flex-col items-center gap-1" onClick={handleUserRatingClick}>
+          <div 
+            className="flex flex-col items-center gap-1 cursor-pointer transform transition-transform hover:scale-105" 
+            onClick={handleUserRatingClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleUserRatingClick();
+              }
+            }}
+          >
             <span className="text-xs text-white font-medium drop-shadow-md">Ma note</span>
             <MediaRatingBadge 
               rating={userRating}
               size="large"
-              className="bg-purple-500 hover:bg-purple-600 cursor-pointer transition-colors"
+              className="bg-purple-500 hover:bg-purple-600 transition-colors shadow-lg ring-2 ring-white/20"
             />
           </div>
         )}
@@ -107,8 +144,8 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           src={coverImage} 
           alt={title} 
           className="w-full h-full object-cover"
+          loading="eager"
           onError={(e) => {
-            // Fallback pour les images qui ne se chargent pas
             const target = e.target as HTMLImageElement;
             target.onerror = null;
             target.src = '/placeholder.svg';
@@ -122,8 +159,8 @@ export function MediaDetailHeader({ media, formattedMedia, type, onAddToCollecti
           src={coverImage} 
           alt={title} 
           className="w-24 h-36 object-cover rounded-lg border border-border shadow-lg mt-4"
+          loading="eager"
           onError={(e) => {
-            // Fallback pour les images qui ne se chargent pas
             const target = e.target as HTMLImageElement;
             target.onerror = null;
             target.src = '/placeholder.svg';

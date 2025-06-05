@@ -3,31 +3,37 @@ import React, { useState, useEffect } from "react";
 import { RatingSlider } from "./rating-slider";
 import { ReviewTextarea } from "./review-textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Star } from "lucide-react";
+import { Loader2, Star, CheckCircle } from "lucide-react";
 import { MediaType } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { NotLoggedInCard } from "./not-logged-in-card";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMediaRating } from "@/hooks/use-media-rating";
+import { useToast } from "@/hooks/use-toast";
 
 export interface MediaRatingProps {
   mediaId: string;
   mediaType: MediaType;
   initialNotes?: string;
   onRatingComplete?: (rating?: number) => void;
+  onRatingError?: () => void;
 }
 
 export function MediaRating({ 
   mediaId, 
   mediaType, 
   initialNotes = "", 
-  onRatingComplete 
+  onRatingComplete,
+  onRatingError
 }: MediaRatingProps) {
   const [rating, setRating] = useState<number | null>(null);
   const [notes, setNotes] = useState(initialNotes || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasChanged, setHasChanged] = useState(false);
   const { isAuthenticated, session } = useAuthState();
+  const { toast } = useToast();
+  
   const { 
     submitRating, 
     isSubmitting: isRatingSubmitting, 
@@ -47,19 +53,27 @@ export function MediaRating({
   
   const handleRatingChange = (value: number) => {
     setRating(value);
+    setHasChanged(true);
   };
   
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
+    setHasChanged(true);
   };
   
   const handleSubmit = async () => {
     if (!rating || rating === 0) {
+      toast({
+        title: "Note requise",
+        description: "Veuillez attribuer une note avant de publier votre critique",
+        variant: "destructive",
+      });
       return;
     }
     
     try {
       setIsSubmitting(true);
+      console.log('Soumission de la critique:', { rating, notes, mediaId, mediaType });
       
       const success = await submitRating({
         rating,
@@ -67,11 +81,36 @@ export function MediaRating({
         notes: notes
       });
       
-      if (success && onRatingComplete) {
-        onRatingComplete(rating);
+      if (success) {
+        console.log('Critique soumise avec succès');
+        setHasChanged(false);
+        
+        toast({
+          title: "Critique publiée",
+          description: "Votre critique a été enregistrée avec succès",
+        });
+        
+        if (onRatingComplete) {
+          onRatingComplete(rating);
+        }
+      } else {
+        console.error('Échec de la soumission de la critique');
+        if (onRatingError) {
+          onRatingError();
+        }
       }
     } catch (error) {
-      console.error("Error during rating submission:", error);
+      console.error("Erreur lors de la soumission de la critique:", error);
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre critique. Veuillez réessayer.",
+        variant: "destructive",
+      });
+      
+      if (onRatingError) {
+        onRatingError();
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -84,13 +123,17 @@ export function MediaRating({
   if (isRatingSubmitting && !userRating) {
     return (
       <div className="flex justify-center items-center py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center space-y-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-sm text-muted-foreground">Chargement...</p>
+        </div>
       </div>
     );
   }
   
   const userAvatarUrl = session?.user?.user_metadata?.avatar_url || null;
   const userName = session?.user?.user_metadata?.full_name || session?.user?.email || "Utilisateur";
+  const isUpdating = userRating && userRating > 0;
   
   return (
     <Card>
@@ -109,27 +152,55 @@ export function MediaRating({
           <div>
             <p className="font-medium">{userName}</p>
             <div className="flex items-center text-sm text-muted-foreground">
-              <span>Votre avis est important</span>
+              <span>
+                {isUpdating ? "Modifiez votre avis" : "Votre avis compte"}
+              </span>
+              {isUpdating && (
+                <CheckCircle className="h-3 w-3 ml-1 text-green-600" />
+              )}
             </div>
           </div>
         </div>
         
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="text-sm font-medium">Note</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">Note</p>
+              {rating && rating > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {rating}/10
+                </span>
+              )}
+            </div>
             <RatingSlider value={rating || 0} onChange={handleRatingChange} />
           </div>
           
           <div className="space-y-2">
-            <p className="text-sm font-medium">Critique</p>
+            <p className="text-sm font-medium">
+              Critique {notes.length > 0 && <span className="text-muted-foreground">({notes.length} caractères)</span>}
+            </p>
             <ReviewTextarea 
               value={notes} 
               onChange={handleNotesChange}
-              placeholder="Partagez votre avis sur ce média..."
+              placeholder={isUpdating ? "Modifiez votre critique..." : "Partagez votre avis sur ce média..."}
             />
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            {hasChanged && (
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  if (userRating) setRating(userRating);
+                  if (userReview) setNotes(userReview);
+                  setHasChanged(false);
+                }}
+                disabled={isSubmitting}
+              >
+                Annuler
+              </Button>
+            )}
+            
             <Button 
               onClick={handleSubmit} 
               disabled={isSubmitting || !rating || rating === 0}
@@ -143,11 +214,17 @@ export function MediaRating({
               ) : (
                 <>
                   <Star className="h-4 w-4" />
-                  {userRating ? "Mettre à jour" : "Publier ma critique"}
+                  {isUpdating ? "Mettre à jour ma critique" : "Publier ma critique"}
                 </>
               )}
             </Button>
           </div>
+          
+          {!hasChanged && isUpdating && (
+            <p className="text-xs text-muted-foreground text-center">
+              Votre critique est déjà publiée. Modifiez-la pour voir les changements.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

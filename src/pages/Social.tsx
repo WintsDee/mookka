@@ -15,18 +15,21 @@ import { useProfile } from "@/hooks/use-profile";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_AVATAR } from "@/config/avatars/avatar-utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw, Wifi, WifiOff } from "lucide-react";
 
 const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [media, setMedia] = useState<Record<string, Media>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useProfile();
   const navigate = useNavigate();
 
-  // Mémoïser les handlers pour éviter les re-rendus inutiles
+  // Handlers optimisés avec useCallback
   const handleLike = useCallback((activityId: string) => {
     if (!isAuthenticated) {
       toast({
@@ -71,19 +74,27 @@ const Social = () => {
     setError(null);
     
     try {
+      console.log("Début du chargement des activités sociales");
+      
       const { data: userMedia, error: userMediaError } = await supabase
         .from('user_media')
         .select('id, user_id, media_id, status, added_at, user_rating')
         .order('added_at', { ascending: false })
         .limit(20);
 
-      if (userMediaError) throw userMediaError;
+      if (userMediaError) {
+        console.error("Erreur user_media:", userMediaError);
+        throw new Error(`Erreur de récupération des données: ${userMediaError.message}`);
+      }
 
       if (!userMedia || userMedia.length === 0) {
+        console.log("Aucune activité trouvée");
         setActivities([]);
         setMedia({});
         return;
       }
+
+      console.log(`${userMedia.length} activités trouvées`);
 
       const mediaIds = userMedia.map(item => item.media_id);
       const { data: mediaData, error: mediaError } = await supabase
@@ -91,39 +102,49 @@ const Social = () => {
         .select('*')
         .in('id', mediaIds);
 
-      if (mediaError) throw mediaError;
+      if (mediaError) {
+        console.error("Erreur media:", mediaError);
+        throw new Error(`Erreur de récupération des médias: ${mediaError.message}`);
+      }
 
       const mediaMap: Record<string, Media> = {};
       mediaData?.forEach(item => {
-        mediaMap[item.id] = {
-          id: item.id,
-          title: item.title,
-          type: item.type as MediaType,
-          coverImage: item.cover_image || '/placeholder.svg',
-          year: item.year,
-          rating: item.rating,
-          genres: item.genres,
-          description: item.description
-        };
+        if (item && item.id) {
+          mediaMap[item.id] = {
+            id: item.id,
+            title: item.title || 'Titre inconnu',
+            type: item.type as MediaType,
+            coverImage: item.cover_image || '/placeholder.svg',
+            year: item.year,
+            rating: item.rating,
+            genres: item.genres,
+            description: item.description
+          };
+        }
       });
       setMedia(mediaMap);
 
-      const userIds = [...new Set(userMedia.map(item => item.user_id))];
+      const userIds = [...new Set(userMedia.map(item => item.user_id))].filter(Boolean);
       
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url')
         .in('id', userIds);
         
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Erreur profiles:", profilesError);
+        // Ne pas bloquer pour les profils manquants
+      }
         
       const profilesMap: Record<string, UserProfile> = {};
       profiles?.forEach(profile => {
-        profilesMap[profile.id] = {
-          id: profile.id,
-          full_name: profile.full_name || profile.username || 'Utilisateur',
-          avatar_url: profile.avatar_url || DEFAULT_AVATAR
-        };
+        if (profile && profile.id) {
+          profilesMap[profile.id] = {
+            id: profile.id,
+            full_name: profile.full_name || profile.username || 'Utilisateur',
+            avatar_url: profile.avatar_url || DEFAULT_AVATAR
+          };
+        }
       });
       
       userIds.forEach(id => {
@@ -136,102 +157,152 @@ const Social = () => {
         }
       });
       
-      const activitiesData = userMedia.map(item => {
-        const mediaItem = mediaMap[item.media_id];
-        const profileItem = profilesMap[item.user_id];
+      const activitiesData = userMedia
+        .filter(item => item && item.media_id && mediaMap[item.media_id])
+        .map(item => {
+          const mediaItem = mediaMap[item.media_id];
+          const profileItem = profilesMap[item.user_id];
 
-        let action = 'a ajouté';
-        switch (item.status) {
-          case 'watching':
-            action = 'a commencé';
-            break;
-          case 'completed':
-            action = 'a terminé';
-            break;
-          default:
-            action = 'a ajouté';
-        }
-        
-        if (item.user_rating) {
-          action = `a noté ${item.user_rating}/10`;
-        }
+          let action = 'a ajouté';
+          switch (item.status) {
+            case 'watching':
+              action = 'regarde';
+              break;
+            case 'completed':
+              action = 'a terminé';
+              break;
+            case 'to-watch':
+              action = 'veut voir';
+              break;
+            default:
+              action = 'a ajouté';
+          }
+          
+          if (item.user_rating && item.user_rating > 0) {
+            action = `a noté ${item.user_rating}/10`;
+          }
 
-        return {
-          id: item.id,
-          user: {
-            id: profileItem.id,
-            name: profileItem.full_name || 'Utilisateur',
-            avatar: profileItem.avatar_url || DEFAULT_AVATAR
-          },
-          action,
-          media: {
-            id: item.media_id,
-            title: mediaItem?.title || 'Titre inconnu',
-            type: mediaItem?.type || 'film'
-          },
-          timestamp: item.added_at
-        };
-      });
+          return {
+            id: item.id,
+            user: {
+              id: profileItem.id,
+              name: profileItem.full_name || 'Utilisateur',
+              avatar: profileItem.avatar_url || DEFAULT_AVATAR
+            },
+            action,
+            media: {
+              id: item.media_id,
+              title: mediaItem?.title || 'Titre inconnu',
+              type: mediaItem?.type || 'film'
+            },
+            timestamp: item.added_at
+          };
+        });
 
+      console.log(`${activitiesData.length} activités formatées`);
       setActivities(activitiesData);
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error("Erreur lors de la récupération des activités:", error);
-      setError("Impossible de charger les activités sociales");
+      const errorMessage = error.message || "Impossible de charger les activités sociales";
+      setError(errorMessage);
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les activités sociales",
+        title: "Erreur de chargement",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+      setIsRetrying(false);
     }
   }, [toast]);
 
-  useEffect(() => {
+  const handleRetry = useCallback(() => {
+    setIsRetrying(true);
     fetchActivities();
-    
-    const channel = supabase
-      .channel('public:user_media')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_media'
-      }, () => {
-        fetchActivities();
-      })
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [fetchActivities]);
 
-  // Mémoïser le contenu pour éviter les re-rendus
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchActivities();
+      
+      const channel = supabase
+        .channel('public:user_media')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'user_media'
+        }, (payload) => {
+          console.log('Changement détecté:', payload);
+          fetchActivities();
+        })
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [fetchActivities, isAuthenticated]);
+
+  // Contenu social optimisé
   const socialContent = useMemo(() => {
     if (!isAuthenticated) {
       return (
-        <div className="flex flex-col items-center justify-center h-[80vh] px-6 text-center">
-          <h2 className="text-2xl font-bold mb-4">Connectez-vous pour accéder aux fonctionnalités sociales</h2>
-          <p className="text-muted-foreground mb-6">
-            Suivez vos amis, partagez vos avis et découvrez de nouveaux médias.
-          </p>
-          <Button onClick={() => navigate('/auth')}>
+        <div className="flex flex-col items-center justify-center h-[70vh] px-6 text-center space-y-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <Wifi className="w-8 h-8 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Rejoignez la communauté Mookka</h2>
+            <p className="text-muted-foreground max-w-md">
+              Connectez-vous pour suivre vos amis, partager vos avis et découvrir de nouveaux médias recommandés par la communauté.
+            </p>
+          </div>
+          <Button onClick={() => navigate('/auth')} size="lg">
             Se connecter
           </Button>
         </div>
       );
     }
 
+    if (error) {
+      return (
+        <div className="space-y-4 p-6">
+          <Alert variant="destructive">
+            <WifiOff className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRetry}
+                disabled={isRetrying}
+                className="ml-2"
+              >
+                {isRetrying ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                {isRetrying ? "Chargement..." : "Réessayer"}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      );
+    }
+
     return (
       <Tabs defaultValue="activity" className="w-full">
-        <TabsList className="w-full grid grid-cols-3 mb-2">
+        <TabsList className="w-full grid grid-cols-3 mb-4 sticky top-0 z-10">
           <TabsTrigger value="activity">Activité</TabsTrigger>
           <TabsTrigger value="friends">Amis</TabsTrigger>
           <TabsTrigger value="discover">Découvrir</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="activity" className="mt-4 animate-fade-in">
-          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-240px)]'}`}>
+        <TabsContent value="activity" className="mt-0">
+          <ScrollArea className={`${isMobile ? 'h-[calc(100vh-220px)]' : 'h-[calc(100vh-260px)]'}`}>
             <ActivityFeed
               activities={activities}
               media={media}
@@ -243,42 +314,51 @@ const Social = () => {
           </ScrollArea>
         </TabsContent>
         
-        <TabsContent value="friends" className="animate-fade-in">
-          <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-            <p className="text-muted-foreground">
-              Fonctionnalité à venir dans la prochaine mise à jour
-            </p>
+        <TabsContent value="friends" className="mt-0">
+          <div className="flex flex-col items-center justify-center h-60 text-center px-6 space-y-4">
+            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+              <span className="text-2xl">👥</span>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Amis</h3>
+              <p className="text-sm text-muted-foreground">
+                Connectez-vous avec vos amis et suivez leurs activités
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Fonctionnalité disponible prochainement
+              </p>
+            </div>
           </div>
         </TabsContent>
         
-        <TabsContent value="discover" className="animate-fade-in">
-          <div className="flex flex-col items-center justify-center h-40 text-center px-6">
-            <p className="text-muted-foreground">
-              Fonctionnalité à venir dans la prochaine mise à jour
-            </p>
+        <TabsContent value="discover" className="mt-0">
+          <div className="flex flex-col items-center justify-center h-60 text-center px-6 space-y-4">
+            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+              <span className="text-2xl">🔍</span>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Découvrir</h3>
+              <p className="text-sm text-muted-foreground">
+                Explorez les tendances et découvrez de nouveaux contenus
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Fonctionnalité disponible prochainement
+              </p>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
     );
-  }, [isAuthenticated, navigate, isMobile, activities, media, loading, handleLike, handleComment, handleShare]);
+  }, [isAuthenticated, navigate, error, handleRetry, isRetrying, isMobile, activities, media, loading, handleLike, handleComment, handleShare]);
 
   return (
     <Background>
       <MobileHeader title="Social" />
-      <div className="pb-24 pt-safe mt-16 animate-fade-in transition-opacity duration-300 ease-in-out">
-        <header className="px-6 mb-6">
-          <div className="mt-4">
-            {error ? (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            ) : (
-              socialContent
-            )}
-          </div>
-        </header>
+      <div className="pb-24 pt-safe mt-16 transition-opacity duration-300 ease-in-out">
+        <div className="px-6">
+          {socialContent}
+        </div>
       </div>
-      
       <MobileNav />
     </Background>
   );
