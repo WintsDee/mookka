@@ -5,6 +5,7 @@ import { MediaType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { QuickRating } from "@/components/media-detail/quick-rating";
 
 interface OverviewTabProps {
   description?: string;
@@ -25,6 +26,18 @@ export function OverviewTab({ description, additionalInfo, mediaId, mediaType }:
   
   return (
     <div className="space-y-6 pb-8">
+      {/* Section notation rapide */}
+      <div>
+        <h2 className="text-lg font-medium mb-3">Votre avis</h2>
+        <QuickRating 
+          mediaId={mediaId} 
+          mediaType={mediaType}
+          onRatingUpdate={(rating) => {
+            console.log(`Note mise à jour: ${rating}`);
+          }}
+        />
+      </div>
+
       {sanitizedDescription && (
         <div>
           <h2 className="text-lg font-medium mb-2">Synopsis</h2>

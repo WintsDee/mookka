@@ -7,7 +7,6 @@ import { useMediaRating } from "@/hooks/use-media-rating";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 
 interface CritiqueTabProps {
   mediaId: string;
@@ -25,14 +24,19 @@ const CritiqueTabComponent = ({
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
 
-  // Validation des props
+  // Validation des props renforcée
   const isValidProps = useMemo(() => {
-    const isValid = Boolean(mediaId && mediaType && mediaId.trim() !== '');
+    const isValid = Boolean(
+      mediaId && 
+      mediaType && 
+      mediaId.trim() !== '' && 
+      ['film', 'serie', 'book', 'game'].includes(mediaType)
+    );
     console.log('CritiqueTab - Props validation:', { mediaId, mediaType, isValid });
     return isValid;
   }, [mediaId, mediaType]);
 
-  // Hook avec gestion d'erreur sécurisée
+  // Hook avec gestion d'erreur améliorée
   const ratingHookResult = useMediaRating(
     isValidProps ? mediaId : '', 
     isValidProps ? mediaType : 'film'
@@ -46,15 +50,15 @@ const CritiqueTabComponent = ({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Impossible de charger les critiques : identifiant du média manquant ou invalide.
+            <br />
+            <small>ID: {mediaId || 'manquant'}, Type: {mediaType || 'manquant'}</small>
           </AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  const { userRating, userReview, isSubmitting } = ratingHookResult || {};
-
-  // État de chargement sécurisé
+  // Vérification de la réponse du hook
   if (!ratingHookResult) {
     return (
       <div className="space-y-6 p-4">
@@ -68,12 +72,13 @@ const CritiqueTabComponent = ({
     );
   }
 
+  const { userRating, userReview, isSubmitting } = ratingHookResult;
+
   // Gestion du succès de soumission
   const handleRatingComplete = (rating?: number) => {
     setSubmitStatus('success');
     setLastSubmitTime(Date.now());
     
-    // Réinitialiser le statut après 3 secondes
     setTimeout(() => {
       setSubmitStatus('idle');
     }, 3000);

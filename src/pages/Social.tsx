@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Media, MediaType } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { MobileHeader } from "@/components/mobile-header";
 import { Activity, UserProfile } from "@/components/social/types";
 import { ActivityFeed } from "@/components/social/activity-feed";
@@ -24,6 +24,7 @@ const Social = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isAuthenticated } = useProfile();
@@ -70,9 +71,12 @@ const Social = () => {
   }, [toast]);
 
   const fetchActivities = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
+    if (!isAuthenticated) {
+      setLoading(false);
+      setIsInitialized(true);
+      return;
+    }
+
     try {
       console.log("Début du chargement des activités sociales");
       
@@ -133,7 +137,6 @@ const Social = () => {
         
       if (profilesError) {
         console.error("Erreur profiles:", profilesError);
-        // Ne pas bloquer pour les profils manquants
       }
         
       const profilesMap: Record<string, UserProfile> = {};
@@ -201,6 +204,7 @@ const Social = () => {
 
       console.log(`${activitiesData.length} activités formatées`);
       setActivities(activitiesData);
+      setError(null);
       
     } catch (error: any) {
       console.error("Erreur lors de la récupération des activités:", error);
@@ -215,38 +219,58 @@ const Social = () => {
     } finally {
       setLoading(false);
       setIsRetrying(false);
+      setIsInitialized(true);
     }
-  }, [toast]);
+  }, [toast, isAuthenticated]);
 
   const handleRetry = useCallback(() => {
     setIsRetrying(true);
+    setError(null);
     fetchActivities();
   }, [fetchActivities]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // Délai pour éviter le clignotement
+    const initTimer = setTimeout(() => {
       fetchActivities();
-      
-      const channel = supabase
-        .channel('public:user_media')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'user_media'
-        }, (payload) => {
-          console.log('Changement détecté:', payload);
-          fetchActivities();
-        })
-        .subscribe();
-        
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [fetchActivities, isAuthenticated]);
+    }, 100);
+    
+    return () => clearTimeout(initTimer);
+  }, [fetchActivities]);
 
-  // Contenu social optimisé
+  useEffect(() => {
+    if (!isAuthenticated || !isInitialized) return;
+    
+    const channel = supabase
+      .channel('public:user_media')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_media'
+      }, (payload) => {
+        console.log('Changement détecté:', payload);
+        fetchActivities();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchActivities, isAuthenticated, isInitialized]);
+
+  // Contenu social optimisé pour éviter le clignotement
   const socialContent = useMemo(() => {
+    if (!isInitialized) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[70vh] px-6 text-center space-y-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
+            <Wifi className="w-8 h-8 text-primary" />
+          </div>
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      );
+    }
+
     if (!isAuthenticated) {
       return (
         <div className="flex flex-col items-center justify-center h-[70vh] px-6 text-center space-y-6">
@@ -349,7 +373,7 @@ const Social = () => {
         </TabsContent>
       </Tabs>
     );
-  }, [isAuthenticated, navigate, error, handleRetry, isRetrying, isMobile, activities, media, loading, handleLike, handleComment, handleShare]);
+  }, [isInitialized, isAuthenticated, navigate, error, handleRetry, isRetrying, isMobile, activities, media, loading, handleLike, handleComment, handleShare]);
 
   return (
     <Background>

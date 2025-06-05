@@ -34,10 +34,20 @@ export function useMediaTabs(initialTab: string = "overview") {
       }
     };
 
+    // Listener pour les autres onglets
+    const handleSwitchToTab = (event: CustomEvent) => {
+      if (event.detail?.targetTab && mountedRef.current) {
+        console.log(`Navigation vers l'onglet ${event.detail.targetTab} détectée`);
+        setActiveTab(event.detail.targetTab);
+      }
+    };
+
     document.addEventListener('switchToCritique', handleSwitchToCritique as EventListener);
+    document.addEventListener('switchToTab', handleSwitchToTab as EventListener);
     
     return () => {
       document.removeEventListener('switchToCritique', handleSwitchToCritique as EventListener);
+      document.removeEventListener('switchToTab', handleSwitchToTab as EventListener);
     };
   }, []);
   
@@ -47,15 +57,32 @@ export function useMediaTabs(initialTab: string = "overview") {
     try {
       console.log('Changement d\'onglet vers:', value);
       setActiveTab(value);
+      
+      // Dispatch un événement pour notifier le changement d'onglet
+      const tabChangeEvent = new CustomEvent('tabChanged', { 
+        detail: { activeTab: value },
+        bubbles: true 
+      });
+      document.dispatchEvent(tabChangeEvent);
     } catch (error) {
       console.error("Erreur lors du changement d'onglet:", error);
       setActiveTab("overview");
     }
   }, []);
+
+  // Fonction pour naviguer vers un onglet spécifique depuis l'extérieur
+  const navigateToTab = useCallback((tabName: string) => {
+    const event = new CustomEvent('switchToTab', { 
+      detail: { targetTab: tabName },
+      bubbles: true 
+    });
+    document.dispatchEvent(event);
+  }, []);
   
   return {
     activeTab,
     handleTabChange,
-    isInitialized
+    isInitialized,
+    navigateToTab
   };
 }

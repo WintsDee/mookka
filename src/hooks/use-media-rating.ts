@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MediaStatus } from "@/types";
@@ -24,12 +24,28 @@ export function useMediaRating(mediaId: string, mediaType: string) {
   const [userRating, setUserRating] = useState<number | null>(null);
   const [userReview, setUserReview] = useState<string | null>(null);
   const [userMediaStatus, setUserMediaStatus] = useState<MediaStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchUserRating = async () => {
+  const fetchUserRating = useCallback(async () => {
+    if (!mediaId || !mediaType) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      setIsLoading(true);
+      setError(null);
+      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user || !mediaId) return;
+      if (!session?.user) {
+        setUserRating(null);
+        setUserReview(null);
+        setUserMediaStatus(null);
+        setIsLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('user_media')
@@ -40,6 +56,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       if (error && error.code !== 'PGRST116') {
         console.error("Error fetching user rating:", error);
+        setError("Impossible de charger votre note");
         return;
       }
 
@@ -55,22 +72,30 @@ export function useMediaRating(mediaId: string, mediaType: string) {
       }
     } catch (error) {
       console.error("Error in fetchUserRating:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (mediaId && mediaType) {
-      fetchUserRating();
+      setError("Erreur lors du chargement de votre note");
+    } finally {
+      setIsLoading(false);
     }
   }, [mediaId, mediaType]);
+
+  useEffect(() => {
+    fetchUserRating();
+  }, [fetchUserRating]);
 
   const submitRating = async ({ rating, review = "", notes = "", status }: RatingSubmission) => {
     if (!mediaId || !rating) {
       console.error("MediaId or rating missing");
+      toast({
+        title: "Erreur",
+        description: "Données manquantes pour enregistrer la note",
+        variant: "destructive",
+      });
       return false;
     }
 
     setIsSubmitting(true);
+    setError(null);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -92,7 +117,7 @@ export function useMediaRating(mediaId: string, mediaType: string) {
 
       if (checkError && checkError.code !== 'PGRST116') {
         console.error("Error checking existing media:", checkError);
-        throw checkError;
+        throw new Error("Erreur lors de la vérification des données existantes");
       }
 
       const updateData: any = {
@@ -142,17 +167,15 @@ export function useMediaRating(mediaId: string, mediaType: string) {
       setUserRating(rating);
       setUserReview(notes || review || null);
 
-      toast({
-        title: "Évaluation enregistrée",
-        description: "Votre note a bien été enregistrée",
-      });
-
       return true;
     } catch (error: any) {
       console.error("Error submitting rating:", error);
+      const errorMessage = error.message || "Impossible d'enregistrer votre note";
+      setError(errorMessage);
+      
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer votre note",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -167,5 +190,8 @@ export function useMediaRating(mediaId: string, mediaType: string) {
     userRating,
     userReview,
     userMediaStatus,
+    isLoading,
+    error,
+    refetch: fetchUserRating
   };
 }
