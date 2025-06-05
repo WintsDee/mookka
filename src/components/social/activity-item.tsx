@@ -25,6 +25,8 @@ const ActivityItemComponent = ({
   onShare,
 }: ActivityItemProps) => {
   const [imageError, setImageError] = useState(false);
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const [mediaImageLoaded, setMediaImageLoaded] = useState(false);
 
   // Mémoïser le fallback de l'avatar
   const avatarFallback = useMemo(() => {
@@ -53,17 +55,20 @@ const ActivityItemComponent = ({
     <Card className="bg-secondary/40 border-border/50">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <Avatar className="w-10 h-10 rounded-full overflow-hidden border border-border/20">
-            <AvatarImage 
-              src={activity.user.avatar} 
-              alt={activity.user.name}
-              className="object-cover"
-              loading="eager"
-            />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {avatarFallback}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="w-10 h-10 rounded-full overflow-hidden border border-border/20">
+              <AvatarImage 
+                src={activity.user.avatar} 
+                alt={activity.user.name}
+                className={`object-cover transition-opacity duration-200 ${avatarLoaded ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setAvatarLoaded(true)}
+                loading="lazy"
+              />
+              <AvatarFallback className={`bg-primary/10 text-primary transition-opacity duration-200 ${avatarLoaded ? 'opacity-0' : 'opacity-100'}`}>
+                {avatarFallback}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           <div>
             <p className="text-sm">
               <span className="font-medium">{activity.user.name}</span>{" "}
@@ -77,22 +82,28 @@ const ActivityItemComponent = ({
         </div>
         
         {media && (
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex items-start gap-3">
             <Link to={`/media/${media.type}/${activity.media.id}`}>
-              <img
-                src={media.coverImage}
-                alt={media.title}
-                className="w-16 h-24 rounded-md object-cover"
-                loading="eager"
-                onError={handleImageError}
-              />
+              <div className="relative w-16 h-24 flex-shrink-0">
+                <img
+                  src={media.coverImage}
+                  alt={media.title}
+                  className={`w-full h-full rounded-md object-cover transition-opacity duration-200 ${mediaImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => setMediaImageLoaded(true)}
+                  onError={handleImageError}
+                  loading="lazy"
+                />
+                {!mediaImageLoaded && (
+                  <div className="absolute inset-0 bg-muted animate-pulse rounded-md" />
+                )}
+              </div>
             </Link>
-            <div>
+            <div className="flex-1 min-w-0">
               <Link to={`/media/${media.type}/${activity.media.id}`} className="hover:underline">
-                <h3 className="font-medium text-sm">{media.title}</h3>
+                <h3 className="font-medium text-sm line-clamp-1">{media.title}</h3>
               </Link>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {media.description?.slice(0, 80)}...
+              <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                {media.description ? media.description.slice(0, 100) + (media.description.length > 100 ? "..." : "") : "Aucune description disponible"}
               </p>
             </div>
           </div>

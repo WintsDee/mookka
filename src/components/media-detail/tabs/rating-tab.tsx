@@ -32,7 +32,6 @@ const CritiqueTabComponent = ({
       mediaId.trim() !== '' && 
       ['film', 'serie', 'book', 'game'].includes(mediaType)
     );
-    console.log('CritiqueTab - Props validation:', { mediaId, mediaType, isValid });
     return isValid;
   }, [mediaId, mediaType]);
 
@@ -50,16 +49,21 @@ const CritiqueTabComponent = ({
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Impossible de charger les critiques : identifiant du média manquant ou invalide.
-            <br />
-            <small>ID: {mediaId || 'manquant'}, Type: {mediaType || 'manquant'}</small>
           </AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  // Vérification de la réponse du hook
-  if (!ratingHookResult) {
+  // Vérification de la réponse du hook avec fallback
+  const { userRating, userReview, isSubmitting, isLoading } = ratingHookResult || {
+    userRating: null,
+    userReview: null,
+    isSubmitting: false,
+    isLoading: true
+  };
+
+  if (isLoading) {
     return (
       <div className="space-y-6 p-4">
         <div className="flex items-center justify-center py-12">
@@ -71,8 +75,6 @@ const CritiqueTabComponent = ({
       </div>
     );
   }
-
-  const { userRating, userReview, isSubmitting } = ratingHookResult;
 
   // Gestion du succès de soumission
   const handleRatingComplete = (rating?: number) => {

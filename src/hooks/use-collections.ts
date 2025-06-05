@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { 
   getMyCollections, 
   getPublicCollections,
@@ -24,7 +24,7 @@ export function useCollections() {
   } = useQuery({
     queryKey: ['collections', 'my'],
     queryFn: getMyCollections,
-    enabled: isAuthenticated // N'exécute pas la requête si l'utilisateur n'est pas authentifié
+    enabled: isAuthenticated
   });
 
   const { 
@@ -41,7 +41,7 @@ export function useCollections() {
   } = useQuery({
     queryKey: ['collections', 'followed'],
     queryFn: getFollowedCollections,
-    enabled: isAuthenticated // N'exécute pas la requête si l'utilisateur n'est pas authentifié
+    enabled: isAuthenticated
   });
 
   const createCollectionMutation = useMutation({
@@ -58,10 +58,11 @@ export function useCollections() {
         description: "Votre collection a été créée avec succès"
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error creating collection:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la collection",
+        description: error.message || "Impossible de créer la collection",
         variant: "destructive"
       });
     }
@@ -77,10 +78,11 @@ export function useCollections() {
         description: "Le média a été ajouté à la collection"
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding to collection:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter le média à la collection",
+        description: error.message || "Impossible d'ajouter le média à la collection",
         variant: "destructive"
       });
     }
@@ -88,7 +90,12 @@ export function useCollections() {
   
   const getCollectionsContainingMedia = async (mediaId: string) => {
     if (!mediaId) return [];
-    return await getCollectionsForMedia(mediaId);
+    try {
+      return await getCollectionsForMedia(mediaId);
+    } catch (error) {
+      console.error('Error getting collections for media:', error);
+      return [];
+    }
   };
 
   return {

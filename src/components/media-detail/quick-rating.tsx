@@ -61,13 +61,20 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
 
   if (!isAuthenticated) {
     return (
-      <Card className="border-primary/20">
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <CardContent className="p-4">
-          <div className="text-center space-y-2">
-            <p className="text-sm font-medium">Notez ce média</p>
-            <p className="text-xs text-muted-foreground">
-              Connectez-vous pour attribuer une note
-            </p>
+          <div className="text-center space-y-3">
+            <div className="flex justify-center">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Star className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium">Notez ce média</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Connectez-vous pour attribuer une note
+              </p>
+            </div>
             <Button variant="outline" size="sm" onClick={() => window.location.href = '/auth'}>
               Se connecter
             </Button>
@@ -78,19 +85,22 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
   }
 
   return (
-    <Card className="border-primary/20">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
       <CardContent className="p-4">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">
-              {userRating ? `Votre note: ${userRating}/10` : "Notez ce média"}
-            </p>
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-primary" />
+              <p className="text-sm font-medium">
+                {userRating ? `Votre note: ${userRating}/10` : "Notez ce média"}
+              </p>
+            </div>
             {userRating && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleModifyClick}
-                className="text-xs"
+                className="text-xs h-6 px-2"
               >
                 Modifier
               </Button>
@@ -102,7 +112,7 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
               <button
                 key={rating}
                 className={cn(
-                  "p-1 transition-all duration-200 hover:scale-110",
+                  "p-1 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full",
                   isSubmitting && "opacity-50 cursor-not-allowed"
                 )}
                 onMouseEnter={() => setHoveredRating(rating)}
@@ -112,10 +122,10 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
               >
                 <Star
                   className={cn(
-                    "w-5 h-5 transition-colors",
+                    "w-6 h-6 transition-all duration-300",
                     rating <= (hoveredRating || userRating || 0)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300"
+                      ? "fill-yellow-400 text-yellow-400 drop-shadow-md"
+                      : "text-gray-300 hover:text-yellow-200"
                   )}
                 />
               </button>

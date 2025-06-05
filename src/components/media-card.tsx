@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
+import { MediaRatingStars } from "@/components/media-rating-stars";
 
 interface MediaCardProps {
   media: Media;
@@ -14,6 +15,7 @@ interface MediaCardProps {
   showDetails?: boolean;
   from?: string;
   showStatusBadge?: boolean;
+  userRating?: number;
 }
 
 const MediaCard = ({ 
@@ -21,7 +23,8 @@ const MediaCard = ({
   size = "medium", 
   showDetails = true, 
   from, 
-  showStatusBadge = true 
+  showStatusBadge = true,
+  userRating
 }: MediaCardProps) => {
   // Normalize rating to 10-point scale if it's not already
   const normalizedRating = media.rating 
@@ -125,26 +128,39 @@ const MediaCard = ({
           {/* Status Badge */}
           {getStatusBadge()}
 
-          {/* Type Badge - Repositioned for mobile */}
-          {isMobile ? (
-            <div className="absolute top-0 right-0">
-              <div className={cn(
-                "w-5 h-5 rounded-tr-lg flex items-center justify-center",
-                `bg-media-${type}`
-              )}>
-                <MediaTypeIcon />
-              </div>
+          {/* User Rating Badge */}
+          {userRating && (
+            <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1">
+              <MediaRatingStars 
+                rating={userRating} 
+                size="small" 
+                showNumber={false}
+              />
             </div>
-          ) : (
-            <Badge 
-              variant={getTypeVariant()} 
-              className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
-            >
-              <MediaTypeIcon />
-              {type === "film" ? "Film" : 
-               type === "serie" ? "Série" : 
-               type === "book" ? "Livre" : "Jeu"}
-            </Badge>
+          )}
+
+          {/* Type Badge - Repositioned for mobile */}
+          {!userRating && (
+            isMobile ? (
+              <div className="absolute top-0 right-0">
+                <div className={cn(
+                  "w-5 h-5 rounded-tr-lg flex items-center justify-center",
+                  `bg-media-${type}`
+                )}>
+                  <MediaTypeIcon />
+                </div>
+              </div>
+            ) : (
+              <Badge 
+                variant={getTypeVariant()} 
+                className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
+              >
+                <MediaTypeIcon />
+                {type === "film" ? "Film" : 
+                 type === "serie" ? "Série" : 
+                 type === "book" ? "Livre" : "Jeu"}
+              </Badge>
+            )
           )}
           
           {/* Information - Always visible */}
@@ -158,10 +174,17 @@ const MediaCard = ({
                       <MediaTypeIcon />
                       <span className="text-xs text-white/80">{year}</span>
                     </div>
-                    {normalizedRating && (
+                    {normalizedRating && !userRating && (
                       <MediaRatingBadge 
                         rating={normalizedRating} 
                         size="small" 
+                      />
+                    )}
+                    {userRating && (
+                      <MediaRatingStars 
+                        rating={userRating} 
+                        size="small"
+                        className="bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5"
                       />
                     )}
                   </div>
