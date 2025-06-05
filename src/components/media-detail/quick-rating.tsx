@@ -50,6 +50,15 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
     }
   };
 
+  const handleModifyClick = () => {
+    // Déclencher un événement pour naviguer vers l'onglet critique
+    const customEvent = new CustomEvent('switchToTab', { 
+      detail: { targetTab: 'critique' },
+      bubbles: true 
+    });
+    document.dispatchEvent(customEvent);
+  };
+
   if (!isAuthenticated) {
     return (
       <Card className="border-primary/20">
@@ -80,7 +89,7 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => document.querySelector('[value="critique"]')?.click()}
+                onClick={handleModifyClick}
                 className="text-xs"
               >
                 Modifier
