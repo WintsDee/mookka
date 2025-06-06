@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban, Play, PauseCircle } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 import { MediaRatingStars } from "@/components/media-rating-stars";
@@ -57,52 +57,44 @@ const MediaCard = ({
     }
   };
   
-  const getStatusBadge = () => {
+  const getStatusIcon = () => {
     if (!status || !showStatusBadge) return null;
     
-    let statusClass = "";
-    let statusText = "";
     let StatusIcon = null;
+    let iconClass = "";
     
     switch (status) {
-      // Statuts "à faire"
       case "to-watch":
       case "to-read":
       case "to-play":
-        statusClass = "bg-amber-600 border-amber-600 text-white";
-        statusText = "À voir";
         StatusIcon = Eye;
+        iconClass = "bg-amber-500 text-white";
         break;
-      
-      // Statuts "en cours"
       case "watching":
       case "reading":
       case "playing":
-        statusClass = "bg-blue-600 border-blue-600 text-white";
-        statusText = "En cours";
         StatusIcon = Play;
+        iconClass = "bg-blue-500 text-white";
         break;
-      
-      // Statut "terminé"
       case "completed":
-        statusClass = "bg-emerald-600 border-emerald-600 text-white";
-        statusText = "Terminé";
         StatusIcon = Check;
+        iconClass = "bg-emerald-500 text-white";
         break;
-
-      // Nouveau statut "abandonné"
       case "abandoned":
-        statusClass = "bg-red-600 border-red-600 text-white";
-        statusText = "Abandonné";
         StatusIcon = Ban;
+        iconClass = "bg-red-500 text-white";
         break;
+      default:
+        return null;
     }
     
     return (
-      <Badge className={`absolute top-2 left-2 text-xs px-2 py-1 border ${statusClass} flex items-center gap-1 shadow-md backdrop-blur-sm z-10 font-medium`}>
-        {StatusIcon && <StatusIcon className="h-3 w-3" />}
-        {statusText}
-      </Badge>
+      <div className={cn(
+        "absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10",
+        iconClass
+      )}>
+        <StatusIcon className="h-4 w-4" />
+      </div>
     );
   };
   
@@ -125,8 +117,8 @@ const MediaCard = ({
             className="w-full h-full object-cover rounded-lg"
           />
           
-          {/* Status Badge */}
-          {getStatusBadge()}
+          {/* Status Icon */}
+          {getStatusIcon()}
 
           {/* Type Badge - Repositioned for mobile */}
           {!userRating && (
@@ -159,13 +151,13 @@ const MediaCard = ({
               {showDetails && (
                 <>
                   <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0 flex-1">
                       <MediaTypeIcon />
-                      <span className="text-xs text-white/80">{year}</span>
+                      <span className="text-xs text-white/80 truncate">{year}</span>
                     </div>
                     
                     {/* Ratings section - User rating above general rating */}
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
                       {userRating && (
                         <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
                           <MediaRatingStars 

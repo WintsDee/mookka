@@ -1,5 +1,5 @@
 
-import React, { memo, useMemo, useState } from "react";
+import React, { memo, useState } from "react";
 import { MediaRating } from "@/components/media-rating";
 import { MediaType } from "@/types";
 import { Loader2, Star, MessageCircle, CheckCircle, AlertCircle } from "lucide-react";
@@ -22,7 +22,6 @@ const CritiqueTabComponent = ({
   initialReview = "" 
 }: CritiqueTabProps) => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
 
   // Validation simple des props
   if (!mediaId || !mediaType) {
@@ -39,15 +38,23 @@ const CritiqueTabComponent = ({
   }
 
   // Hook avec gestion d'erreur simple
-  const ratingData = useMediaRating(mediaId, mediaType);
+  const ratingHookResult = useMediaRating(mediaId, mediaType);
 
-  // Vérification de la réponse du hook avec fallback sécurisé
-  const { userRating, userReview, isSubmitting, isLoading } = ratingData || {
-    userRating: null,
-    userReview: null,
-    isSubmitting: false,
-    isLoading: true
-  };
+  // Gestion sécurisée des données du hook
+  if (!ratingHookResult) {
+    return (
+      <div className="space-y-6 p-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center space-y-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-sm text-muted-foreground">Chargement de vos critiques...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { userRating, userReview, isLoading } = ratingHookResult;
 
   if (isLoading) {
     return (
@@ -63,10 +70,8 @@ const CritiqueTabComponent = ({
   }
 
   // Gestion du succès de soumission
-  const handleRatingComplete = (rating?: number) => {
+  const handleRatingComplete = () => {
     setSubmitStatus('success');
-    setLastSubmitTime(Date.now());
-    
     setTimeout(() => {
       setSubmitStatus('idle');
     }, 3000);
@@ -77,33 +82,6 @@ const CritiqueTabComponent = ({
     setTimeout(() => {
       setSubmitStatus('idle');
     }, 3000);
-  };
-
-  // Affichage du message de statut
-  const StatusMessage = () => {
-    if (submitStatus === 'success') {
-      return (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            Votre critique a été enregistrée avec succès !
-          </AlertDescription>
-        </Alert>
-      );
-    }
-    
-    if (submitStatus === 'error') {
-      return (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Erreur lors de l'enregistrement. Veuillez réessayer.
-          </AlertDescription>
-        </Alert>
-      );
-    }
-    
-    return null;
   };
 
   return (
@@ -125,7 +103,23 @@ const CritiqueTabComponent = ({
       </div>
 
       {/* Message de statut */}
-      <StatusMessage />
+      {submitStatus === 'success' && (
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            Votre critique a été enregistrée avec succès !
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {submitStatus === 'error' && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Erreur lors de l'enregistrement. Veuillez réessayer.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Critique existante */}
       {userRating && userRating > 0 && (userReview || submitStatus === 'success') && (
@@ -154,11 +148,6 @@ const CritiqueTabComponent = ({
                 </p>
               </div>
             )}
-            <div className="text-xs text-muted-foreground">
-              {lastSubmitTime > 0 && submitStatus === 'success' && (
-                <span>Mise à jour il y a quelques instants</span>
-              )}
-            </div>
           </CardContent>
         </Card>
       )}
