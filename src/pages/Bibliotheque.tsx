@@ -105,7 +105,6 @@ const Bibliotheque = () => {
               key={media.id} 
               media={media} 
               from="/bibliotheque"
-              userRating={(media as UserMedia).userRating}
             />
           ))}
         </div>
