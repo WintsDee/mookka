@@ -3,11 +3,12 @@ import React, { useState, useEffect } from "react";
 import { MediaType } from "@/types";
 import { Background } from "@/components/ui/background";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 import { useCollections } from "@/hooks/use-collections";
+import { useMediaRating } from "@/hooks/use-media-rating";
 import { MediaDetailHeader } from "@/components/media-detail/media-detail-header";
 import { MediaContent } from "@/components/media-detail/media-content";
 import { MediaDetailActions } from "@/components/media-detail/media-detail-actions";
-import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface MediaDetailViewProps {
@@ -28,8 +29,8 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
   });
   
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
-  const { addMediaToCollection, isAddingToCollection } = useCollections();
-  const { toast } = useToast();
+  const { addMediaToCollection, isAddingToCollection, showSuccessAnimation: showCollectionSuccess, hideSuccessAnimation: hideCollectionSuccess } = useCollections();
+  const { showSuccessAnimation: showRatingSuccess, hideSuccessAnimation: hideRatingSuccess } = useMediaRating(id, type);
   const [isContentVisible, setIsContentVisible] = useState(false);
   const [isViewReady, setIsViewReady] = useState(false);
 
@@ -56,28 +57,12 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
   }, [id, type, formattedMedia]);
 
   const handleAddToCollection = async (collectionId: string) => {
-    if (!id) {
-      toast({
-        title: "Erreur",
-        description: "Identifiant du média manquant",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!id) return;
     
     try {
       await addMediaToCollection({ collectionId, mediaId: id });
-      toast({
-        title: "Succès",
-        description: "Média ajouté à la collection"
-      });
     } catch (error) {
       console.error("Erreur lors de l'ajout à la collection:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'ajouter ce média à la collection",
-        variant: "destructive",
-      });
     } finally {
       setAddToCollectionOpen(false);
     }
@@ -138,6 +123,18 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
           mediaId={id}
           onAddToCollection={handleAddToCollection}
           isAddingToCollection={isAddingToCollection}
+        />
+        
+        <SuccessAnimation 
+          show={showCollectionSuccess} 
+          message="Ajouté à la collection"
+          onComplete={hideCollectionSuccess}
+        />
+        
+        <SuccessAnimation 
+          show={showRatingSuccess} 
+          message="Note enregistrée"
+          onComplete={hideRatingSuccess}
         />
       </Background>
     );

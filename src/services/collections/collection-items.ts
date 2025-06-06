@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { CollectionItem } from "@/types/collection";
-import { Media, MediaType } from "@/types";
 
 export async function addMediaToCollection(
   collectionId: string, 
@@ -9,6 +8,10 @@ export async function addMediaToCollection(
   position?: number
 ): Promise<CollectionItem> {
   console.log('Adding media to collection:', { collectionId, mediaId });
+  
+  if (!collectionId || !mediaId) {
+    throw new Error('Collection ID et Media ID sont requis');
+  }
   
   try {
     // Vérifier l'authentification
@@ -29,26 +32,30 @@ export async function addMediaToCollection(
       
       if (error) {
         console.error('Error getting position:', error);
-        throw new Error(`Erreur lors de la récupération de la position: ${error.message}`);
+        newPosition = 0;
+      } else {
+        newPosition = data.length > 0 ? data[0].position + 1 : 0;
       }
-      
-      newPosition = data.length > 0 ? data[0].position + 1 : 0;
     }
 
-    // Vérifier que la collection existe
+    // Vérifier que la collection existe et appartient à l'utilisateur
     const { data: collectionExists, error: collectionError } = await supabase
       .from('collections')
-      .select('id')
+      .select('id, owner_id')
       .eq('id', collectionId)
       .maybeSingle();
 
     if (collectionError) {
       console.error('Error checking collection:', collectionError);
-      throw new Error(`Erreur lors de la vérification de la collection: ${collectionError.message}`);
+      throw new Error('Erreur lors de la vérification de la collection');
     }
 
     if (!collectionExists) {
       throw new Error('Cette collection n\'existe pas');
+    }
+
+    if (collectionExists.owner_id !== userData.user.id) {
+      throw new Error('Vous n\'avez pas les droits pour modifier cette collection');
     }
 
     // Vérifier que le média existe dans la table media
@@ -60,7 +67,7 @@ export async function addMediaToCollection(
 
     if (mediaError) {
       console.error('Error checking media existence:', mediaError);
-      throw new Error(`Erreur lors de la vérification du média: ${mediaError.message}`);
+      throw new Error('Erreur lors de la vérification du média');
     }
 
     if (!mediaExists) {
@@ -77,7 +84,7 @@ export async function addMediaToCollection(
 
     if (existingError) {
       console.error('Error checking existing item:', existingError);
-      throw new Error(`Erreur lors de la vérification: ${existingError.message}`);
+      // Ne pas bloquer si c'est juste une erreur de requête
     }
 
     if (existingItem) {
@@ -97,7 +104,7 @@ export async function addMediaToCollection(
 
     if (error) {
       console.error('Error inserting collection item:', error);
-      throw new Error(`Impossible d'ajouter le média à la collection: ${error.message}`);
+      throw new Error('Impossible d\'ajouter le média à la collection');
     }
     
     console.log('Media added successfully:', data);
@@ -131,7 +138,7 @@ export async function removeMediaFromCollection(
 
     if (error) {
       console.error('Error removing media from collection:', error);
-      throw new Error(`Impossible de retirer le média de la collection: ${error.message}`);
+      throw new Error('Impossible de retirer le média de la collection');
     }
     
     console.log('Media removed successfully');
