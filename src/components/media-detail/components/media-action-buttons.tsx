@@ -1,14 +1,17 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, FolderPlus, Trash2 } from "lucide-react";
-import { MediaType, MediaStatus } from "@/types";
+import { ArrowLeft, Folder, Trash2 } from "lucide-react";
+import { MediaType } from "@/types";
+import { MediaTypeIcon } from "./media-type-icon";
+import { StatusDropdown } from "@/components/media-detail/status-dropdown";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MediaActionButtonsProps {
   isInLibrary: boolean;
   mediaId: string;
   mediaType: MediaType;
-  userMediaStatus: MediaStatus | null;
+  userMediaStatus: any;
   onGoBack: () => void;
   onOpenAddDialog: () => void;
   onOpenCollectionDialog: () => void;
@@ -17,44 +20,69 @@ interface MediaActionButtonsProps {
 
 export function MediaActionButtons({
   isInLibrary,
+  mediaId,
+  mediaType,
+  userMediaStatus,
   onGoBack,
   onOpenAddDialog,
   onOpenCollectionDialog,
   onOpenDeleteDialog
 }: MediaActionButtonsProps) {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center justify-between gap-2 mb-safe pb-4">
       <Button
-        variant="outline"
-        size="sm"
-        onClick={onOpenCollectionDialog}
-        className="flex-1"
+        variant="ghost"
+        size="icon"
+        onClick={onGoBack}
+        className="h-10 w-10 rounded-full"
       >
-        <FolderPlus className="h-4 w-4 mr-2" />
-        Collections
+        <ArrowLeft className="h-5 w-5" />
       </Button>
       
-      {isInLibrary ? (
+      <div className="flex items-center gap-2">
+        {/* Status dropdown - only shown for media in library */}
+        {isInLibrary && (
+          <StatusDropdown
+            mediaId={mediaId}
+            mediaType={mediaType}
+            currentStatus={userMediaStatus}
+            isInLibrary={isInLibrary}
+            size="sm"
+          />
+        )}
+        
+        {/* Bouton pour les collections */}
         <Button
-          variant="destructive"
-          size="sm"
-          onClick={onOpenDeleteDialog}
-          className="flex-1"
+          variant="outline"
+          size="icon"
+          className="h-10 w-10 rounded-full"
+          onClick={onOpenCollectionDialog}
         >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Supprimer
+          <Folder className="h-5 w-5" />
         </Button>
-      ) : (
-        <Button
-          variant="default"
-          size="sm"
-          onClick={onOpenAddDialog}
-          className="flex-1"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter
-        </Button>
-      )}
+        
+        {/* Bouton pour supprimer de la bibliothèque - only shown for media in library */}
+        {isInLibrary && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-full"
+            onClick={onOpenDeleteDialog}
+          >
+            <Trash2 className="h-5 w-5" />
+          </Button>
+        )}
+        
+        {/* Bouton principal pour ajouter à la bibliothèque - only shown if not in library */}
+        {!isInLibrary && (
+          <Button onClick={onOpenAddDialog} className="gap-2 rounded-full">
+            <MediaTypeIcon type={mediaType} />
+            {isMobile ? "Ajouter" : "Ajouter à ma bibliothèque"}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

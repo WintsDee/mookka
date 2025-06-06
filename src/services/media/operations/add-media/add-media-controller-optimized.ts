@@ -23,12 +23,6 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
     throw new Error("MediaId et mediaType sont requis");
   }
   
-  // Nettoyer le mediaId - s'assurer qu'il s'agit d'une chaîne valide
-  const cleanMediaId = String(params.mediaId).trim();
-  if (!cleanMediaId) {
-    throw new Error("MediaId invalide");
-  }
-  
   try {
     // 1. Validation utilisateur (avec cache)
     console.log("1. Validation de l'utilisateur...");
@@ -41,7 +35,7 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
     
     // 3. Vérification média existant (avec cache)
     console.log("3. Vérification du média existant...");
-    let existingMedia = await checkExistingMediaOptimized(cleanMediaId);
+    let existingMedia = await checkExistingMediaOptimized(params.mediaId);
     let internalMediaId: string;
     
     if (existingMedia) {
@@ -51,12 +45,10 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
       // 4. Récupération depuis API externe si nécessaire
       console.log("4. Récupération depuis API externe...");
       try {
-        await fetchMediaFromExternalApi(cleanMediaId, params.mediaType);
+        await fetchMediaFromExternalApi(params.mediaId, params.mediaType);
         
-        // Attendre un peu puis vérifier à nouveau
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        existingMedia = await checkExistingMediaOptimized(cleanMediaId);
-        
+        // Vérifier à nouveau
+        existingMedia = await checkExistingMediaOptimized(params.mediaId);
         if (!existingMedia) {
           throw new Error("Impossible de récupérer le média depuis l'API externe");
         }
@@ -81,6 +73,7 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
     console.log("Média ajouté avec succès à la bibliothèque");
   } catch (error) {
     console.error("Erreur dans addMediaToLibraryOptimized:", error);
+    // Assurer qu'on retourne une erreur claire
     if (error instanceof Error) {
       throw error;
     } else {

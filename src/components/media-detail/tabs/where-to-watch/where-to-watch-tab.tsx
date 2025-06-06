@@ -1,10 +1,13 @@
-
 import React from "react";
+import { Card } from "@/components/ui/card";
 import { MediaType } from "@/types";
-import { usePlatforms } from "./use-platforms";
+import { Platform } from "./types";
 import { PlatformList } from "./platform-list";
+import { usePlatforms } from "./use-platforms";
 import { WhereToWatchLoading } from "./where-to-watch-loading";
 import { WhereToWatchEmpty } from "./where-to-watch-empty";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface WhereToWatchTabProps {
   mediaId: string;
@@ -13,63 +16,128 @@ interface WhereToWatchTabProps {
 }
 
 export function WhereToWatchTab({ mediaId, mediaType, title }: WhereToWatchTabProps) {
-  console.log("WhereToWatchTab - Props:", { mediaId, mediaType, title });
+  const { availablePlatforms, isLoading, error, hasAvailablePlatforms } = usePlatforms(mediaId, mediaType, title);
   
-  // Validation des props
-  if (!mediaId || !mediaType) {
-    console.error("WhereToWatchTab - Missing required props:", { mediaId, mediaType });
-    return <WhereToWatchEmpty />;
-  }
-
-  // Hook pour récupérer les plateformes - avec les 3 arguments
-  const { platforms, isLoading, error } = usePlatforms(mediaId, mediaType, title || "");
+  // Log platform data for debugging
+  console.log(`WhereToWatch tab for ${mediaType} ID:${mediaId}`, { availablePlatforms, hasAvailablePlatforms });
   
-  console.log("WhereToWatchTab - Hook result:", { 
-    platformsCount: platforms?.length || 0, 
-    isLoading, 
-    hasError: !!error 
-  });
-
-  // États de chargement et d'erreur
   if (isLoading) {
     return <WhereToWatchLoading />;
   }
-
+  
   if (error) {
-    console.error("WhereToWatchTab - Error:", error);
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Erreur</AlertTitle>
+        <AlertDescription>
+          {error}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!hasAvailablePlatforms) {
     return <WhereToWatchEmpty />;
   }
 
-  if (!platforms || platforms.length === 0) {
-    return <WhereToWatchEmpty />;
+  // For films and series, group by category (subscription, vod, free)
+  if (mediaType === "film" || mediaType === "serie") {
+    // Group platforms by category
+    const groupedByCategory = availablePlatforms.reduce((acc, platform) => {
+      const category = platform.category || "other";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(platform);
+      return acc;
+    }, {} as Record<string, Platform[]>);
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
+
+        {/* Display subscription platforms first */}
+        {groupedByCategory.subscription && groupedByCategory.subscription.length > 0 && (
+          <PlatformList 
+            key="subscription"
+            type="streaming" 
+            category="subscription"
+            platforms={groupedByCategory.subscription} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        {/* Then VOD platforms */}
+        {groupedByCategory.vod && groupedByCategory.vod.length > 0 && (
+          <PlatformList 
+            key="vod"
+            type="purchase" 
+            category="vod"
+            platforms={groupedByCategory.vod} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        {/* Finally free platforms */}
+        {groupedByCategory.free && groupedByCategory.free.length > 0 && (
+          <PlatformList 
+            key="free"
+            type="streaming" 
+            category="free"
+            platforms={groupedByCategory.free} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        {/* Other platforms if any */}
+        {groupedByCategory.other && groupedByCategory.other.length > 0 && (
+          <PlatformList 
+            key="other"
+            type="other" 
+            platforms={groupedByCategory.other} 
+            mediaType={mediaType}
+            title={title}
+          />
+        )}
+
+        <div className="text-xs text-muted-foreground mt-4 text-center">
+          Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
+        </div>
+      </div>
+    );
+  } else {
+    // Pour les livres et jeux, conserver le regroupement par type
+    const groupedPlatforms = availablePlatforms.reduce((acc, platform) => {
+      const type = platform.type;
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(platform);
+      return acc;
+    }, {} as Record<string, Platform[]>);
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium mb-4">Où voir ou acheter ce média ?</h2>
+
+        {Object.entries(groupedPlatforms).map(([type, typePlatforms]) => (
+          <PlatformList 
+            key={type}
+            type={type} 
+            platforms={typePlatforms} 
+            mediaType={mediaType}
+            title={title}
+          />
+        ))}
+
+        <div className="text-xs text-muted-foreground mt-4 text-center">
+          Remarque: Ces liens vous dirigent vers les résultats de recherche pour "{title}" sur chaque plateforme.
+        </div>
+      </div>
+    );
   }
-
-  // Grouper les plateformes par type et catégorie
-  const groupedPlatforms = platforms.reduce((acc, platform) => {
-    const key = `${platform.type}-${platform.category || 'default'}`;
-    if (!acc[key]) {
-      acc[key] = {
-        type: platform.type,
-        category: platform.category,
-        platforms: []
-      };
-    }
-    acc[key].platforms.push(platform);
-    return acc;
-  }, {} as Record<string, { type: string; category?: string; platforms: any[] }>);
-
-  return (
-    <div className="p-4 space-y-4">
-      {Object.values(groupedPlatforms).map((group, index) => (
-        <PlatformList 
-          key={index}
-          type={group.type}
-          category={group.category}
-          platforms={group.platforms} 
-          mediaType={mediaType}
-          title={title}
-        />
-      ))}
-    </div>
-  );
 }
