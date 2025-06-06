@@ -33,11 +33,11 @@ export function MediaRatingStars({
   
   return (
     <div className={cn(
-      "flex items-center justify-center flex-wrap", 
+      "flex items-center whitespace-nowrap min-w-0", 
       containerClasses[size], 
       className
     )}>
-      <div className={cn("flex items-center", containerClasses[size])}>
+      <div className={cn("flex items-center flex-shrink-0", containerClasses[size])}>
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
@@ -53,7 +53,7 @@ export function MediaRatingStars({
       </div>
       {showNumber && (
         <span className={cn(
-          "font-medium text-primary ml-1 whitespace-nowrap", 
+          "font-medium text-primary ml-1 flex-shrink-0", 
           containerClasses[size].split(' ')[1]
         )}>
           {rating}/10

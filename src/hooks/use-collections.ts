@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { 
   getMyCollections, 
   getPublicCollections,
@@ -14,9 +13,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useProfile } from '@/hooks/use-profile';
 
 export function useCollections() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAuthenticated } = useProfile();
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const { 
     data: myCollections = [], 
@@ -59,18 +58,10 @@ export function useCollections() {
     }) => createCollection(collectionData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections', 'my'] });
-      toast({
-        title: "Collection créée",
-        description: "Votre collection a été créée avec succès"
-      });
+      setShowSuccessAnimation(true);
     },
     onError: (error: any) => {
       console.error('Error creating collection:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible de créer la collection",
-        variant: "destructive"
-      });
     }
   });
   
@@ -83,18 +74,10 @@ export function useCollections() {
       console.log('Successfully added to collection:', data);
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['media-collections', variables.mediaId] });
-      toast({
-        title: "Média ajouté",
-        description: "Le média a été ajouté à la collection"
-      });
+      setShowSuccessAnimation(true);
     },
     onError: (error: any) => {
       console.error('Error adding to collection:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'ajouter le média à la collection",
-        variant: "destructive"
-      });
     }
   });
   
@@ -123,6 +106,8 @@ export function useCollections() {
     isCreatingCollection: createCollectionMutation.isPending,
     addMediaToCollection: addToCollectionMutation.mutate,
     isAddingToCollection: addToCollectionMutation.isPending,
-    getCollectionsContainingMedia
+    getCollectionsContainingMedia,
+    showSuccessAnimation,
+    hideSuccessAnimation: () => setShowSuccessAnimation(false)
   };
 }

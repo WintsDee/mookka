@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Media } from "@/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban } from "lucide-react";
+import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
 import { MediaRatingStars } from "@/components/media-rating-stars";
@@ -33,7 +33,7 @@ const MediaCard = ({
       : parseFloat(((media.rating / 5) * 10).toFixed(1))
     : undefined;
 
-  const { id, title, type, coverImage, year, genres, status, duration } = media;
+  const { id, title, type, coverImage, year, status, duration } = media;
   const isMobile = useIsMobile();
   
   const sizeClasses = {
@@ -57,52 +57,44 @@ const MediaCard = ({
     }
   };
   
-  const getStatusBadge = () => {
+  const getStatusIcon = () => {
     if (!status || !showStatusBadge) return null;
     
-    let statusClass = "";
-    let statusText = "";
     let StatusIcon = null;
+    let iconClass = "";
     
     switch (status) {
-      // Statuts "à faire"
       case "to-watch":
       case "to-read":
       case "to-play":
-        statusClass = "bg-amber-500/20 border-amber-500/30 text-amber-300";
-        statusText = type === "book" ? "À lire" : type === "game" ? "À jouer" : "À voir";
         StatusIcon = Eye;
+        iconClass = "bg-amber-500 text-white";
         break;
-      
-      // Statuts "en cours"
       case "watching":
       case "reading":
       case "playing":
-        statusClass = "bg-purple-500/20 border-purple-500/30 text-purple-300";
-        statusText = "En cours";
-        StatusIcon = Clock;
+        StatusIcon = Play;
+        iconClass = "bg-blue-500 text-white";
         break;
-      
-      // Statut "terminé"
       case "completed":
-        statusClass = "bg-emerald-500/20 border-emerald-500/30 text-emerald-300";
-        statusText = type === "book" ? "Lu" : type === "film" ? "Vu" : "Terminé";
         StatusIcon = Check;
+        iconClass = "bg-emerald-500 text-white";
         break;
-
-      // Nouveau statut "abandonné"
       case "abandoned":
-        statusClass = "bg-gray-500/20 border-gray-500/30 text-gray-300";
-        statusText = "Abandonné";
         StatusIcon = Ban;
+        iconClass = "bg-red-500 text-white";
         break;
+      default:
+        return null;
     }
     
     return (
-      <Badge className={`absolute top-2 left-2 text-[0.6rem] py-0 border ${statusClass} flex items-center gap-1 shadow-sm backdrop-blur-sm z-10`}>
-        {StatusIcon && <StatusIcon className="h-3 w-3" />}
-        {statusText}
-      </Badge>
+      <div className={cn(
+        "absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10",
+        iconClass
+      )}>
+        <StatusIcon className="h-4 w-4" />
+      </div>
     );
   };
   
@@ -125,19 +117,8 @@ const MediaCard = ({
             className="w-full h-full object-cover rounded-lg"
           />
           
-          {/* Status Badge */}
-          {getStatusBadge()}
-
-          {/* User Rating Badge */}
-          {userRating && (
-            <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm rounded-full px-2 py-1">
-              <MediaRatingStars 
-                rating={userRating} 
-                size="small" 
-                showNumber={false}
-              />
-            </div>
-          )}
+          {/* Status Icon */}
+          {getStatusIcon()}
 
           {/* Type Badge - Repositioned for mobile */}
           {!userRating && (
@@ -153,7 +134,7 @@ const MediaCard = ({
             ) : (
               <Badge 
                 variant={getTypeVariant()} 
-                className="absolute top-2 right-2 text-[0.6rem] py-0 shadow-md font-semibold border border-white/20"
+                className="absolute top-2 right-2 text-xs py-1 px-2 shadow-md font-semibold border border-white/20"
               >
                 <MediaTypeIcon />
                 {type === "film" ? "Film" : 
@@ -164,43 +145,42 @@ const MediaCard = ({
           )}
           
           {/* Information - Always visible */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent rounded-lg">
             <div className="absolute bottom-0 left-0 p-3 w-full">
-              <h3 className="text-white font-bold text-sm line-clamp-2">{title}</h3>
+              <h3 className="text-white font-bold text-sm line-clamp-2 mb-2">{title}</h3>
               {showDetails && (
                 <>
-                  <div className="flex items-center justify-between mt-1">
-                    <div className="flex items-center">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center min-w-0 flex-1">
                       <MediaTypeIcon />
-                      <span className="text-xs text-white/80">{year}</span>
+                      <span className="text-xs text-white/80 truncate">{year}</span>
                     </div>
-                    {normalizedRating && !userRating && (
-                      <MediaRatingBadge 
-                        rating={normalizedRating} 
-                        size="small" 
-                      />
-                    )}
-                    {userRating && (
-                      <MediaRatingStars 
-                        rating={userRating} 
-                        size="small"
-                        className="bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5"
-                      />
-                    )}
+                    
+                    {/* Ratings section - User rating above general rating */}
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+                      {userRating && (
+                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
+                          <MediaRatingStars 
+                            rating={userRating} 
+                            size="small"
+                            showNumber={false}
+                            className="text-white"
+                          />
+                        </div>
+                      )}
+                      {normalizedRating && (
+                        <MediaRatingBadge 
+                          rating={normalizedRating} 
+                          size="small" 
+                        />
+                      )}
+                    </div>
                   </div>
+                  
                   {duration && (
-                    <div className="flex items-center mt-1">
+                    <div className="flex items-center">
                       <Clock className="h-3 w-3 text-white/60 mr-1" />
                       <span className="text-xs text-white/60">{duration}</span>
-                    </div>
-                  )}
-                  {genres && genres.length > 0 && (
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                      {genres.slice(0, 2).map((genre) => (
-                        <Badge key={genre} variant="outline" className="text-[0.6rem] py-0 border-white/20 text-white/90">
-                          {genre}
-                        </Badge>
-                      ))}
                     </div>
                   )}
                 </>
