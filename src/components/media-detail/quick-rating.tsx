@@ -45,6 +45,11 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
       }
     } catch (error) {
       console.error("Erreur lors de la notation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre note",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -107,12 +112,12 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
             )}
           </div>
           
-          <div className="flex items-center gap-1 justify-center">
+          <div className="grid grid-cols-5 gap-1 max-w-full overflow-hidden">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
               <button
                 key={rating}
                 className={cn(
-                  "p-1.5 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full",
+                  "p-1 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full flex items-center justify-center min-w-0",
                   isSubmitting && "opacity-50 cursor-not-allowed"
                 )}
                 onMouseEnter={() => setHoveredRating(rating)}
@@ -122,7 +127,7 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
               >
                 <Star
                   className={cn(
-                    "w-6 h-6 transition-all duration-300",
+                    "w-5 h-5 transition-all duration-300 flex-shrink-0",
                     rating <= (hoveredRating || userRating || 0)
                       ? "fill-primary text-primary drop-shadow-md scale-105"
                       : "text-muted-foreground/40 hover:text-primary/60 hover:scale-105"
@@ -132,7 +137,7 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
             ))}
           </div>
           
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground px-1">
             <span>1</span>
             <span>5</span>
             <span>10</span>

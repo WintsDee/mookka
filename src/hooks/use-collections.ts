@@ -20,28 +20,34 @@ export function useCollections() {
 
   const { 
     data: myCollections = [], 
-    isLoading: loadingMyCollections 
+    isLoading: loadingMyCollections,
+    error: myCollectionsError 
   } = useQuery({
     queryKey: ['collections', 'my'],
     queryFn: getMyCollections,
-    enabled: isAuthenticated
+    enabled: isAuthenticated,
+    retry: 2
   });
 
   const { 
     data: publicCollections = [], 
-    isLoading: loadingPublicCollections 
+    isLoading: loadingPublicCollections,
+    error: publicCollectionsError 
   } = useQuery({
     queryKey: ['collections', 'public'],
-    queryFn: getPublicCollections
+    queryFn: getPublicCollections,
+    retry: 2
   });
   
   const { 
     data: followedCollections = [], 
-    isLoading: loadingFollowedCollections 
+    isLoading: loadingFollowedCollections,
+    error: followedCollectionsError 
   } = useQuery({
     queryKey: ['collections', 'followed'],
     queryFn: getFollowedCollections,
-    enabled: isAuthenticated
+    enabled: isAuthenticated,
+    retry: 2
   });
 
   const createCollectionMutation = useMutation({
@@ -69,10 +75,14 @@ export function useCollections() {
   });
   
   const addToCollectionMutation = useMutation({
-    mutationFn: ({ collectionId, mediaId }: { collectionId: string; mediaId: string }) => 
-      addMediaToCollection(collectionId, mediaId),
-    onSuccess: () => {
+    mutationFn: ({ collectionId, mediaId }: { collectionId: string; mediaId: string }) => {
+      console.log('Adding media to collection:', { collectionId, mediaId });
+      return addMediaToCollection(collectionId, mediaId);
+    },
+    onSuccess: (data, variables) => {
+      console.log('Successfully added to collection:', data);
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['media-collections', variables.mediaId] });
       toast({
         title: "Média ajouté",
         description: "Le média a été ajouté à la collection"
@@ -91,7 +101,10 @@ export function useCollections() {
   const getCollectionsContainingMedia = async (mediaId: string) => {
     if (!mediaId) return [];
     try {
-      return await getCollectionsForMedia(mediaId);
+      console.log('Getting collections for media:', mediaId);
+      const collections = await getCollectionsForMedia(mediaId);
+      console.log('Collections found:', collections);
+      return collections;
     } catch (error) {
       console.error('Error getting collections for media:', error);
       return [];
@@ -105,6 +118,7 @@ export function useCollections() {
     loadingMyCollections,
     loadingPublicCollections,
     loadingFollowedCollections,
+    collectionsError: myCollectionsError || publicCollectionsError || followedCollectionsError,
     createCollection: createCollectionMutation.mutate,
     isCreatingCollection: createCollectionMutation.isPending,
     addMediaToCollection: addToCollectionMutation.mutate,

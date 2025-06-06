@@ -13,6 +13,11 @@ const cacheTimestamps = new Map<string, number>();
  * Vérifie si un média existe déjà dans la base de données (version optimisée)
  */
 export async function checkExistingMediaOptimized(mediaId: string): Promise<{ id: string, title: string } | null> {
+  if (!mediaId) {
+    console.error('MediaId is required');
+    return null;
+  }
+
   // Vérifier le cache d'abord
   const cacheKey = mediaId;
   const cachedResult = mediaCache.get(cacheKey);
@@ -40,19 +45,26 @@ export async function checkExistingMediaOptimized(mediaId: string): Promise<{ id
     const { data, error } = await query.maybeSingle();
     
     if (error) {
+      console.error(`Erreur lors de la requête média ${mediaId}:`, error);
+      
       if (isAuthError(error)) {
-        await supabase.auth.refreshSession();
-        // Retry une seule fois
-        const { data: retryData, error: retryError } = await query.maybeSingle();
-        if (retryError) {
-          throw new Error("Problème d'authentification - Veuillez vous reconnecter");
+        try {
+          await supabase.auth.refreshSession();
+          // Retry une seule fois
+          const { data: retryData, error: retryError } = await query.maybeSingle();
+          if (retryError) {
+            throw new Error("Problème d'authentification - Veuillez vous reconnecter");
+          }
+          // Mettre en cache le résultat du retry
+          mediaCache.set(cacheKey, retryData);
+          cacheTimestamps.set(cacheKey, Date.now());
+          return retryData;
+        } catch (refreshError) {
+          console.error('Erreur lors du refresh de session:', refreshError);
+          throw new Error("Session expirée - Veuillez vous reconnecter");
         }
-        // Mettre en cache le résultat du retry
-        mediaCache.set(cacheKey, retryData);
-        cacheTimestamps.set(cacheKey, Date.now());
-        return retryData;
       } else {
-        throw error;
+        throw new Error(`Erreur de base de données: ${error.message}`);
       }
     }
     
@@ -60,9 +72,11 @@ export async function checkExistingMediaOptimized(mediaId: string): Promise<{ id
     mediaCache.set(cacheKey, data);
     cacheTimestamps.set(cacheKey, Date.now());
     
+    console.log(`Résultat de la vérification pour ${mediaId}:`, data ? 'trouvé' : 'non trouvé');
     return data;
   } catch (error) {
     console.error(`Erreur lors de la vérification du média ${mediaId}:`, error);
+    // Ne pas mettre en cache les erreurs
     throw error;
   }
 }

@@ -17,44 +17,45 @@ export function MediaRatingStars({
   className 
 }: MediaRatingStarsProps) {
   const sizeClasses = {
-    small: "w-3.5 h-3.5",
+    small: "w-3 h-3",
     medium: "w-4 h-4", 
     large: "w-5 h-5"
   };
   
   const containerClasses = {
-    small: "gap-0.5",
-    medium: "gap-1",
-    large: "gap-1"
-  };
-
-  const textClasses = {
-    small: "text-xs",
-    medium: "text-sm",
-    large: "text-base"
+    small: "gap-0.5 text-xs",
+    medium: "gap-1 text-sm",
+    large: "gap-1.5 text-base"
   };
 
   // Calculer le nombre d'étoiles pleines (sur 5 étoiles)
   const starRating = Math.round((rating / 10) * 5);
   
   return (
-    <div className={cn("flex items-center", containerClasses[size], className)}>
-      <div className={cn("flex", containerClasses[size])}>
+    <div className={cn(
+      "flex items-center justify-center flex-wrap", 
+      containerClasses[size], 
+      className
+    )}>
+      <div className={cn("flex items-center", containerClasses[size])}>
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
             className={cn(
               sizeClasses[size],
-              "transition-all duration-200 drop-shadow-sm",
+              "transition-all duration-200 flex-shrink-0",
               star <= starRating
-                ? "fill-primary text-primary shadow-sm"
-                : "text-muted-foreground/40 hover:text-muted-foreground/60"
+                ? "fill-primary text-primary drop-shadow-sm"
+                : "text-muted-foreground/40"
             )}
           />
         ))}
       </div>
       {showNumber && (
-        <span className={cn("font-medium text-primary ml-1.5", textClasses[size])}>
+        <span className={cn(
+          "font-medium text-primary ml-1 whitespace-nowrap", 
+          containerClasses[size].split(' ')[1]
+        )}>
           {rating}/10
         </span>
       )}

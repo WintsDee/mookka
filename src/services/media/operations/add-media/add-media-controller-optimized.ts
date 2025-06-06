@@ -25,12 +25,16 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
   
   try {
     // 1. Validation utilisateur (avec cache)
+    console.log("1. Validation de l'utilisateur...");
     const userId = await validateUserSessionOptimized();
+    console.log("Utilisateur validé:", userId);
     
     // 2. Déterminer le statut par défaut
     const effectiveStatus = params.status || getDefaultStatus(params.mediaType);
+    console.log("Statut effectif:", effectiveStatus);
     
     // 3. Vérification média existant (avec cache)
+    console.log("3. Vérification du média existant...");
     let existingMedia = await checkExistingMediaOptimized(params.mediaId);
     let internalMediaId: string;
     
@@ -39,18 +43,25 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
       console.log(`Média trouvé: ${internalMediaId}`);
     } else {
       // 4. Récupération depuis API externe si nécessaire
-      console.log("Récupération depuis API externe...");
-      await fetchMediaFromExternalApi(params.mediaId, params.mediaType);
-      
-      // Vérifier à nouveau
-      existingMedia = await checkExistingMediaOptimized(params.mediaId);
-      if (!existingMedia) {
-        throw new Error("Impossible de récupérer le média depuis l'API externe");
+      console.log("4. Récupération depuis API externe...");
+      try {
+        await fetchMediaFromExternalApi(params.mediaId, params.mediaType);
+        
+        // Vérifier à nouveau
+        existingMedia = await checkExistingMediaOptimized(params.mediaId);
+        if (!existingMedia) {
+          throw new Error("Impossible de récupérer le média depuis l'API externe");
+        }
+        internalMediaId = existingMedia.id;
+        console.log("Média récupéré et ajouté:", internalMediaId);
+      } catch (apiError) {
+        console.error("Erreur API externe:", apiError);
+        throw new Error("Ce média n'est pas disponible actuellement. Veuillez réessayer plus tard.");
       }
-      internalMediaId = existingMedia.id;
     }
     
     // 5. Ajout/mise à jour dans la bibliothèque utilisateur (optimisé)
+    console.log("5. Ajout à la bibliothèque utilisateur...");
     await addOrUpdateUserMediaOptimized({
       userId,
       mediaId: internalMediaId,
@@ -62,7 +73,12 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
     console.log("Média ajouté avec succès à la bibliothèque");
   } catch (error) {
     console.error("Erreur dans addMediaToLibraryOptimized:", error);
-    throw error;
+    // Assurer qu'on retourne une erreur claire
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error("Une erreur inattendue s'est produite lors de l'ajout du média");
+    }
   }
 }
 
