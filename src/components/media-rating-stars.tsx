@@ -17,7 +17,7 @@ export function MediaRatingStars({
   className 
 }: MediaRatingStarsProps) {
   const sizeClasses = {
-    small: "w-3 h-3",
+    small: "w-3.5 h-3.5",
     medium: "w-4 h-4", 
     large: "w-5 h-5"
   };
@@ -45,15 +45,16 @@ export function MediaRatingStars({
             key={star}
             className={cn(
               sizeClasses[size],
+              "transition-all duration-200 drop-shadow-sm",
               star <= starRating
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-300"
+                ? "fill-primary text-primary shadow-sm"
+                : "text-muted-foreground/40 hover:text-muted-foreground/60"
             )}
           />
         ))}
       </div>
       {showNumber && (
-        <span className={cn("font-medium text-yellow-600 ml-1", textClasses[size])}>
+        <span className={cn("font-medium text-primary ml-1.5", textClasses[size])}>
           {rating}/10
         </span>
       )}

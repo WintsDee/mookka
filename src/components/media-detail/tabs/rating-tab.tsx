@@ -24,39 +24,25 @@ const CritiqueTabComponent = ({
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
 
-  // Validation des props renforcée
-  const isValidProps = useMemo(() => {
-    const isValid = Boolean(
-      mediaId && 
-      mediaType && 
-      mediaId.trim() !== '' && 
-      ['film', 'serie', 'book', 'game'].includes(mediaType)
-    );
-    return isValid;
-  }, [mediaId, mediaType]);
-
-  // Hook avec gestion d'erreur améliorée
-  const ratingHookResult = useMediaRating(
-    isValidProps ? mediaId : '', 
-    isValidProps ? mediaType : 'film'
-  );
-
-  // Affichage sécurisé des états d'erreur
-  if (!isValidProps) {
+  // Validation simple des props
+  if (!mediaId || !mediaType) {
     return (
       <div className="space-y-6 p-4">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Impossible de charger les critiques : identifiant du média manquant ou invalide.
+            Impossible de charger les critiques : données du média manquantes.
           </AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  // Vérification de la réponse du hook avec fallback
-  const { userRating, userReview, isSubmitting, isLoading } = ratingHookResult || {
+  // Hook avec gestion d'erreur simple
+  const ratingData = useMediaRating(mediaId, mediaType);
+
+  // Vérification de la réponse du hook avec fallback sécurisé
+  const { userRating, userReview, isSubmitting, isLoading } = ratingData || {
     userRating: null,
     userReview: null,
     isSubmitting: false,

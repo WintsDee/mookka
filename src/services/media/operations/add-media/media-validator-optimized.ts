@@ -30,9 +30,11 @@ export async function checkExistingMediaOptimized(mediaId: string): Promise<{ id
     let query = supabase.from('media').select('id, title, external_id');
     
     if (isUuid) {
+      // Si c'est un UUID, chercher par ID interne
       query = query.eq('id', mediaId);
     } else {
-      query = query.eq('external_id', mediaId.toString());
+      // Si ce n'est pas un UUID, chercher par external_id
+      query = query.eq('external_id', String(mediaId));
     }
     
     const { data, error } = await query.maybeSingle();

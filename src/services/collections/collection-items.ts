@@ -28,7 +28,7 @@ export async function addMediaToCollection(
     newPosition = data.length > 0 ? data[0].position + 1 : 0;
   }
 
-  // Vérifier d'abord si le média existe dans la table media
+  // Vérifier d'abord si le média existe dans la table media avec l'UUID
   const { data: mediaExists, error: mediaError } = await supabase
     .from('media')
     .select('id')
@@ -53,7 +53,7 @@ export async function addMediaToCollection(
     .from('collection_items')
     .insert({
       collection_id: collectionId,
-      media_id: mediaId,
+      media_id: mediaExists.id, // Utiliser l'UUID du média
       position: newPosition,
       added_by: userId.user.id
     })

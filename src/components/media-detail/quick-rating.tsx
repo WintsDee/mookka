@@ -112,7 +112,7 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
               <button
                 key={rating}
                 className={cn(
-                  "p-1 transition-all duration-300 hover:scale-125 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full",
+                  "p-1.5 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-full",
                   isSubmitting && "opacity-50 cursor-not-allowed"
                 )}
                 onMouseEnter={() => setHoveredRating(rating)}
@@ -124,8 +124,8 @@ export function QuickRating({ mediaId, mediaType, onRatingUpdate }: QuickRatingP
                   className={cn(
                     "w-6 h-6 transition-all duration-300",
                     rating <= (hoveredRating || userRating || 0)
-                      ? "fill-yellow-400 text-yellow-400 drop-shadow-md"
-                      : "text-gray-300 hover:text-yellow-200"
+                      ? "fill-primary text-primary drop-shadow-md scale-105"
+                      : "text-muted-foreground/40 hover:text-primary/60 hover:scale-105"
                   )}
                 />
               </button>
