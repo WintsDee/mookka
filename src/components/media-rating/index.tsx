@@ -1,231 +1,118 @@
 
-import React, { useState, useEffect } from "react";
-import { RatingSlider } from "./rating-slider";
-import { ReviewTextarea } from "./review-textarea";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Star, CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormField } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { MediaType } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { NotLoggedInCard } from "./not-logged-in-card";
-import { useAuthState } from "@/hooks/use-auth-state";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMediaRating } from "@/hooks/use-media-rating";
-import { useToast } from "@/hooks/use-toast";
+import { RatingProgress } from "./rating-progress";
+import { Loader2, Star } from "lucide-react";
 
-export interface MediaRatingProps {
+const formSchema = z.object({
+  rating: z.number().min(1).max(10),
+  review: z.string().optional(),
+});
+
+interface MediaRatingProps {
   mediaId: string;
   mediaType: MediaType;
   initialNotes?: string;
-  onRatingComplete?: (rating?: number) => void;
+  onRatingComplete?: () => void;
   onRatingError?: () => void;
 }
 
 export function MediaRating({ 
   mediaId, 
   mediaType, 
-  initialNotes = "", 
+  initialNotes = "",
   onRatingComplete,
   onRatingError
 }: MediaRatingProps) {
-  const [rating, setRating] = useState<number | null>(null);
-  const [notes, setNotes] = useState(initialNotes || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasChanged, setHasChanged] = useState(false);
-  const { isAuthenticated, session } = useAuthState();
-  const { toast } = useToast();
-  
-  const { 
-    submitRating, 
-    isSubmitting: isRatingSubmitting, 
-    userRating, 
-    userReview 
-  } = useMediaRating(mediaId, mediaType);
-  
-  // Initialiser avec les données existantes
-  useEffect(() => {
-    if (userRating !== null && userRating !== undefined) {
-      setRating(userRating);
-    }
-    if (userReview) {
-      setNotes(userReview);
-    }
-  }, [userRating, userReview]);
-  
-  const handleRatingChange = (value: number) => {
-    setRating(value);
-    setHasChanged(true);
-  };
-  
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNotes(e.target.value);
-    setHasChanged(true);
-  };
-  
-  const handleSubmit = async () => {
-    if (!rating || rating === 0) {
-      toast({
-        title: "Note requise",
-        description: "Veuillez attribuer une note avant de publier votre critique",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+  const { submitRating, isSubmitting, userRating } = useMediaRating(mediaId, mediaType);
+  const [rating, setRating] = useState(userRating || 5);
+  const [review, setReview] = useState(initialNotes);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      rating: userRating || 5,
+      review: initialNotes,
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setIsSubmitting(true);
-      console.log('Soumission de la critique:', { rating, notes, mediaId, mediaType });
-      
       const success = await submitRating({
-        rating,
-        review: notes,
-        notes: notes
+        rating: values.rating,
+        review: values.review || "",
+        notes: values.review || ""
       });
       
       if (success) {
-        console.log('Critique soumise avec succès');
-        setHasChanged(false);
-        
-        toast({
-          title: "Critique publiée",
-          description: "Votre critique a été enregistrée avec succès",
-        });
-        
-        if (onRatingComplete) {
-          onRatingComplete(rating);
-        }
+        onRatingComplete?.();
       } else {
-        console.error('Échec de la soumission de la critique');
-        if (onRatingError) {
-          onRatingError();
-        }
+        onRatingError?.();
       }
     } catch (error) {
-      console.error("Erreur lors de la soumission de la critique:", error);
-      
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer votre critique. Veuillez réessayer.",
-        variant: "destructive",
-      });
-      
-      if (onRatingError) {
-        onRatingError();
-      }
-    } finally {
-      setIsSubmitting(false);
+      console.error("Erreur lors de la soumission:", error);
+      onRatingError?.();
     }
   };
-  
-  if (!isAuthenticated) {
-    return <NotLoggedInCard />;
-  }
-  
-  if (isRatingSubmitting && !userRating) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-center space-y-2">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-sm text-muted-foreground">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const userAvatarUrl = session?.user?.user_metadata?.avatar_url || null;
-  const userName = session?.user?.user_metadata?.full_name || session?.user?.email || "Utilisateur";
-  const isUpdating = userRating && userRating > 0;
-  
+
   return (
     <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center mb-6">
-          <Avatar className="h-10 w-10 mr-3 border border-border/50">
-            <AvatarImage 
-              src={userAvatarUrl || undefined}
-              alt={userName}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-secondary text-secondary-foreground">
-              {userName.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{userName}</p>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <span>
-                {isUpdating ? "Modifiez votre avis" : "Votre avis compte"}
-              </span>
-              {isUpdating && (
-                <CheckCircle className="h-3 w-3 ml-1 text-green-600" />
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Star className="h-5 w-5" />
+          Noter ce média
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="rating"
+              render={({ field }) => (
+                <RatingProgress
+                  value={rating}
+                  onChange={(newRating) => {
+                    setRating(newRating);
+                    field.onChange(newRating);
+                  }}
+                />
               )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Note</p>
-              {rating && rating > 0 && (
-                <span className="text-sm text-muted-foreground">
-                  {rating}/10
-                </span>
-              )}
-            </div>
-            <RatingSlider value={rating || 0} onChange={handleRatingChange} />
-          </div>
-          
-          <div className="space-y-2">
-            <p className="text-sm font-medium">
-              Critique {notes.length > 0 && <span className="text-muted-foreground">({notes.length} caractères)</span>}
-            </p>
-            <ReviewTextarea 
-              value={notes} 
-              onChange={handleNotesChange}
-              placeholder={isUpdating ? "Modifiez votre critique..." : "Partagez votre avis sur ce média..."}
             />
-          </div>
-          
-          <div className="flex justify-end gap-2">
-            {hasChanged && (
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  if (userRating) setRating(userRating);
-                  if (userReview) setNotes(userReview);
-                  setHasChanged(false);
+
+            <div className="space-y-2">
+              <Label htmlFor="review">Votre avis (optionnel)</Label>
+              <Textarea
+                id="review"
+                placeholder="Partagez votre avis sur ce média..."
+                value={review}
+                onChange={(e) => {
+                  setReview(e.target.value);
+                  form.setValue("review", e.target.value);
                 }}
-                disabled={isSubmitting}
-              >
-                Annuler
-              </Button>
-            )}
-            
+                className="min-h-[100px]"
+              />
+            </div>
+
             <Button 
-              onClick={handleSubmit} 
-              disabled={isSubmitting || !rating || rating === 0}
-              className="gap-2"
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Enregistrement...
-                </>
-              ) : (
-                <>
-                  <Star className="h-4 w-4" />
-                  {isUpdating ? "Mettre à jour ma critique" : "Publier ma critique"}
-                </>
-              )}
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {userRating ? "Mettre à jour" : "Publier"} ma critique
             </Button>
-          </div>
-          
-          {!hasChanged && isUpdating && (
-            <p className="text-xs text-muted-foreground text-center">
-              Votre critique est déjà publiée. Modifiez-la pour voir les changements.
-            </p>
-          )}
-        </div>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );

@@ -22,7 +22,7 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia }: WhereToW
   }
 
   // Hook pour récupérer les plateformes
-  const { platforms, isLoading, error } = usePlatforms(mediaType, formattedMedia);
+  const { platforms, isLoading, error } = usePlatforms(mediaType, formattedMedia, formattedMedia?.title || "");
   
   console.log("WhereToWatchTab - Hook result:", { 
     platformsCount: platforms?.length || 0, 
@@ -46,7 +46,12 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia }: WhereToW
 
   return (
     <div className="p-4">
-      <PlatformList platforms={platforms} mediaType={mediaType} />
+      <PlatformList 
+        type="streaming"
+        platforms={platforms} 
+        mediaType={mediaType}
+        title={formattedMedia?.title || ""}
+      />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
-import { MediaRatingStars } from "@/components/media-rating-stars";
 
 interface MediaCardProps {
   media: Media;
@@ -120,29 +119,16 @@ const MediaCard = ({
           {/* Status Icon */}
           {getStatusIcon()}
 
-          {/* Type Badge - Repositioned for mobile */}
-          {!userRating && (
-            isMobile ? (
-              <div className="absolute top-0 right-0">
-                <div className={cn(
-                  "w-5 h-5 rounded-tr-lg flex items-center justify-center",
-                  `bg-media-${type}`
-                )}>
-                  <MediaTypeIcon />
-                </div>
-              </div>
-            ) : (
-              <Badge 
-                variant={getTypeVariant()} 
-                className="absolute top-2 right-2 text-xs py-1 px-2 shadow-md font-semibold border border-white/20"
-              >
-                <MediaTypeIcon />
-                {type === "film" ? "Film" : 
-                 type === "serie" ? "Série" : 
-                 type === "book" ? "Livre" : "Jeu"}
-              </Badge>
-            )
-          )}
+          {/* Type Badge */}
+          <Badge 
+            variant={getTypeVariant()} 
+            className="absolute top-2 right-2 text-xs py-1 px-2 shadow-md font-semibold border border-white/20"
+          >
+            <MediaTypeIcon />
+            {type === "film" ? "Film" : 
+             type === "serie" ? "Série" : 
+             type === "book" ? "Livre" : "Jeu"}
+          </Badge>
           
           {/* Information - Always visible */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent rounded-lg">
@@ -156,16 +142,13 @@ const MediaCard = ({
                       <span className="text-xs text-white/80 truncate">{year}</span>
                     </div>
                     
-                    {/* Ratings section - User rating above general rating */}
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+                    {/* Ratings section */}
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                       {userRating && (
-                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
-                          <MediaRatingStars 
-                            rating={userRating} 
-                            size="small"
-                            showNumber={false}
-                            className="text-white"
-                          />
+                        <div className="bg-blue-600/90 backdrop-blur-sm rounded px-2 py-0.5">
+                          <span className="text-white text-xs font-medium">
+                            {userRating}/10
+                          </span>
                         </div>
                       )}
                       {normalizedRating && (
