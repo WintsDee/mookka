@@ -150,16 +150,16 @@ const MediaCard = ({
               <h3 className="text-white font-bold text-sm line-clamp-2 mb-2">{title}</h3>
               {showDetails && (
                 <>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center min-w-0 flex-1">
+                  <div className="flex items-center justify-between mb-1 min-w-0">
+                    <div className="flex items-center min-w-0 flex-1 mr-2">
                       <MediaTypeIcon />
                       <span className="text-xs text-white/80 truncate">{year}</span>
                     </div>
                     
-                    {/* Ratings section - User rating above general rating */}
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
+                    {/* Ratings section - User rating above general rating - Ensure single line */}
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0 min-w-0">
                       {userRating && (
-                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
+                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-1.5 py-0.5 max-w-full">
                           <MediaRatingStars 
                             rating={userRating} 
                             size="small"
@@ -169,18 +169,20 @@ const MediaCard = ({
                         </div>
                       )}
                       {normalizedRating && (
-                        <MediaRatingBadge 
-                          rating={normalizedRating} 
-                          size="small" 
-                        />
+                        <div className="max-w-full">
+                          <MediaRatingBadge 
+                            rating={normalizedRating} 
+                            size="small" 
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
                   
                   {duration && (
                     <div className="flex items-center">
-                      <Clock className="h-3 w-3 text-white/60 mr-1" />
-                      <span className="text-xs text-white/60">{duration}</span>
+                      <Clock className="h-3 w-3 text-white/60 mr-1 flex-shrink-0" />
+                      <span className="text-xs text-white/60 truncate">{duration}</span>
                     </div>
                   )}
                 </>
