@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, BookOpen, Gamepad, Film, Tv, Check, Eye, Ban, Play } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MediaRatingBadge } from "@/components/media-detail/media-rating-badge";
-import { MediaRatingStars } from "@/components/media-rating-stars";
 
 interface MediaCardProps {
   media: Media;
@@ -159,13 +158,8 @@ const MediaCard = ({
                     {/* Ratings section - User rating above general rating */}
                     <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
                       {userRating && (
-                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
-                          <MediaRatingStars 
-                            rating={userRating} 
-                            size="small"
-                            showNumber={false}
-                            className="text-white"
-                          />
+                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-md px-2 py-0.5">
+                          <span className="text-white text-xs font-bold">{userRating}/10</span>
                         </div>
                       )}
                       {normalizedRating && (

@@ -1,12 +1,17 @@
 
-import React, { memo, useState } from "react";
-import { MediaRating } from "@/components/media-rating";
-import { MediaType } from "@/types";
-import { Loader2, Star, MessageCircle, CheckCircle, AlertCircle } from "lucide-react";
-import { useMediaRating } from "@/hooks/use-media-rating";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
+import { useMediaRating } from "@/hooks/use-media-rating";
+import { MediaType } from "@/types";
+import { RatingSlider } from "@/components/media-rating/rating-slider";
+import { cn } from "@/lib/utils";
 
 interface CritiqueTabProps {
   mediaId: string;
@@ -15,182 +20,128 @@ interface CritiqueTabProps {
   initialReview?: string;
 }
 
-const CritiqueTabComponent = ({ 
-  mediaId, 
-  mediaType, 
-  initialRating = 0, 
-  initialReview = "" 
-}: CritiqueTabProps) => {
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+const ratingSchema = z.object({
+  rating: z.number().min(1).max(10),
+  review: z.string().optional(),
+});
 
-  // Validation simple des props
-  if (!mediaId || !mediaType) {
-    return (
-      <div className="space-y-6 p-4">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Impossible de charger les critiques : données du média manquantes.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+type RatingFormData = z.infer<typeof ratingSchema>;
 
-  // Hook avec gestion d'erreur simple
-  const ratingHookResult = useMediaRating(mediaId, mediaType);
+export function CritiqueTab({ mediaId, mediaType, initialRating, initialReview }: CritiqueTabProps) {
+  const { toast } = useToast();
+  const { submitRating, isSubmitting, userRating, userReview } = useMediaRating(mediaId, mediaType);
+  const [localRating, setLocalRating] = useState(userRating || initialRating || 5);
 
-  // Gestion sécurisée des données du hook
-  if (!ratingHookResult) {
-    return (
-      <div className="space-y-6 p-4">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-sm text-muted-foreground">Chargement de vos critiques...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const form = useForm<RatingFormData>({
+    resolver: zodResolver(ratingSchema),
+    defaultValues: {
+      rating: userRating || initialRating || 5,
+      review: userReview || initialReview || "",
+    },
+  });
 
-  const { userRating, userReview, isLoading } = ratingHookResult;
+  useEffect(() => {
+    if (userRating !== null) {
+      setLocalRating(userRating);
+      form.setValue("rating", userRating);
+    }
+    if (userReview !== null) {
+      form.setValue("review", userReview);
+    }
+  }, [userRating, userReview, form]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6 p-4">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-sm text-muted-foreground">Chargement de vos critiques...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const onSubmit = async (data: RatingFormData) => {
+    const success = await submitRating({
+      rating: data.rating,
+      notes: data.review || "",
+    });
 
-  // Gestion du succès de soumission
-  const handleRatingComplete = () => {
-    setSubmitStatus('success');
-    setTimeout(() => {
-      setSubmitStatus('idle');
-    }, 3000);
+    if (success) {
+      toast({
+        title: "Note enregistrée",
+        description: "Votre critique a été sauvegardée avec succès",
+      });
+    }
   };
 
-  const handleRatingError = () => {
-    setSubmitStatus('error');
-    setTimeout(() => {
-      setSubmitStatus('idle');
-    }, 3000);
+  const getRatingColor = (rating: number) => {
+    if (rating >= 8) return "text-emerald-500 bg-emerald-50 border-emerald-200";
+    if (rating >= 6) return "text-green-500 bg-green-50 border-green-200";
+    if (rating >= 4) return "text-yellow-500 bg-yellow-50 border-yellow-200";
+    return "text-red-500 bg-red-50 border-red-200";
+  };
+
+  const getRatingLabel = (rating: number) => {
+    if (rating >= 9) return "Exceptionnel";
+    if (rating >= 8) return "Excellent";
+    if (rating >= 7) return "Très bon";
+    if (rating >= 6) return "Bon";
+    if (rating >= 5) return "Moyen";
+    if (rating >= 4) return "Décevant";
+    return "Mauvais";
   };
 
   return (
     <div className="space-y-6 p-4">
-      {/* Header Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Star className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Votre critique</h2>
-          {userRating && userRating > 0 && (
-            <Badge variant="secondary" className="ml-auto">
-              {userRating}/10
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Partagez votre avis et attribuez une note à ce média
-        </p>
-      </div>
-
-      {/* Message de statut */}
-      {submitStatus === 'success' && (
-        <Alert className="border-green-200 bg-green-50">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">
-            Votre critique a été enregistrée avec succès !
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {submitStatus === 'error' && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Erreur lors de l'enregistrement. Veuillez réessayer.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Critique existante */}
-      {userRating && userRating > 0 && (userReview || submitStatus === 'success') && (
-        <Card className="border-green-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-green-600" />
-              Votre critique publiée
-              {submitStatus === 'success' && (
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+      <Card className={cn("transition-all duration-200", getRatingColor(localRating))}>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Ma critique</span>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Note :</span>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
-                {userRating}/10
-              </Badge>
+              <span className={cn("text-2xl font-bold", getRatingColor(localRating).split(' ')[0])}>
+                {localRating}/10
+              </span>
+              <span className={cn("text-sm font-medium px-2 py-1 rounded-full", getRatingColor(localRating))}>
+                {getRatingLabel(localRating)}
+              </span>
             </div>
-            {userReview && (
-              <div className="space-y-1">
-                <span className="text-sm font-medium">Avis :</span>
-                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-                  {userReview}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-      
-      {/* Composant de notation */}
-      <MediaRating 
-        mediaId={mediaId} 
-        mediaType={mediaType}
-        initialNotes={initialReview || userReview || ""}
-        onRatingComplete={handleRatingComplete}
-        onRatingError={handleRatingError}
-      />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="rating"
+                render={({ field }) => (
+                  <RatingSlider
+                    value={localRating}
+                    onChange={(rating) => {
+                      setLocalRating(rating);
+                      field.onChange(rating);
+                    }}
+                  />
+                )}
+              />
 
-      {/* Conseils pour l'utilisateur */}
-      {!userRating && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex gap-3">
-            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Star className="w-3 h-3 text-blue-600" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-900">
-                Première critique ?
-              </p>
-              <p className="text-xs text-blue-700">
-                Attribuez une note et rédigez votre avis pour aider la communauté à découvrir de nouveaux contenus.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+              <FormField
+                control={form.control}
+                name="review"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mon avis (optionnel)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Partagez votre avis sur ce média..."
+                        className="min-h-24 resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? "Enregistrement..." : "Enregistrer ma critique"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-// Mémoïsation optimisée
-export const CritiqueTab = memo(CritiqueTabComponent, (prevProps, nextProps) => {
-  return (
-    prevProps.mediaId === nextProps.mediaId &&
-    prevProps.mediaType === nextProps.mediaType &&
-    prevProps.initialRating === nextProps.initialRating &&
-    prevProps.initialReview === nextProps.initialReview
-  );
-});
-
-CritiqueTab.displayName = 'CritiqueTab';
+}

@@ -118,7 +118,7 @@ const TabContentComponent = ({ id, type, formattedMedia, additionalInfo }: TabCo
             <WhereToWatchTab 
               mediaId={id} 
               mediaType={type} 
-              title={formattedMedia?.title || ""}
+              formattedMedia={formattedMedia}
             />,
             errorMessage
           )}
