@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Plus, FolderPlus, Trash2 } from "lucide-react";
 import { MediaType, MediaStatus } from "@/types";
 
 interface MediaActionButtonsProps {
@@ -17,6 +17,7 @@ interface MediaActionButtonsProps {
 
 export function MediaActionButtons({
   isInLibrary,
+  onGoBack,
   onOpenAddDialog,
   onOpenCollectionDialog,
   onOpenDeleteDialog

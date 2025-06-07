@@ -93,13 +93,7 @@ const CritiqueTabComponent = ({
           <h2 className="text-xl font-semibold">Votre critique</h2>
           {userRating && userRating > 0 && (
             <Badge variant="secondary" className="ml-auto">
-              <span className={`font-semibold ${
-                userRating >= 7 ? 'text-green-600' :
-                userRating >= 4 ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {userRating}/10
-              </span>
+              {userRating}/10
             </Badge>
           )}
         </div>
@@ -142,11 +136,7 @@ const CritiqueTabComponent = ({
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Note :</span>
-              <Badge variant="outline" className={`border-green-300 ${
-                userRating >= 7 ? 'bg-green-50 text-green-700' :
-                userRating >= 4 ? 'bg-yellow-50 text-yellow-700' :
-                'bg-red-50 text-red-700'
-              }`}>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
                 {userRating}/10
               </Badge>
             </div>
