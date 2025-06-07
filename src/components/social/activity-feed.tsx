@@ -6,6 +6,7 @@ import { Media } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 interface ActivityFeedProps {
   activities: Activity[];
@@ -24,30 +25,13 @@ const ActivityFeedComponent = ({
   onComment,
   onShare,
 }: ActivityFeedProps) => {
-  // Mémoïser le skeleton de chargement
+  // Mémoïser le skeleton de chargement avec la même icône que l'app
   const loadingSkeleton = useMemo(() => (
-    <div className="space-y-4 px-1">
-      {[1, 2, 3].map((i) => (
-        <Card key={i} className="bg-secondary/40 border-border/50">
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
-              <div className="flex-1">
-                <div className="h-4 bg-muted animate-pulse rounded w-3/4 mb-2" />
-                <div className="h-3 bg-muted animate-pulse rounded w-1/2" />
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="w-16 h-24 bg-muted animate-pulse rounded-md" />
-              <div className="flex-1">
-                <div className="h-4 bg-muted animate-pulse rounded w-2/3 mb-2" />
-                <div className="h-3 bg-muted animate-pulse rounded w-full mb-1" />
-                <div className="h-3 bg-muted animate-pulse rounded w-4/5" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      ))}
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      </div>
+      <p className="text-sm text-muted-foreground">Chargement des activités...</p>
     </div>
   ), []);
 

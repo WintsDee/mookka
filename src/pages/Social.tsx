@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Background } from "@/components/ui/background";
 import { MobileNav } from "@/components/mobile-nav";
@@ -16,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { DEFAULT_AVATAR } from "@/config/avatars/avatar-utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, Wifi, WifiOff } from "lucide-react";
+import { RefreshCw, Wifi, WifiOff, Loader2 } from "lucide-react";
 
 const Social = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -263,8 +262,8 @@ const Social = () => {
     if (!isInitialized) {
       return (
         <div className="flex flex-col items-center justify-center h-[70vh] px-6 text-center space-y-6">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
-            <Wifi className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
           <p className="text-muted-foreground">Chargement...</p>
         </div>

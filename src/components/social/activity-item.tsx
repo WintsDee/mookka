@@ -2,12 +2,13 @@
 import React, { memo, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity } from "@/components/social/types";
 import { Media } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface ActivityItemProps {
   activity: Activity;
@@ -43,6 +44,18 @@ const ActivityItemComponent = ({
     });
   }, [activity.timestamp]);
 
+  // Extraire la note de l'action
+  const ratingMatch = activity.action.match(/a noté (\d+(?:\.\d+)?)\/10/);
+  const rating = ratingMatch ? parseFloat(ratingMatch[1]) : null;
+
+  // Fonction pour obtenir la couleur de la note
+  const getRatingColor = (rating: number) => {
+    if (rating >= 8) return "bg-green-500 text-white";
+    if (rating >= 6) return "bg-blue-500 text-white";
+    if (rating >= 4) return "bg-yellow-500 text-white";
+    return "bg-red-500 text-white";
+  };
+
   // Gestionnaire d'erreur d'image mémoïsé
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!imageError) {
@@ -69,12 +82,29 @@ const ActivityItemComponent = ({
               </AvatarFallback>
             </Avatar>
           </div>
-          <div>
-            <p className="text-sm">
-              <span className="font-medium">{activity.user.name}</span>{" "}
-              {activity.action}{" "}
-              <span className="font-medium">{activity.media.title}</span>
-            </p>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm">
+                <span className="font-medium">{activity.user.name}</span>{" "}
+                {rating ? (
+                  <>
+                    a noté{" "}
+                    <span className="font-medium">{activity.media.title}</span>
+                  </>
+                ) : (
+                  <>
+                    {activity.action}{" "}
+                    <span className="font-medium">{activity.media.title}</span>
+                  </>
+                )}
+              </p>
+              {rating && (
+                <Badge className={`${getRatingColor(rating)} text-xs px-2 py-1 flex items-center gap-1`}>
+                  <Star className="w-3 h-3 fill-current" />
+                  {rating}/10
+                </Badge>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {formattedTime}
             </p>
