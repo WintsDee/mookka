@@ -8,7 +8,7 @@ import { LibrarySearch } from "@/components/library/library-search";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MediaType } from "@/types";
+import { MediaType, MediaStatus } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
@@ -79,7 +79,7 @@ const Bibliotheque = () => {
           coverImage: item.media.cover_image,
           year: item.media.year,
           rating: item.media.rating,
-          status: item.status,
+          status: item.status as MediaStatus,
           duration: item.media.duration,
           userRating: item.user_rating
         }));
@@ -116,12 +116,13 @@ const Bibliotheque = () => {
         <div className="space-y-6">
           <LibraryTypeSelector 
             selectedType={selectedType} 
-            onTypeChange={setSelectedType} 
+            onSelectType={setSelectedType} 
           />
           
           <LibrarySearch 
-            searchQuery={searchQuery} 
-            onSearchChange={setSearchQuery} 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onSearch={() => {}} 
           />
 
           {isLoading ? (
