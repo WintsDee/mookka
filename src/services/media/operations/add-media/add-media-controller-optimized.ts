@@ -35,7 +35,7 @@ export async function addMediaToLibraryOptimized(params: AddMediaParams): Promis
     const userId = await validateUserSessionOptimized();
     console.log("Utilisateur validé:", userId);
     
-    // 2. Déterminer le statut par défaut si non spécifié
+    // 2. Déterminer le statut par défaut
     const effectiveStatus = params.status || getDefaultStatus(params.mediaType);
     console.log("Statut effectif:", effectiveStatus);
     

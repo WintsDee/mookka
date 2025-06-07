@@ -90,10 +90,10 @@ const MediaCard = ({
     
     return (
       <div className={cn(
-        "absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg z-10",
+        "absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10",
         iconClass
       )}>
-        <StatusIcon className="h-3 w-3" />
+        <StatusIcon className="h-4 w-4" />
       </div>
     );
   };
@@ -159,14 +159,13 @@ const MediaCard = ({
                     {/* Ratings section - User rating above general rating */}
                     <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-2">
                       {userRating && (
-                        <div className="bg-blue-600/90 backdrop-blur-sm rounded px-2 py-1 flex items-center">
+                        <div className="bg-blue-600/90 backdrop-blur-sm rounded-full px-2 py-0.5">
                           <MediaRatingStars 
                             rating={userRating} 
                             size="small"
                             showNumber={false}
                             className="text-white"
                           />
-                          <span className="text-white text-xs font-medium ml-1">{userRating}</span>
                         </div>
                       )}
                       {normalizedRating && (

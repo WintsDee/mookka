@@ -10,10 +10,9 @@ interface WhereToWatchTabProps {
   mediaId: string;
   mediaType: MediaType;
   formattedMedia: any;
-  title?: string;
 }
 
-export function WhereToWatchTab({ mediaId, mediaType, formattedMedia, title }: WhereToWatchTabProps) {
+export function WhereToWatchTab({ mediaId, mediaType, formattedMedia }: WhereToWatchTabProps) {
   console.log("WhereToWatchTab - Props:", { mediaId, mediaType, hasFormattedMedia: !!formattedMedia });
   
   // Validation des props
@@ -23,7 +22,7 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia, title }: W
   }
 
   // Hook pour récupérer les plateformes
-  const { platforms, isLoading, error } = usePlatforms(mediaType, formattedMedia, title);
+  const { platforms, isLoading, error } = usePlatforms(mediaType, formattedMedia);
   
   console.log("WhereToWatchTab - Hook result:", { 
     platformsCount: platforms?.length || 0, 
@@ -47,12 +46,7 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia, title }: W
 
   return (
     <div className="p-4">
-      <PlatformList 
-        platforms={platforms} 
-        mediaType={mediaType}
-        type={mediaType}
-        title={title || formattedMedia?.title || ""}
-      />
+      <PlatformList platforms={platforms} mediaType={mediaType} />
     </div>
   );
 }

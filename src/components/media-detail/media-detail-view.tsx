@@ -127,13 +127,13 @@ export function MediaDetailView({ id, type, media, formattedMedia, additionalInf
         
         <SuccessAnimation 
           show={showCollectionSuccess} 
-          message="Ajouté à la collection !"
+          message="Ajouté à la collection"
           onComplete={hideCollectionSuccess}
         />
         
         <SuccessAnimation 
           show={showRatingSuccess} 
-          message="Note enregistrée !"
+          message="Note enregistrée"
           onComplete={hideRatingSuccess}
         />
       </Background>

@@ -33,7 +33,7 @@ export function MediaRatingStars({
   
   return (
     <div className={cn(
-      "flex items-center flex-nowrap", 
+      "flex items-center whitespace-nowrap min-w-0", 
       containerClasses[size], 
       className
     )}>
@@ -53,7 +53,7 @@ export function MediaRatingStars({
       </div>
       {showNumber && (
         <span className={cn(
-          "font-medium text-primary ml-1 flex-shrink-0 whitespace-nowrap", 
+          "font-medium text-primary ml-1 flex-shrink-0", 
           containerClasses[size].split(' ')[1]
         )}>
           {rating}/10

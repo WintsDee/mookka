@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, FolderPlus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, FolderPlus, Trash2 } from "lucide-react";
 import { MediaType, MediaStatus } from "@/types";
 
 interface MediaActionButtonsProps {
@@ -17,43 +17,42 @@ interface MediaActionButtonsProps {
 
 export function MediaActionButtons({
   isInLibrary,
+  onGoBack,
   onOpenAddDialog,
   onOpenCollectionDialog,
   onOpenDeleteDialog
 }: MediaActionButtonsProps) {
   return (
     <div className="flex items-center gap-2 w-full">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onOpenCollectionDialog}
+        className="flex-1"
+      >
+        <FolderPlus className="h-4 w-4 mr-2" />
+        Collections
+      </Button>
+      
       {isInLibrary ? (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenCollectionDialog}
-            className="flex-1"
-          >
-            <FolderPlus className="h-4 w-4 mr-2" />
-            Collections
-          </Button>
-          
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onOpenDeleteDialog}
-            className="flex-1"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Supprimer
-          </Button>
-        </>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={onOpenDeleteDialog}
+          className="flex-1"
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Supprimer
+        </Button>
       ) : (
         <Button
           variant="default"
           size="sm"
           onClick={onOpenAddDialog}
-          className="w-full"
+          className="flex-1"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter à ma bibliothèque
+          Ajouter
         </Button>
       )}
     </div>
