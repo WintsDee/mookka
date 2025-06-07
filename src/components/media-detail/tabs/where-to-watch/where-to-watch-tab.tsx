@@ -21,8 +21,8 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia }: WhereToW
     return <WhereToWatchEmpty />;
   }
 
-  // Hook pour récupérer les plateformes
-  const { platforms, isLoading, error } = usePlatforms(mediaType, formattedMedia);
+  // Hook pour récupérer les plateformes - fix: ajout du titre comme 3ème paramètre
+  const { platforms, isLoading, error } = usePlatforms(mediaId, mediaType, formattedMedia?.title || "");
   
   console.log("WhereToWatchTab - Hook result:", { 
     platformsCount: platforms?.length || 0, 
