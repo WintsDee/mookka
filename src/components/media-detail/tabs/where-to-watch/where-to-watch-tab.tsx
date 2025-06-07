@@ -46,12 +46,7 @@ export function WhereToWatchTab({ mediaId, mediaType, formattedMedia }: WhereToW
 
   return (
     <div className="p-4">
-      <PlatformList 
-        platforms={platforms} 
-        mediaType={mediaType}
-        type={mediaType}
-        title={formattedMedia?.title || ""}
-      />
+      <PlatformList platforms={platforms} mediaType={mediaType} />
     </div>
   );
 }
